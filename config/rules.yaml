@@ -65,3 +65,12 @@ bookings:
   # Hotels: refundable rooms are refunded in full until this many hours before check-in
   # (14:00 local on the check-in day); non-refundable rooms are not refunded.
   hotel_free_cancellation_hours_before_check_in: 24
+
+recovery:
+  # Delays at least this long give the traveller the right to rebook or take a refund.
+  significant_delay_minutes: 180
+  # When the airline or hotel causes the change, the replacement costs nothing extra and a
+  # cheaper replacement is not partly refunded (TripMind demo policy).
+  # Rebooking alternatives are searched on the original day and the following days.
+  search_days: 2
+  max_alternatives: 4

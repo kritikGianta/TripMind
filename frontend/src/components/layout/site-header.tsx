@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { siteConfig } from "@/config/site";
 import { UserMenu } from "@/features/auth/components/user-menu";
+import { NotificationBell } from "@/features/recovery/components/notification-bell";
 import { cn } from "@/lib/utils";
 
 import { Logo } from "./logo";
@@ -42,6 +43,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          <NotificationBell />
           <UserMenu />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>

@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import Airport, City, Flight
 from app.modules.catalog.repository import CatalogRepository
+from app.modules.operations.queries import cancelled_flights
 from app.modules.search.locations import LocationService
 from app.modules.search.pricing import Converter, LedgerLine, MoneyOut, SearchRules
 from app.modules.search.schemas import (
@@ -164,7 +165,11 @@ class FlightSearchService:
     def _flights(self, *conditions: object) -> list[Flight]:
         return list(
             self._session.scalars(
-                select(Flight).where(Flight.is_active.is_(True), *conditions)  # type: ignore[arg-type]
+                select(Flight).where(
+                    Flight.is_active.is_(True),
+                    Flight.id.not_in(cancelled_flights()),  # cancelled by the airline: not for sale
+                    *conditions,  # type: ignore[arg-type]
+                )
             )
         )
 

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney } from "@/features/search/format";
+import { RecoveryBanner } from "@/features/recovery/components/recovery-view";
 import { errorMessage } from "@/lib/api/errors";
 
 import { useBooking, useCancel, useCancellationQuote, usePay, type Booking, type BookingItem } from "../api";
@@ -240,6 +241,7 @@ export function BookingView() {
           <StatusBadge status={booking.status} />
         </div>
 
+        <RecoveryBanner bookingId={booking.id} />
         {booking.status === "confirmed" ? (
           <Alert>
             <CheckCircle2 className="text-emerald-600" />

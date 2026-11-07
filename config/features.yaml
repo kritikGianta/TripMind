@@ -17,3 +17,5 @@ features:
   bookings: true
   # Connected-trip planner: ranked flight + stay bundles with the Journey Confidence Report.
   trip_planner: true
+  # Disruptions (operators) and recovery cases with rebooking or refund (travellers).
+  recovery: true

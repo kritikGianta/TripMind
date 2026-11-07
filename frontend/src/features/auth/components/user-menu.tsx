@@ -1,6 +1,6 @@
 "use client";
 
-import { DatabaseZap, LogOut, UserRound } from "lucide-react";
+import { CloudLightning, DatabaseZap, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -71,6 +71,13 @@ export function UserMenu() {
           <DropdownMenuItem asChild>
             <Link href="/admin/imports">
               <DatabaseZap /> Data imports
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
+        {user.role === "admin" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/operations">
+              <CloudLightning /> Disruptions
             </Link>
           </DropdownMenuItem>
         ) : null}

@@ -90,6 +90,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/operations/booked-flights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Upcoming flights with seats sold */
+        get: operations["booked_flights_api_v1_admin_operations_booked_flights_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/operations/disruptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recorded disruptions */
+        get: operations["disruptions_api_v1_admin_operations_disruptions_get"];
+        put?: never;
+        /** Record a cancellation, delay or room outage and open recovery cases */
+        post: operations["disrupt_api_v1_admin_operations_disruptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/demo-login": {
         parameters: {
             query?: never;
@@ -413,6 +448,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My latest notifications */
+        get: operations["list_notifications_api_v1_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark one notification (or all, without an ID) as read */
+        post: operations["mark_read_api_v1_notifications_read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/plans": {
         parameters: {
             query?: never;
@@ -482,6 +551,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/recovery/cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My recovery cases, open first */
+        get: operations["cases_api_v1_recovery_cases_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/cases/{case_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One recovery case with its options */
+        get: operations["case_api_v1_recovery_cases__case_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/cases/{case_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Choose an option; only the affected item changes */
+        post: operations["accept_api_v1_recovery_cases__case_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/trips": {
         parameters: {
             query?: never;
@@ -520,6 +640,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcceptIn */
+        AcceptIn: {
+            /** Option Id */
+            option_id: string;
+        };
         /** AirportBrief */
         AirportBrief: {
             /** City Name */
@@ -556,6 +681,34 @@ export interface components {
             file: string;
             /** Mapping */
             mapping: string;
+        };
+        /** BookedFlightListOut */
+        BookedFlightListOut: {
+            /** Items */
+            items: components["schemas"]["BookedFlightOut"][];
+        };
+        /** BookedFlightOut */
+        BookedFlightOut: {
+            /** Booked Seats */
+            booked_seats: number;
+            /** Cabin Class */
+            cabin_class: string;
+            /**
+             * Departure Local
+             * Format: date-time
+             */
+            departure_local: string;
+            /** Disruption */
+            disruption: string | null;
+            /**
+             * Flight Id
+             * Format: uuid
+             */
+            flight_id: string;
+            /** Flight Number */
+            flight_number: string;
+            /** Route */
+            route: string;
         };
         /** BookingItemOut */
         BookingItemOut: {
@@ -831,6 +984,57 @@ export interface components {
              */
             role: "traveler" | "admin";
         };
+        /** DisruptionIn */
+        DisruptionIn: {
+            /** Delay Minutes */
+            delay_minutes?: number | null;
+            /** Ends On */
+            ends_on?: string | null;
+            /** Flight Id */
+            flight_id?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "flight_cancelled" | "flight_delayed" | "room_unavailable";
+            /**
+             * Reason
+             * @default Operational reasons
+             */
+            reason: string;
+            /** Room Type Id */
+            room_type_id?: string | null;
+            /** Starts On */
+            starts_on?: string | null;
+        };
+        /** DisruptionListOut */
+        DisruptionListOut: {
+            /** Items */
+            items: components["schemas"]["DisruptionOut"][];
+        };
+        /** DisruptionOut */
+        DisruptionOut: {
+            /** Affected Items */
+            affected_items: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Delay Minutes */
+            delay_minutes: number | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Reason */
+            reason: string;
+            /** Target */
+            target: string;
+        };
         /** EntityCountsOut */
         EntityCountsOut: {
             /**
@@ -1062,6 +1266,11 @@ export interface components {
             notices: string[];
             outbound: components["schemas"]["FlightResultsOut"];
             travel_window: components["schemas"]["TravelWindowOut"] | null;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
         };
         /** HealthOut */
         HealthOut: {
@@ -1453,6 +1662,40 @@ export interface components {
             /** Currency */
             currency: string;
         };
+        /** NotificationListOut */
+        NotificationListOut: {
+            /** Items */
+            items: components["schemas"]["NotificationOut"][];
+            /** Unread */
+            unread: number;
+        };
+        /** NotificationOut */
+        NotificationOut: {
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Emailed */
+            emailed: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Link */
+            link: string | null;
+            /** Read */
+            read: boolean;
+            /** Severity */
+            severity: string;
+            /** Title */
+            title: string;
+        };
         /** OptionStateIn */
         OptionStateIn: {
             /**
@@ -1697,6 +1940,84 @@ export interface components {
              */
             status: "ready" | "not_ready";
         };
+        /** RecoveryCaseListOut */
+        RecoveryCaseListOut: {
+            /** Items */
+            items: components["schemas"]["RecoveryCaseOut"][];
+        };
+        /** RecoveryCaseOut */
+        RecoveryCaseOut: {
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            /** Booking Reference */
+            booking_reference: string;
+            /** Chosen Option Id */
+            chosen_option_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Disruption Kind */
+            disruption_kind: string;
+            /** Disruption Reason */
+            disruption_reason: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Impact */
+            impact: string[];
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /** Item Title */
+            item_title: string;
+            /** Options */
+            options: components["schemas"]["RecoveryOptionOut"][];
+            /** Resolution */
+            resolution: string | null;
+            /** Resolved At */
+            resolved_at: string | null;
+            /** Status */
+            status: string;
+            /** Summary */
+            summary: string;
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+        };
+        /** RecoveryOptionOut */
+        RecoveryOptionOut: {
+            /** Description */
+            description: string;
+            extra_cost: components["schemas"]["MoneyOut"];
+            /** Id */
+            id: string;
+            /** Notes */
+            notes?: string[];
+            offer?: components["schemas"]["FlightOfferOut"] | null;
+            refund?: components["schemas"]["MoneyOut"] | null;
+            /** Room */
+            room?: {
+                [key: string]: unknown;
+            } | null;
+            /** Title */
+            title: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "rebook_flight" | "rebook_room" | "refund" | "keep";
+        };
         /** RefundOut */
         RefundOut: {
             amount: components["schemas"]["MoneyOut"];
@@ -1934,6 +2255,19 @@ export interface components {
              * @enum {string}
              */
             role: "traveler" | "admin";
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
         };
     };
     responses: never;
@@ -2394,6 +2728,205 @@ export interface operations {
             };
             /** @description Request Entity Too Large */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    booked_flights_api_v1_admin_operations_booked_flights_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookedFlightListOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    disruptions_api_v1_admin_operations_disruptions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisruptionListOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    disrupt_api_v1_admin_operations_disruptions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DisruptionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisruptionOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3459,6 +3992,55 @@ export interface operations {
             };
         };
     };
+    list_notifications_api_v1_notifications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationListOut"];
+                };
+            };
+        };
+    };
+    mark_read_api_v1_notifications_read_post: {
+        parameters: {
+            query?: {
+                notification_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_plans_api_v1_plans_get: {
         parameters: {
             query?: never;
@@ -3721,6 +4303,211 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReadinessOut"];
+                };
+            };
+        };
+    };
+    cases_api_v1_recovery_cases_get: {
+        parameters: {
+            query?: {
+                booking_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCaseListOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    case_api_v1_recovery_cases__case_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCaseOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    accept_api_v1_recovery_cases__case_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCaseOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };

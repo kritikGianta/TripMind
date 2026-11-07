@@ -19,7 +19,10 @@ from app.modules.bookings.models import (
 from app.modules.catalog.models import Airport, City, Flight, Hotel, HotelAmenity, RoomType
 from app.modules.ingestion.models import ImportReject, ImportRun
 from app.modules.inventory.models import FlightInventory, InventoryClaim, RoomNightInventory
+from app.modules.notifications.models import Notification
+from app.modules.operations.models import Disruption
 from app.modules.planner.models import TripPlan
+from app.modules.recovery.models import RecoveryCase
 
 __all__ = [
     "Airport",
@@ -30,6 +33,7 @@ __all__ = [
     "BookingItem",
     "BookingTraveller",
     "City",
+    "Disruption",
     "Flight",
     "FlightInventory",
     "Hotel",
@@ -37,7 +41,9 @@ __all__ = [
     "ImportReject",
     "ImportRun",
     "InventoryClaim",
+    "Notification",
     "Payment",
+    "RecoveryCase",
     "RefreshToken",
     "Refund",
     "RoomNightInventory",

@@ -65,6 +65,7 @@ from app.modules.bookings.schemas import (
 )
 from app.modules.catalog.models import Airport, City, Flight, RoomType
 from app.modules.inventory.service import InventoryService, SoldOut
+from app.modules.notifications.service import NotificationService
 from app.modules.search.flights import FlightSearchService
 from app.modules.search.hotels import HotelSearchService, Stay
 from app.modules.search.pricing import (
@@ -137,6 +138,7 @@ class BookingService:
         self._hotels = HotelSearchService(session, self._converter, search_rules, today)
         self._inventory = InventoryService(session)
         self._audit = AuditService(session)
+        self._notifications = NotificationService(session)
 
     # ------------------------------------------------------------------ pricing
 
@@ -577,6 +579,16 @@ class BookingService:
                 "confirmed",
                 f"Paid with {result.brand} ending {result.last4}. Booking confirmed.",
             )
+            self._notifications.notify(
+                user_id=user.id,
+                kind="booking_confirmed",
+                severity="success",
+                title=f"Booking {booking.reference} confirmed",
+                body=f"{', '.join(i.title for i in self._items(booking))}. Confirmation sent to "
+                f"{booking.contact_email}.",
+                link=f"/bookings/{booking.id}",
+                now=self._clock.now(),
+            )
         else:
             booking.status = BookingStatus.PAYMENT_FAILED
             self._event(
@@ -705,6 +717,19 @@ class BookingService:
                 if refunded
                 else " No refund due."
             ),
+        )
+        self._notifications.notify(
+            user_id=user.id,
+            kind="booking_cancelled",
+            title=f"Booking {booking.reference} updated",
+            body=f"Cancelled {names}."
+            + (
+                f" Refund of {refunded / 100:,.2f} {booking.currency} on its way."
+                if refunded
+                else " No refund was due."
+            ),
+            link=f"/bookings/{booking.id}",
+            now=now,
         )
         self._audit.record(
             action="booking.cancel",

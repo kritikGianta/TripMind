@@ -24,7 +24,10 @@ from app.modules.bookings.router import router as bookings_router
 from app.modules.ingestion.router import admin_router as imports_admin_router
 from app.modules.ingestion.router import public_router as datasets_router
 from app.modules.meta.router import router as meta_router
+from app.modules.notifications.router import router as notifications_router
 from app.modules.planner.router import router as planner_router
+from app.modules.recovery.router import admin_router as operations_router
+from app.modules.recovery.router import router as recovery_router
 from app.modules.search.router import router as search_router
 
 log = structlog.get_logger(__name__)
@@ -77,6 +80,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(search_router, prefix=settings.api_prefix)
     app.include_router(bookings_router, prefix=settings.api_prefix)
     app.include_router(planner_router, prefix=settings.api_prefix)
+    app.include_router(recovery_router, prefix=settings.api_prefix)
+    app.include_router(operations_router, prefix=settings.api_prefix)
+    app.include_router(notifications_router, prefix=settings.api_prefix)
     app.include_router(imports_admin_router, prefix=settings.api_prefix)
 
     # Served on the API's own port only; the web proxy forwards /api/* and never /metrics.

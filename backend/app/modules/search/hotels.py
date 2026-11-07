@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import City, Hotel, HotelAmenity, RoomType
+from app.modules.operations.queries import unavailable_rooms
 from app.modules.search.locations import LocationService
 from app.modules.search.pricing import Converter, LedgerLine, MoneyOut, SearchRules
 from app.modules.search.schemas import (
@@ -111,6 +112,7 @@ class HotelSearchService:
         self._converter = converter
         self._rules = rules
         self._today = today
+        self._out_of_service: dict[tuple[date, date], set[uuid.UUID]] = {}
 
     def validate(self, stay: Stay) -> None:
         if stay.check_in < self._today:
@@ -134,7 +136,9 @@ class HotelSearchService:
             else None
         )
         fits = stay is None or (
-            room.max_occupancy >= stay.guests_per_room and room.total_rooms >= stay.rooms
+            room.max_occupancy >= stay.guests_per_room
+            and room.total_rooms >= stay.rooms
+            and room.id not in self._unavailable(stay)
         )
         price = None
         if stay is not None:
@@ -171,6 +175,12 @@ class HotelSearchService:
             price=price,
             origin=room.origin,
         )
+
+    def _unavailable(self, stay: Stay) -> set[uuid.UUID]:
+        key = (stay.check_in, stay.check_out)
+        if key not in self._out_of_service:
+            self._out_of_service[key] = unavailable_rooms(self._session, *key)
+        return self._out_of_service[key]
 
     def _nightly_display(self, room: RoomOfferOut) -> int | None:
         if room.nightly_rate is None:

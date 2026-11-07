@@ -159,7 +159,7 @@ export const differentiators: Array<{ typical: string; tripmind: string; status:
   { typical: "Flights and hotels sorted separately", tripmind: "Ranks complete, feasible flight + stay bundles", status: "live" },
   { typical: "A headline price", tripmind: "An itemised price ledger that marks unknown fees", status: "live" },
   { typical: "Filters and shortlists lost on navigation", tripmind: "A persistent trip record of intent, picks and rejections", status: "live" },
-  { typical: "Confirmation is the end", tripmind: "Recovery: rebuilds the trip when a flight is disrupted", status: "planned" },
+  { typical: "Confirmation is the end", tripmind: "Recovery: rebuilds the trip when a flight is disrupted", status: "live" },
   { typical: "Chatbot that can invent facts", tripmind: "AI grounded in data; it suggests, the traveller decides", status: "planned" },
   { typical: "Bundle-only or AI-only flows", tripmind: "Every product bookable on its own, with AI switched off", status: "live" },
 ];
@@ -199,7 +199,8 @@ export const capabilities: Capability[] = [
   { name: "Booking engine", detail: "Holds, idempotency, payment simulator, travellers, refunds, My Trips", status: "live" },
   { name: "Add-on booking", detail: "Add a stay to a flight trip (or the reverse) with dates prefilled", status: "live" },
   { name: "Connected-trip planner", detail: "Ranked flight + stay bundles, score breakdown, Journey Confidence Report, booked in one checkout", status: "live" },
-  { name: "Disruption recovery", detail: "Item-level rebooking with traveller approval", status: "planned" },
+  { name: "Disruption recovery", detail: "Cancellations, delays and room outages: options offered, traveller approves, only the affected item is replaced", status: "live" },
+  { name: "Notifications", detail: "In-app alerts for confirmations, changes and refunds, with a simulated email copy", status: "live" },
   { name: "AI assistant", detail: "Natural-language search, grounded answers, group planning", status: "planned" },
   { name: "Monitoring dashboards", detail: "Prometheus + Grafana + tracing", status: "planned" },
 ];
@@ -260,7 +261,9 @@ export const edgeCases: Capability[] = [
   { name: "Payment fails or the hold expires", detail: "Retry within the hold, or stock is released", status: "live" },
   { name: "Price changes during checkout", detail: "The server re-prices; a different total is shown before anything is held", status: "live" },
   { name: "Cancel only part of a booking", detail: "Item-level cancellation: drop the flight, keep the stay, refund per policy", status: "live" },
-  { name: "Flight confirmed but hotel fails", detail: "Shown as partial with a recovery path, never as fully confirmed", status: "planned" },
+  { name: "Airline cancels a booked flight", detail: "Rebooking options or a full refund; the hotel in the same trip is never touched", status: "live" },
+  { name: "Long delay vs short delay", detail: "Short delays notify; delays of 3 hours or more also offer rebooking or a refund", status: "live" },
+  { name: "Disruption hits an unpaid hold", detail: "The hold is released at once and nothing is charged", status: "live" },
   { name: "AI provider down or rate-limited", detail: "Next provider, then rule-based fallback", status: "planned" },
   { name: "Bad rows in the dataset", detail: "Quarantined with a reason and counted in the import report", status: "live" },
   { name: "Flight lands after midnight in another timezone", detail: "Local times converted with each airport's timezone; arrival rolls to the next day", status: "live" },
@@ -276,7 +279,7 @@ export const edgeCases: Capability[] = [
 export const proof = {
   measured: [
     { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "7 Nov 2026" },
-    { value: "94", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "100", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
     { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [

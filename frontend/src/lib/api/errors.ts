@@ -69,7 +69,11 @@ const MESSAGES: Record<string, string> = {
   BOOKING_NOT_FOUND: "Booking not found.",
   TRIP_NOT_FOUND: "Trip not found.",
   PLAN_NOT_FOUND: "Plan not found.",
-  OPTION_NOT_FOUND: "That option is no longer in this plan.",
+  OPTION_NOT_FOUND: "That option is no longer available.",
+  CASE_NOT_FOUND: "This recovery case was not found.",
+  CASE_RESOLVED: "This has already been sorted.",
+  ALREADY_DISRUPTED: "That flight is already cancelled.",
+  FLIGHT_NOT_FOUND: "Flight not found.",
 };
 
 export function errorMessage(error: unknown): string {
