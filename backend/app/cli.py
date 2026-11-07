@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import argparse
 import getpass
+import json
 import secrets
 import sys
+from pathlib import Path
 
 from sqlalchemy.orm import Session
 
@@ -80,6 +82,15 @@ def create_admin(email: str, full_name: str) -> int:
     return 0
 
 
+def export_openapi(path: Path) -> int:
+    from app.main import create_app  # imported lazily: builds the full application
+
+    schema = create_app().openapi()
+    path.write_text(json.dumps(schema, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(f"Wrote {path}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -87,10 +98,14 @@ def main(argv: list[str] | None = None) -> int:
     admin = sub.add_parser("create-admin", help="Create an admin account")
     admin.add_argument("--email", required=True)
     admin.add_argument("--name", default="Administrator")
+    openapi = sub.add_parser("openapi", help="Write the OpenAPI schema to a file")
+    openapi.add_argument("path", type=Path)
 
     args = parser.parse_args(argv)
     if args.command == "seed":
         return seed()
+    if args.command == "openapi":
+        return export_openapi(args.path)
     return create_admin(args.email, args.name)
 
 

@@ -1,0 +1,5 @@
+# Normalise line endings so scripts and Dockerfiles behave identically on Windows and Linux.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
