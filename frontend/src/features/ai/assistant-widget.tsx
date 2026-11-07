@@ -30,7 +30,11 @@ export function AssistantWidget() {
       apiFetch<Answer>("/ai/assistant", { method: "POST", body: { messages } }),
   });
 
-  useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [turns, open]);
+  // Block body on purpose: an effect must return nothing or a cleanup function, and Chrome's
+  // scrollIntoView now returns a Promise, which React would try to call as a cleanup.
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: "smooth" });
+  }, [turns, open]);
   if (!enabled("ai_assistant")) return null;
 
   function send(question: string) {

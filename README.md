@@ -104,6 +104,7 @@ Dashboards are code: edit `ops/grafana/build_dashboard.py`, run it, commit the J
 | `TEST_DATABASE_URL=postgresql+psycopg://tripmind:tripmind@127.0.0.1:5432/tripmind_test uv run pytest` | `npm run typecheck` |
 | `uv run ruff check . && uv run mypy app` | `npm run build` |
 | `uv run lint-imports` (enforces module layering) | `npm run gen:api` (regenerate API types) |
+| | `npm run e2e` (Playwright in local Chrome, against the running stack) |
 
 After changing the API, regenerate the frontend types:
 

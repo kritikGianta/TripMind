@@ -73,8 +73,10 @@ export function PlanForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="size-4 text-primary" /> Plan the whole trip
+        <CardTitle>
+          <h1 className="flex items-center gap-2">
+            <Sparkles className="size-4 text-primary" aria-hidden /> Plan the whole trip
+          </h1>
         </CardTitle>
         <CardDescription>
           TripMind combines flights both ways with a stay for the nights in between, checks that they fit together, and
