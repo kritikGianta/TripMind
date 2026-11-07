@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { siteConfig } from "@/config/site";
+import { AiSearch } from "@/features/ai/ai-search";
 import { SearchPanel } from "@/features/search/components/search-panel";
 
 /**
@@ -45,6 +46,7 @@ export default function HomePage() {
             {siteConfig.tagline}
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground text-pretty">{siteConfig.description}</p>
+          <AiSearch />
           <Suspense fallback={<Skeleton className="h-40 w-full" />}>
             <SearchPanel />
           </Suspense>

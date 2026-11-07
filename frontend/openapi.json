@@ -17,6 +17,26 @@
         "title": "AcceptIn",
         "type": "object"
       },
+      "Action": {
+        "properties": {
+          "href": {
+            "maxLength": 200,
+            "title": "Href",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 60,
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "href"
+        ],
+        "title": "Action",
+        "type": "object"
+      },
       "AirportBrief": {
         "properties": {
           "city_name": {
@@ -151,6 +171,59 @@
           "note"
         ],
         "title": "AnalyticsOut",
+        "type": "object"
+      },
+      "AssistantOut": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/Action"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "source": {
+            "description": "'ai:<provider>' or 'rules'",
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "answer",
+          "citations",
+          "actions",
+          "source"
+        ],
+        "title": "AssistantOut",
+        "type": "object"
+      },
+      "AssistantRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Messages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "messages"
+        ],
+        "title": "AssistantRequest",
         "type": "object"
       },
       "AuditOut": {
@@ -793,6 +866,30 @@
         "title": "CancellationQuoteOut",
         "type": "object"
       },
+      "ChatMessage": {
+        "properties": {
+          "content": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ChatMessage",
+        "type": "object"
+      },
       "CheckOut": {
         "properties": {
           "message": {
@@ -820,6 +917,24 @@
           "message"
         ],
         "title": "CheckOut",
+        "type": "object"
+      },
+      "Citation": {
+        "properties": {
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "source"
+        ],
+        "title": "Citation",
         "type": "object"
       },
       "CityOut": {
@@ -3175,6 +3290,167 @@
         "title": "OptionStateIn",
         "type": "object"
       },
+      "ParseIn": {
+        "properties": {
+          "text": {
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "ParseIn",
+        "type": "object"
+      },
+      "ParsedSearchOut": {
+        "properties": {
+          "adults": {
+            "title": "Adults",
+            "type": "integer"
+          },
+          "cabin_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cabin Class"
+          },
+          "depart_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depart Date"
+          },
+          "destination": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "intent": {
+            "enum": [
+              "flights",
+              "stays",
+              "trip"
+            ],
+            "title": "Intent",
+            "type": "string"
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Budget"
+          },
+          "min_stars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Stars"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing",
+            "type": "array"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "return_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Return Date"
+          },
+          "source": {
+            "description": "'ai:<provider>' or 'rules'",
+            "title": "Source",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "unknown_places": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unknown Places",
+            "type": "array"
+          }
+        },
+        "required": [
+          "source",
+          "intent",
+          "origin",
+          "destination",
+          "depart_date",
+          "return_date",
+          "adults",
+          "cabin_class",
+          "priority",
+          "max_budget",
+          "min_stars",
+          "missing",
+          "unknown_places",
+          "summary"
+        ],
+        "title": "ParsedSearchOut",
+        "type": "object"
+      },
       "PaymentOut": {
         "properties": {
           "amount": {
@@ -3261,6 +3537,36 @@
           "cardholder_name"
         ],
         "title": "PaymentRequest",
+        "type": "object"
+      },
+      "PlaceOut": {
+        "properties": {
+          "airport_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Airport Code"
+          },
+          "city_id": {
+            "title": "City Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "city_id",
+          "label",
+          "airport_code"
+        ],
+        "title": "PlaceOut",
         "type": "object"
       },
       "PlanListOut": {
@@ -4322,6 +4628,34 @@
           "access_expires_at"
         ],
         "title": "SessionOut",
+        "type": "object"
+      },
+      "StatusOut": {
+        "properties": {
+          "active_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Provider"
+          },
+          "providers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Providers",
+            "type": "object"
+          }
+        },
+        "required": [
+          "providers",
+          "active_provider"
+        ],
+        "title": "StatusOut",
         "type": "object"
       },
       "StayOut": {
@@ -5785,6 +6119,149 @@
         "summary": "Record a cancellation, delay or room outage and open recovery cases",
         "tags": [
           "admin: operations"
+        ]
+      }
+    },
+    "/api/v1/ai/assistant": {
+      "post": {
+        "operationId": "assistant_api_v1_ai_assistant_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Ask the help assistant (grounded in TripMind help and your trips)",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/ai/parse-search": {
+      "post": {
+        "operationId": "parse_search_api_v1_ai_parse_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParsedSearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Turn a sentence into search criteria (LLM, or rules as fallback)",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/ai/status": {
+      "get": {
+        "operationId": "status_api_v1_ai_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Which AI providers are configured",
+        "tags": [
+          "ai"
         ]
       }
     },

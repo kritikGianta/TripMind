@@ -19,3 +19,7 @@ features:
   trip_planner: true
   # Disruptions (operators) and recovery cases with rebooking or refund (travellers).
   recovery: true
+  # Natural-language search box (hosted LLM when a key is set, rules otherwise).
+  ai_search: true
+  # Help assistant grounded in TripMind help and the traveller's trips.
+  ai_assistant: true

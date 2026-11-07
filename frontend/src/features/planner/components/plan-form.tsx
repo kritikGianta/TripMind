@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -32,14 +32,19 @@ export function PlanForm() {
   const first = dataset?.travel_window?.first_departure;
   const start = first && first > tomorrow ? first : tomorrow;
 
-  const [from, setFrom] = useState<PickedLocation | null>(null);
-  const [to, setTo] = useState<PickedLocation | null>(null);
-  const [depart, setDepart] = useState("");
-  const [ret, setRet] = useState("");
-  const [adults, setAdults] = useState(2);
-  const [priority, setPriority] = useState<PlanRequest["priority"]>("balanced");
-  const [minStars, setMinStars] = useState("any");
-  const [budget, setBudget] = useState("");
+  // Values can arrive prefilled in the URL, e.g. from the "Describe your trip" box.
+  const params = useSearchParams();
+  const picked = (value: string | null, label: string | null) => (value ? { value, label: label ?? value } : null);
+  const [from, setFrom] = useState<PickedLocation | null>(() => picked(params.get("origin"), params.get("originLabel")));
+  const [to, setTo] = useState<PickedLocation | null>(() => picked(params.get("dest"), params.get("destLabel")));
+  const [depart, setDepart] = useState(params.get("depart") ?? "");
+  const [ret, setRet] = useState(params.get("return") ?? "");
+  const [adults, setAdults] = useState(Number(params.get("adults") ?? 2));
+  const [priority, setPriority] = useState<PlanRequest["priority"]>(
+    (params.get("priority") as PlanRequest["priority"] | null) ?? "balanced",
+  );
+  const [minStars, setMinStars] = useState(params.get("stars") ?? "any");
+  const [budget, setBudget] = useState(params.get("budget") ?? "");
   const [error, setError] = useState<string | null>(null);
 
   const departValue = depart || start;

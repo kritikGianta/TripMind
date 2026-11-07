@@ -66,3 +66,17 @@ RECOVERY_RESOLUTIONS = Counter(
     "Recovery cases resolved by the traveller's choice.",
     ["resolution"],
 )
+
+AI_REQUESTS = Counter(
+    "ai_requests_total",
+    "Hosted LLM calls by provider, feature and outcome.",
+    [
+        "provider",
+        "feature",
+        "outcome",
+    ],  # ok | cached | rate_limited | server_error | error | invalid_output
+)
+
+AI_FALLBACKS = Counter(
+    "ai_fallbacks_total", "AI features answered by rules because no provider answered.", ["feature"]
+)

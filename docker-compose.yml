@@ -15,6 +15,11 @@ x-api-env: &api-env
   CONFIG_DIR: /config
   # Set to http://jaeger:4318 (with the obs profile) to send traces to Jaeger.
   OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+  # Optional hosted LLM keys; AI features fall back to rules without them.
+  GROQ_API_KEY: ${GROQ_API_KEY:-}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+  LLM_PROVIDER_ORDER: ${LLM_PROVIDER_ORDER:-groq,gemini,openrouter}
 
 services:
   db:
@@ -62,6 +67,7 @@ services:
     environment: *api-env
     volumes:
       - ./config:/config:ro
+      - ./docs/help:/docs/help:ro
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:

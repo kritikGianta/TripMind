@@ -160,7 +160,7 @@ export const differentiators: Array<{ typical: string; tripmind: string; status:
   { typical: "A headline price", tripmind: "An itemised price ledger that marks unknown fees", status: "live" },
   { typical: "Filters and shortlists lost on navigation", tripmind: "A persistent trip record of intent, picks and rejections", status: "live" },
   { typical: "Confirmation is the end", tripmind: "Recovery: rebuilds the trip when a flight is disrupted", status: "live" },
-  { typical: "Chatbot that can invent facts", tripmind: "AI grounded in data; it suggests, the traveller decides", status: "planned" },
+  { typical: "Chatbot that can invent facts", tripmind: "AI grounded in data; it suggests, the traveller decides", status: "live" },
   { typical: "Bundle-only or AI-only flows", tripmind: "Every product bookable on its own, with AI switched off", status: "live" },
 ];
 
@@ -204,7 +204,9 @@ export const capabilities: Capability[] = [
   { name: "Account extras", detail: "Saved travellers for one-click checkout, loyalty points that follow refunds, printable invoice", status: "live" },
   { name: "Promo codes", detail: "Rules in config, priced on the server, shown in the breakdown, spread across items so refunds stay exact", status: "live" },
   { name: "Admin console", detail: "Data imports, disruptions, analytics from the database, and the audit log", status: "live" },
-  { name: "AI assistant", detail: "Natural-language search, grounded answers, group planning", status: "planned" },
+  { name: "Natural-language search", detail: "A sentence becomes a filled search form; LLM with a rule parser filling gaps and as fallback", status: "live" },
+  { name: "Help assistant", detail: "Answers only from TripMind policies (generated from live config) and your trips, with citations", status: "live" },
+  { name: "Group planning and trained models", detail: "Group voting, hotel ranker, fare estimator and other small models", status: "planned" },
   { name: "Monitoring dashboards", detail: "Prometheus metrics and alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger", status: "live" },
 ];
 
@@ -247,7 +249,7 @@ export const aiBoundaries = {
   ],
   fallback:
     "Free hosted models are tried in order, with timeouts. If all are unavailable, rule-based parsing and templates take over and booking continues normally.",
-  status: "planned" as Status,
+  status: "live" as Status,
 };
 
 // ── 11 · Edge cases ───────────────────────────────────────────────────────────────────────────
@@ -267,7 +269,7 @@ export const edgeCases: Capability[] = [
   { name: "Airline cancels a booked flight", detail: "Rebooking options or a full refund; the hotel in the same trip is never touched", status: "live" },
   { name: "Long delay vs short delay", detail: "Short delays notify; delays of 3 hours or more also offer rebooking or a refund", status: "live" },
   { name: "Disruption hits an unpaid hold", detail: "The hold is released at once and nothing is charged", status: "live" },
-  { name: "AI provider down or rate-limited", detail: "Next provider, then rule-based fallback", status: "planned" },
+  { name: "AI provider down or rate-limited", detail: "Next provider, then rule-based fallback", status: "live" },
   { name: "Bad rows in the dataset", detail: "Quarantined with a reason and counted in the import report", status: "live" },
   { name: "Flight lands after midnight in another timezone", detail: "Local times converted with each airport's timezone; arrival rolls to the next day", status: "live" },
   { name: "Misspelt or renamed city", detail: "Aliases (Bombay, Bangalore) and fuzzy matching, each match listed in the report", status: "live" },
@@ -283,7 +285,7 @@ export const proof = {
   measured: [
     { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "7 Nov 2026" },
     { value: "910 / 0", label: "synthetic requests from 8 virtual users in 46 s / server errors; search p95 0.47 s on a laptop in Docker", measuredOn: "7 Nov 2026" },
-    { value: "105", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "122", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
     { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [

@@ -76,6 +76,8 @@ const MESSAGES: Record<string, string> = {
   FLIGHT_NOT_FOUND: "Flight not found.",
   PROFILE_LIMIT: "You can save up to 10 travellers.",
   PROFILE_NOT_FOUND: "That traveller was not found.",
+  PROMO_INVALID: "This promo code can't be used.",
+  PROMO_ALREADY_USED: "You've already used this promo code.",
 };
 
 export function errorMessage(error: unknown): string {

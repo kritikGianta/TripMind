@@ -61,6 +61,12 @@ class Settings(BaseSettings):
     otel_exporter_otlp_endpoint: str | None = None
     otel_service_name: str = "tripmind-api"
 
+    # Hosted LLM keys (optional; config/ai.yaml lists the providers and models).
+    groq_api_key: SecretStr | None = None
+    gemini_api_key: SecretStr | None = None
+    openrouter_api_key: SecretStr | None = None
+    llm_provider_order: str | None = None
+
     # CORS is only needed for cross-origin callers; the web app uses a same-origin proxy.
     cors_origins: list[str] = Field(default_factory=list)
 

@@ -159,6 +159,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ai/assistant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask the help assistant (grounded in TripMind help and your trips) */
+        post: operations["assistant_api_v1_ai_assistant_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/parse-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Turn a sentence into search criteria (LLM, or rules as fallback) */
+        post: operations["parse_search_api_v1_ai_parse_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Which AI providers are configured */
+        get: operations["status_api_v1_ai_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/demo-login": {
         parameters: {
             query?: never;
@@ -731,6 +782,13 @@ export interface components {
             /** Option Id */
             option_id: string;
         };
+        /** Action */
+        Action: {
+            /** Href */
+            href: string;
+            /** Label */
+            label: string;
+        };
         /** AirportBrief */
         AirportBrief: {
             /** City Name */
@@ -770,6 +828,25 @@ export interface components {
             top_destinations: components["schemas"]["CountOut"][];
             /** Travellers */
             travellers: number;
+        };
+        /** AssistantOut */
+        AssistantOut: {
+            /** Actions */
+            actions: components["schemas"]["Action"][];
+            /** Answer */
+            answer: string;
+            /** Citations */
+            citations: components["schemas"]["Citation"][];
+            /**
+             * Source
+             * @description 'ai:<provider>' or 'rules'
+             */
+            source: string;
+        };
+        /** AssistantRequest */
+        AssistantRequest: {
+            /** Messages */
+            messages: components["schemas"]["ChatMessage"][];
         };
         /** AuditOut */
         AuditOut: {
@@ -1014,6 +1091,16 @@ export interface components {
             lines: components["schemas"]["CancellationLineOut"][];
             total_refund: components["schemas"]["MoneyOut"];
         };
+        /** ChatMessage */
+        ChatMessage: {
+            /** Content */
+            content: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+        };
         /** CheckOut */
         CheckOut: {
             /** Message */
@@ -1025,6 +1112,13 @@ export interface components {
              * @enum {string}
              */
             status: "ok" | "info" | "warn" | "risk";
+        };
+        /** Citation */
+        Citation: {
+            /** Source */
+            source: string;
+            /** Title */
+            title: string;
         };
         /** CityOut */
         CityOut: {
@@ -1902,6 +1996,46 @@ export interface components {
              */
             state: "saved" | "dismissed" | "none";
         };
+        /** ParseIn */
+        ParseIn: {
+            /** Text */
+            text: string;
+        };
+        /** ParsedSearchOut */
+        ParsedSearchOut: {
+            /** Adults */
+            adults: number;
+            /** Cabin Class */
+            cabin_class: string | null;
+            /** Depart Date */
+            depart_date: string | null;
+            destination: components["schemas"]["PlaceOut"] | null;
+            /**
+             * Intent
+             * @enum {string}
+             */
+            intent: "flights" | "stays" | "trip";
+            /** Max Budget */
+            max_budget: number | null;
+            /** Min Stars */
+            min_stars: number | null;
+            /** Missing */
+            missing: string[];
+            origin: components["schemas"]["PlaceOut"] | null;
+            /** Priority */
+            priority: string | null;
+            /** Return Date */
+            return_date: string | null;
+            /**
+             * Source
+             * @description 'ai:<provider>' or 'rules'
+             */
+            source: string;
+            /** Summary */
+            summary: string;
+            /** Unknown Places */
+            unknown_places: string[];
+        };
         /** PaymentOut */
         PaymentOut: {
             amount: components["schemas"]["MoneyOut"];
@@ -1931,6 +2065,15 @@ export interface components {
             expiry_month: number;
             /** Expiry Year */
             expiry_year: number;
+        };
+        /** PlaceOut */
+        PlaceOut: {
+            /** Airport Code */
+            airport_code: string | null;
+            /** City Id */
+            city_id: string;
+            /** Label */
+            label: string;
         };
         /** PlanListOut */
         PlanListOut: {
@@ -2336,6 +2479,15 @@ export interface components {
              */
             access_expires_at: string;
             user: components["schemas"]["UserOut"];
+        };
+        /** StatusOut */
+        StatusOut: {
+            /** Active Provider */
+            active_provider: string | null;
+            /** Providers */
+            providers: {
+                [key: string]: string;
+            };
         };
         /** StayOut */
         StayOut: {
@@ -3265,6 +3417,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    assistant_api_v1_ai_assistant_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    parse_search_api_v1_ai_parse_search_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParsedSearchOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    status_api_v1_ai_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
         };
