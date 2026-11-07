@@ -10,6 +10,8 @@ export const siteConfig = {
     "TripMind is a hackathon prototype. It is not affiliated with or endorsed by Booking Holdings or any travel provider.",
   nav: [
     { href: "/", label: "Home" },
+    { href: "/flights", label: "Flights" },
+    { href: "/stays", label: "Stays" },
     { href: "/about", label: "About" },
   ],
 } as const;

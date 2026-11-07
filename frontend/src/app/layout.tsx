@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -27,7 +28,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           >
             Skip to content
           </a>
-          <SiteHeader />
+          {/* The header reads the current path, which is request-time data on dynamic routes. */}
+          <Suspense fallback={<div className="h-14 border-b" />}>
+            <SiteHeader />
+          </Suspense>
           <main id="main" className="flex flex-1 flex-col">
             {children}
           </main>

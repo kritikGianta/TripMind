@@ -19,7 +19,9 @@ Every booking lands in **My Trips**. AI helps when it is switched on, and the pl
 | Platform: error contract, request IDs, health and readiness checks, Prometheus metrics, feature flags | Live |
 | Web app: navbar, home page, About page (presentation deck), dataset label | Live |
 | Data: catalog schema, ingestion pipeline (profile, map, validate, quarantine, publish, report), synthetic demo dataset, admin import API | Live |
-| Search, booking engine, trip planner, recovery, AI assistant, dashboards | Planned (see [plan v2](docs/plan-v2.md)) |
+| Search: airports and cities with aliases, flights (direct and one-stop, one-way or return), stays by party size, hotel details, filters with counts, sorting, itemised prices, currency conversion | Live |
+| Admin data console: upload, dry run, import history, report and quarantined rows (`/admin/imports`) | Live |
+| Booking engine, My Trips, trip planner, recovery, AI assistant, dashboards | Planned (see [plan v2](docs/plan-v2.md)) |
 
 ## Quick start (Docker)
 
@@ -28,7 +30,7 @@ cp .env.example .env            # then set JWT_SECRET (command is in the file)
 docker compose up -d --build
 ```
 
-- App: http://localhost:3000. Use **Demo access → Traveller** on the sign-in page.
+- App: http://localhost:3000. Search flights or stays from the home page. Sign in with **Demo access → Admin** to open **Data imports** from the account menu.
 - API docs: http://localhost:8000/api/v1/docs
 - Readiness: http://localhost:8000/api/v1/ready
 - Metrics: http://localhost:8000/metrics

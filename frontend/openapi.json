@@ -1,6 +1,29 @@
 {
   "components": {
     "schemas": {
+      "AirportBrief": {
+        "properties": {
+          "city_name": {
+            "title": "City Name",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "city_name"
+        ],
+        "title": "AirportBrief",
+        "type": "object"
+      },
       "Body_profile_api_v1_admin_imports_profile_post": {
         "properties": {
           "dataset": {
@@ -47,6 +70,37 @@
           "mapping"
         ],
         "title": "Body_run_import_api_v1_admin_imports_post",
+        "type": "object"
+      },
+      "CityOut": {
+        "properties": {
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "country"
+        ],
+        "title": "CityOut",
         "type": "object"
       },
       "ColumnProfileOut": {
@@ -297,6 +351,39 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "FacetOption": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "min_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "label",
+          "count"
+        ],
+        "title": "FacetOption",
+        "type": "object"
+      },
       "FeaturesOut": {
         "properties": {
           "features": {
@@ -362,6 +449,343 @@
         "title": "FileProfileOut",
         "type": "object"
       },
+      "FlightFacets": {
+        "properties": {
+          "airlines": {
+            "items": {
+              "$ref": "#/components/schemas/FacetOption"
+            },
+            "title": "Airlines",
+            "type": "array"
+          },
+          "departure_windows": {
+            "items": {
+              "$ref": "#/components/schemas/FacetOption"
+            },
+            "title": "Departure Windows",
+            "type": "array"
+          },
+          "price_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stops": {
+            "items": {
+              "$ref": "#/components/schemas/FacetOption"
+            },
+            "title": "Stops",
+            "type": "array"
+          }
+        },
+        "required": [
+          "stops",
+          "airlines",
+          "departure_windows",
+          "price_range"
+        ],
+        "title": "FlightFacets",
+        "type": "object"
+      },
+      "FlightLegOut": {
+        "properties": {
+          "aircraft": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aircraft"
+          },
+          "airline_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Airline Code"
+          },
+          "airline_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Airline Name"
+          },
+          "arrival_at": {
+            "format": "date-time",
+            "title": "Arrival At",
+            "type": "string"
+          },
+          "arrival_local": {
+            "description": "Wall-clock time at the destination airport",
+            "format": "date-time",
+            "title": "Arrival Local",
+            "type": "string"
+          },
+          "cabin_class": {
+            "title": "Cabin Class",
+            "type": "string"
+          },
+          "departure_at": {
+            "format": "date-time",
+            "title": "Departure At",
+            "type": "string"
+          },
+          "departure_local": {
+            "description": "Wall-clock time at the origin airport",
+            "format": "date-time",
+            "title": "Departure Local",
+            "type": "string"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/AirportBrief"
+          },
+          "duration_minutes": {
+            "title": "Duration Minutes",
+            "type": "integer"
+          },
+          "fare": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "flight_id": {
+            "format": "uuid",
+            "title": "Flight Id",
+            "type": "string"
+          },
+          "flight_number": {
+            "title": "Flight Number",
+            "type": "string"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/AirportBrief"
+          },
+          "stops": {
+            "title": "Stops",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "flight_id",
+          "flight_number",
+          "airline_code",
+          "airline_name",
+          "origin",
+          "destination",
+          "departure_local",
+          "arrival_local",
+          "departure_at",
+          "arrival_at",
+          "duration_minutes",
+          "stops",
+          "cabin_class",
+          "aircraft",
+          "fare"
+        ],
+        "title": "FlightLegOut",
+        "type": "object"
+      },
+      "FlightOfferOut": {
+        "properties": {
+          "bookable": {
+            "description": "False when a leg has no price in the data",
+            "title": "Bookable",
+            "type": "boolean"
+          },
+          "duration_minutes": {
+            "title": "Duration Minutes",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Stable offer ID: the legs it is made of",
+            "title": "Id",
+            "type": "string"
+          },
+          "layovers": {
+            "items": {
+              "$ref": "#/components/schemas/LayoverOut"
+            },
+            "title": "Layovers",
+            "type": "array"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/FlightLegOut"
+            },
+            "title": "Legs",
+            "type": "array"
+          },
+          "notices": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notices",
+            "type": "array"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceLedger"
+          },
+          "self_transfer": {
+            "description": "Legs flown by different airlines",
+            "title": "Self Transfer",
+            "type": "boolean"
+          },
+          "stops": {
+            "title": "Stops",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "legs",
+          "stops",
+          "layovers",
+          "duration_minutes",
+          "self_transfer",
+          "bookable",
+          "price"
+        ],
+        "title": "FlightOfferOut",
+        "type": "object"
+      },
+      "FlightResultsOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "destination": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AirportBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "facets": {
+            "$ref": "#/components/schemas/FlightFacets"
+          },
+          "offers": {
+            "items": {
+              "$ref": "#/components/schemas/FlightOfferOut"
+            },
+            "title": "Offers",
+            "type": "array"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AirportBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total": {
+            "description": "Offers matching the filters (before the result cap)",
+            "title": "Total",
+            "type": "integer"
+          },
+          "unfiltered_total": {
+            "title": "Unfiltered Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "date",
+          "offers",
+          "total",
+          "unfiltered_total",
+          "facets"
+        ],
+        "title": "FlightResultsOut",
+        "type": "object"
+      },
+      "FlightSearchOut": {
+        "properties": {
+          "adults": {
+            "title": "Adults",
+            "type": "integer"
+          },
+          "cabin_class": {
+            "title": "Cabin Class",
+            "type": "string"
+          },
+          "display_currency": {
+            "title": "Display Currency",
+            "type": "string"
+          },
+          "inbound": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FlightResultsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notices": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notices",
+            "type": "array"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/FlightResultsOut"
+          },
+          "travel_window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TravelWindowOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "outbound",
+          "inbound",
+          "adults",
+          "cabin_class",
+          "display_currency",
+          "travel_window",
+          "notices"
+        ],
+        "title": "FlightSearchOut",
+        "type": "object"
+      },
       "HealthOut": {
         "properties": {
           "status": {
@@ -379,6 +803,432 @@
           "version"
         ],
         "title": "HealthOut",
+        "type": "object"
+      },
+      "HotelDetailOut": {
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "amenities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Amenities",
+            "type": "array"
+          },
+          "check_in_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check In Time"
+          },
+          "check_out_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Out Time"
+          },
+          "city": {
+            "$ref": "#/components/schemas/CityOut"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "display_currency": {
+            "title": "Display Currency",
+            "type": "string"
+          },
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km"
+          },
+          "guest_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest Rating"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "review_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Count"
+          },
+          "rooms": {
+            "items": {
+              "$ref": "#/components/schemas/RoomOfferOut"
+            },
+            "title": "Rooms",
+            "type": "array"
+          },
+          "star_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Star Rating"
+          },
+          "stay": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StayOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "city",
+          "address",
+          "description",
+          "star_rating",
+          "guest_rating",
+          "review_count",
+          "amenities",
+          "latitude",
+          "longitude",
+          "distance_km",
+          "check_in_time",
+          "check_out_time",
+          "origin",
+          "stay",
+          "rooms",
+          "display_currency"
+        ],
+        "title": "HotelDetailOut",
+        "type": "object"
+      },
+      "HotelFacets": {
+        "properties": {
+          "amenities": {
+            "items": {
+              "$ref": "#/components/schemas/FacetOption"
+            },
+            "title": "Amenities",
+            "type": "array"
+          },
+          "price_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceRange"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per night, display currency"
+          },
+          "stars": {
+            "items": {
+              "$ref": "#/components/schemas/FacetOption"
+            },
+            "title": "Stars",
+            "type": "array"
+          }
+        },
+        "required": [
+          "stars",
+          "amenities",
+          "price_range"
+        ],
+        "title": "HotelFacets",
+        "type": "object"
+      },
+      "HotelResultOut": {
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "amenities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Amenities",
+            "type": "array"
+          },
+          "bookable": {
+            "title": "Bookable",
+            "type": "boolean"
+          },
+          "breakfast_available": {
+            "title": "Breakfast Available",
+            "type": "boolean"
+          },
+          "cheapest_room": {
+            "$ref": "#/components/schemas/RoomOfferOut"
+          },
+          "city_name": {
+            "title": "City Name",
+            "type": "string"
+          },
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "From the city centre",
+            "title": "Distance Km"
+          },
+          "free_cancellation": {
+            "title": "Free Cancellation",
+            "type": "boolean"
+          },
+          "guest_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest Rating"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "review_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Count"
+          },
+          "star_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Star Rating"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "city_name",
+          "address",
+          "star_rating",
+          "guest_rating",
+          "review_count",
+          "amenities",
+          "latitude",
+          "longitude",
+          "distance_km",
+          "cheapest_room",
+          "bookable",
+          "free_cancellation",
+          "breakfast_available"
+        ],
+        "title": "HotelResultOut",
+        "type": "object"
+      },
+      "HotelSearchOut": {
+        "properties": {
+          "check_in": {
+            "format": "date",
+            "title": "Check In",
+            "type": "string"
+          },
+          "check_out": {
+            "format": "date",
+            "title": "Check Out",
+            "type": "string"
+          },
+          "city": {
+            "$ref": "#/components/schemas/CityOut"
+          },
+          "display_currency": {
+            "title": "Display Currency",
+            "type": "string"
+          },
+          "facets": {
+            "$ref": "#/components/schemas/HotelFacets"
+          },
+          "guests": {
+            "title": "Guests",
+            "type": "integer"
+          },
+          "nights": {
+            "title": "Nights",
+            "type": "integer"
+          },
+          "notices": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notices",
+            "type": "array"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/HotelResultOut"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "rooms": {
+            "title": "Rooms",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "unfiltered_total": {
+            "title": "Unfiltered Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "city",
+          "check_in",
+          "check_out",
+          "nights",
+          "guests",
+          "rooms",
+          "results",
+          "total",
+          "unfiltered_total",
+          "facets",
+          "display_currency",
+          "notices"
+        ],
+        "title": "HotelSearchOut",
         "type": "object"
       },
       "ImportRunDetailOut": {
@@ -747,6 +1597,146 @@
         "title": "ImportRunPage",
         "type": "object"
       },
+      "LayoverOut": {
+        "properties": {
+          "airport": {
+            "$ref": "#/components/schemas/AirportBrief"
+          },
+          "minutes": {
+            "title": "Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "airport",
+          "minutes"
+        ],
+        "title": "LayoverOut",
+        "type": "object"
+      },
+      "LedgerLine": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None when the data does not contain the amount"
+          },
+          "kind": {
+            "enum": [
+              "fare",
+              "room",
+              "taxes_and_fees"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "label",
+          "kind",
+          "amount"
+        ],
+        "title": "LedgerLine",
+        "type": "object"
+      },
+      "LocationListOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LocationOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "LocationListOut",
+        "type": "object"
+      },
+      "LocationOut": {
+        "properties": {
+          "city_name": {
+            "title": "City Name",
+            "type": "string"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "kind": {
+            "enum": [
+              "airport",
+              "city"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "value": {
+            "description": "Airport code, or city ID: pass it back as the search value",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "value",
+          "name",
+          "city_name",
+          "country",
+          "label"
+        ],
+        "title": "LocationOut",
+        "type": "object"
+      },
       "LoginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -783,6 +1773,103 @@
           "mappings"
         ],
         "title": "MappingListOut",
+        "type": "object"
+      },
+      "MoneyOut": {
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "currency"
+        ],
+        "title": "MoneyOut",
+        "type": "object"
+      },
+      "PriceLedger": {
+        "properties": {
+          "complete": {
+            "description": "False when some lines are not included in the data",
+            "title": "Complete",
+            "type": "boolean"
+          },
+          "converted": {
+            "description": "True when display_total used a conversion rate",
+            "title": "Converted",
+            "type": "boolean"
+          },
+          "display_total": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Total converted to the display currency"
+          },
+          "fx_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fx Note"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sum of the known lines, in the supplier currency"
+          }
+        },
+        "required": [
+          "lines",
+          "total",
+          "display_total",
+          "converted",
+          "complete"
+        ],
+        "title": "PriceLedger",
+        "type": "object"
+      },
+      "PriceRange": {
+        "properties": {
+          "max": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "min": {
+            "$ref": "#/components/schemas/MoneyOut"
+          }
+        },
+        "required": [
+          "min",
+          "max"
+        ],
+        "title": "PriceRange",
         "type": "object"
       },
       "ProfileOut": {
@@ -979,6 +2066,105 @@
         "title": "RejectPage",
         "type": "object"
       },
+      "RoomOfferOut": {
+        "properties": {
+          "bed_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bed Type"
+          },
+          "board": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board"
+          },
+          "fits_party": {
+            "description": "Enough occupancy and rooms for the requested party",
+            "title": "Fits Party",
+            "type": "boolean"
+          },
+          "max_occupancy": {
+            "title": "Max Occupancy",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "nightly_rate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceLedger"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "For the requested nights and rooms"
+          },
+          "refundable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refundable"
+          },
+          "room_type_id": {
+            "format": "uuid",
+            "title": "Room Type Id",
+            "type": "string"
+          },
+          "total_rooms": {
+            "title": "Total Rooms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "room_type_id",
+          "name",
+          "max_occupancy",
+          "bed_type",
+          "board",
+          "refundable",
+          "total_rooms",
+          "fits_party",
+          "nightly_rate",
+          "price",
+          "origin"
+        ],
+        "title": "RoomOfferOut",
+        "type": "object"
+      },
       "SessionOut": {
         "description": "Returned after sign-in, sign-up and refresh. Tokens travel only in httpOnly cookies.",
         "properties": {
@@ -996,6 +2182,41 @@
           "access_expires_at"
         ],
         "title": "SessionOut",
+        "type": "object"
+      },
+      "StayOut": {
+        "properties": {
+          "check_in": {
+            "format": "date",
+            "title": "Check In",
+            "type": "string"
+          },
+          "check_out": {
+            "format": "date",
+            "title": "Check Out",
+            "type": "string"
+          },
+          "guests": {
+            "title": "Guests",
+            "type": "integer"
+          },
+          "nights": {
+            "title": "Nights",
+            "type": "integer"
+          },
+          "rooms": {
+            "title": "Rooms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "check_in",
+          "check_out",
+          "nights",
+          "guests",
+          "rooms"
+        ],
+        "title": "StayOut",
         "type": "object"
       },
       "TravelWindowOut": {
@@ -2049,6 +3270,236 @@
         ]
       }
     },
+    "/api/v1/flights/search": {
+      "get": {
+        "operationId": "search_flights_api_v1_flights_search_get",
+        "parameters": [
+          {
+            "description": "Airport code or city ID",
+            "in": "query",
+            "name": "origin",
+            "required": true,
+            "schema": {
+              "description": "Airport code or city ID",
+              "maxLength": 64,
+              "minLength": 2,
+              "title": "Origin",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "destination",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 2,
+              "title": "Destination",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "departure_date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Departure Date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "return_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Return Date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "adults",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 9,
+              "minimum": 1,
+              "title": "Adults",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cabin_class",
+            "required": false,
+            "schema": {
+              "default": "economy",
+              "enum": [
+                "economy",
+                "premium_economy",
+                "business",
+                "first"
+              ],
+              "title": "Cabin Class",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "max_stops",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Stops"
+            }
+          },
+          {
+            "in": "query",
+            "name": "airlines",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 20,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Airlines"
+            }
+          },
+          {
+            "in": "query",
+            "name": "departure_windows",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "night",
+                      "morning",
+                      "afternoon",
+                      "evening"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Departure Windows"
+            }
+          },
+          {
+            "description": "Display currency",
+            "in": "query",
+            "name": "max_price",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Display currency",
+              "title": "Max Price"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "best",
+              "enum": [
+                "best",
+                "cheapest",
+                "fastest",
+                "earliest"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlightSearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "One-way or return flights, direct and with one connection",
+        "tags": [
+          "search"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "health_api_v1_health_get",
@@ -2067,6 +3518,438 @@
         "summary": "Liveness: the process is serving",
         "tags": [
           "meta"
+        ]
+      }
+    },
+    "/api/v1/hotels/search": {
+      "get": {
+        "operationId": "search_hotels_api_v1_hotels_search_get",
+        "parameters": [
+          {
+            "description": "City ID from /locations?kind=city",
+            "in": "query",
+            "name": "city",
+            "required": true,
+            "schema": {
+              "description": "City ID from /locations?kind=city",
+              "title": "City",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "check_in",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Check In",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "check_out",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Check Out",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "guests",
+            "required": false,
+            "schema": {
+              "default": 2,
+              "maximum": 16,
+              "minimum": 1,
+              "title": "Guests",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rooms",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 8,
+              "minimum": 1,
+              "title": "Rooms",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "stars",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Stars"
+            }
+          },
+          {
+            "in": "query",
+            "name": "min_rating",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 10,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Rating"
+            }
+          },
+          {
+            "in": "query",
+            "name": "amenities",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 20,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amenities"
+            }
+          },
+          {
+            "description": "Per night, display currency",
+            "in": "query",
+            "name": "max_price",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Per night, display currency",
+              "title": "Max Price"
+            }
+          },
+          {
+            "in": "query",
+            "name": "free_cancellation",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Free Cancellation",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "breakfast",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Breakfast",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "recommended",
+              "enum": [
+                "recommended",
+                "price",
+                "rating",
+                "distance",
+                "stars"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HotelSearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Stays in a city for given dates and party size",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/v1/hotels/{hotel_id}": {
+      "get": {
+        "operationId": "hotel_detail_api_v1_hotels__hotel_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "hotel_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Hotel Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "check_in",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Check In"
+            }
+          },
+          {
+            "in": "query",
+            "name": "check_out",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Check Out"
+            }
+          },
+          {
+            "in": "query",
+            "name": "guests",
+            "required": false,
+            "schema": {
+              "default": 2,
+              "maximum": 16,
+              "minimum": 1,
+              "title": "Guests",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rooms",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 8,
+              "minimum": 1,
+              "title": "Rooms",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HotelDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "One stay with all its room types; priced when dates are given",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/v1/locations": {
+      "get": {
+        "operationId": "locations_api_v1_locations_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 80,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "default": "airport",
+              "enum": [
+                "airport",
+                "city"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 8,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Airports (for flights) or cities (for stays) matching a search box",
+        "tags": [
+          "search"
         ]
       }
     },

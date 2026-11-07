@@ -26,3 +26,30 @@ ingestion:
   max_upload_mb: 100
   max_uncompressed_mb: 1024
   max_archive_members: 200
+
+pricing:
+  # Prices are shown in the supplier's currency; totals are also converted to this currency.
+  display_currency: INR
+  # Static demo conversion rates (units of display currency per 1 unit). Not live market rates;
+  # the UI labels every converted amount as approximate. Replace with the finale's rates if given.
+  fx_rates:
+    INR: 1
+    AED: 22.7
+    SGD: 64.5
+    THB: 2.44
+    GBP: 106
+    LKR: 0.286
+    NPR: 0.625
+    QAR: 22.7
+    USD: 84
+    EUR: 91
+  fx_note: Converted with fixed demo rates from config/rules.yaml, not live exchange rates.
+  # The supplied data has no taxes or fees, so price breakdowns list them as not included.
+  taxes_included_in_data: false
+
+search:
+  # Connections built from single flights (one stop at most).
+  min_connection_minutes: 60
+  max_connection_minutes: 360
+  max_results: 200
+  max_hotel_nights: 30

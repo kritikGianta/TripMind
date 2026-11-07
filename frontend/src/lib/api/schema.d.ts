@@ -209,6 +209,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/flights/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One-way or return flights, direct and with one connection */
+        get: operations["search_flights_api_v1_flights_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -218,6 +235,57 @@ export interface paths {
         };
         /** Liveness: the process is serving */
         get: operations["health_api_v1_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hotels/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stays in a city for given dates and party size */
+        get: operations["search_hotels_api_v1_hotels_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hotels/{hotel_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One stay with all its room types; priced when dates are given */
+        get: operations["hotel_detail_api_v1_hotels__hotel_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Airports (for flights) or cities (for stays) matching a search box */
+        get: operations["locations_api_v1_locations_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -264,6 +332,15 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AirportBrief */
+        AirportBrief: {
+            /** City Name */
+            city_name: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+        };
         /** Body_profile_api_v1_admin_imports_profile_post */
         Body_profile_api_v1_admin_imports_profile_post: {
             /**
@@ -291,6 +368,18 @@ export interface components {
             file: string;
             /** Mapping */
             mapping: string;
+        };
+        /** CityOut */
+        CityOut: {
+            /** Country */
+            country: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** ColumnProfileOut */
         ColumnProfileOut: {
@@ -404,6 +493,16 @@ export interface components {
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
+        /** FacetOption */
+        FacetOption: {
+            /** Count */
+            count: number;
+            /** Label */
+            label: string;
+            min_price?: components["schemas"]["MoneyOut"] | null;
+            /** Value */
+            value: string;
+        };
         /** FeaturesOut */
         FeaturesOut: {
             /** Features */
@@ -424,6 +523,126 @@ export interface components {
             /** Rows */
             rows: number;
         };
+        /** FlightFacets */
+        FlightFacets: {
+            /** Airlines */
+            airlines: components["schemas"]["FacetOption"][];
+            /** Departure Windows */
+            departure_windows: components["schemas"]["FacetOption"][];
+            price_range: components["schemas"]["PriceRange"] | null;
+            /** Stops */
+            stops: components["schemas"]["FacetOption"][];
+        };
+        /** FlightLegOut */
+        FlightLegOut: {
+            /** Aircraft */
+            aircraft: string | null;
+            /** Airline Code */
+            airline_code: string | null;
+            /** Airline Name */
+            airline_name: string | null;
+            /**
+             * Arrival At
+             * Format: date-time
+             */
+            arrival_at: string;
+            /**
+             * Arrival Local
+             * Format: date-time
+             * @description Wall-clock time at the destination airport
+             */
+            arrival_local: string;
+            /** Cabin Class */
+            cabin_class: string;
+            /**
+             * Departure At
+             * Format: date-time
+             */
+            departure_at: string;
+            /**
+             * Departure Local
+             * Format: date-time
+             * @description Wall-clock time at the origin airport
+             */
+            departure_local: string;
+            destination: components["schemas"]["AirportBrief"];
+            /** Duration Minutes */
+            duration_minutes: number;
+            fare: components["schemas"]["MoneyOut"] | null;
+            /**
+             * Flight Id
+             * Format: uuid
+             */
+            flight_id: string;
+            /** Flight Number */
+            flight_number: string;
+            origin: components["schemas"]["AirportBrief"];
+            /** Stops */
+            stops: number;
+        };
+        /** FlightOfferOut */
+        FlightOfferOut: {
+            /**
+             * Bookable
+             * @description False when a leg has no price in the data
+             */
+            bookable: boolean;
+            /** Duration Minutes */
+            duration_minutes: number;
+            /**
+             * Id
+             * @description Stable offer ID: the legs it is made of
+             */
+            id: string;
+            /** Layovers */
+            layovers: components["schemas"]["LayoverOut"][];
+            /** Legs */
+            legs: components["schemas"]["FlightLegOut"][];
+            /** Notices */
+            notices?: string[];
+            price: components["schemas"]["PriceLedger"];
+            /**
+             * Self Transfer
+             * @description Legs flown by different airlines
+             */
+            self_transfer: boolean;
+            /** Stops */
+            stops: number;
+        };
+        /** FlightResultsOut */
+        FlightResultsOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            destination: components["schemas"]["AirportBrief"] | null;
+            facets: components["schemas"]["FlightFacets"];
+            /** Offers */
+            offers: components["schemas"]["FlightOfferOut"][];
+            origin: components["schemas"]["AirportBrief"] | null;
+            /**
+             * Total
+             * @description Offers matching the filters (before the result cap)
+             */
+            total: number;
+            /** Unfiltered Total */
+            unfiltered_total: number;
+        };
+        /** FlightSearchOut */
+        FlightSearchOut: {
+            /** Adults */
+            adults: number;
+            /** Cabin Class */
+            cabin_class: string;
+            /** Display Currency */
+            display_currency: string;
+            inbound: components["schemas"]["FlightResultsOut"] | null;
+            /** Notices */
+            notices: string[];
+            outbound: components["schemas"]["FlightResultsOut"];
+            travel_window: components["schemas"]["TravelWindowOut"] | null;
+        };
         /** HealthOut */
         HealthOut: {
             /**
@@ -433,6 +652,124 @@ export interface components {
             status: "ok";
             /** Version */
             version: string;
+        };
+        /** HotelDetailOut */
+        HotelDetailOut: {
+            /** Address */
+            address: string | null;
+            /** Amenities */
+            amenities: string[];
+            /** Check In Time */
+            check_in_time: string | null;
+            /** Check Out Time */
+            check_out_time: string | null;
+            city: components["schemas"]["CityOut"];
+            /** Description */
+            description: string | null;
+            /** Display Currency */
+            display_currency: string;
+            /** Distance Km */
+            distance_km: number | null;
+            /** Guest Rating */
+            guest_rating: number | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Latitude */
+            latitude: number | null;
+            /** Longitude */
+            longitude: number | null;
+            /** Name */
+            name: string;
+            /** Origin */
+            origin: string;
+            /** Review Count */
+            review_count: number | null;
+            /** Rooms */
+            rooms: components["schemas"]["RoomOfferOut"][];
+            /** Star Rating */
+            star_rating: number | null;
+            stay: components["schemas"]["StayOut"] | null;
+        };
+        /** HotelFacets */
+        HotelFacets: {
+            /** Amenities */
+            amenities: components["schemas"]["FacetOption"][];
+            /** @description Per night, display currency */
+            price_range: components["schemas"]["PriceRange"] | null;
+            /** Stars */
+            stars: components["schemas"]["FacetOption"][];
+        };
+        /** HotelResultOut */
+        HotelResultOut: {
+            /** Address */
+            address: string | null;
+            /** Amenities */
+            amenities: string[];
+            /** Bookable */
+            bookable: boolean;
+            /** Breakfast Available */
+            breakfast_available: boolean;
+            cheapest_room: components["schemas"]["RoomOfferOut"];
+            /** City Name */
+            city_name: string;
+            /**
+             * Distance Km
+             * @description From the city centre
+             */
+            distance_km: number | null;
+            /** Free Cancellation */
+            free_cancellation: boolean;
+            /** Guest Rating */
+            guest_rating: number | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Latitude */
+            latitude: number | null;
+            /** Longitude */
+            longitude: number | null;
+            /** Name */
+            name: string;
+            /** Review Count */
+            review_count: number | null;
+            /** Star Rating */
+            star_rating: number | null;
+        };
+        /** HotelSearchOut */
+        HotelSearchOut: {
+            /**
+             * Check In
+             * Format: date
+             */
+            check_in: string;
+            /**
+             * Check Out
+             * Format: date
+             */
+            check_out: string;
+            city: components["schemas"]["CityOut"];
+            /** Display Currency */
+            display_currency: string;
+            facets: components["schemas"]["HotelFacets"];
+            /** Guests */
+            guests: number;
+            /** Nights */
+            nights: number;
+            /** Notices */
+            notices: string[];
+            /** Results */
+            results: components["schemas"]["HotelResultOut"][];
+            /** Rooms */
+            rooms: number;
+            /** Total */
+            total: number;
+            /** Unfiltered Total */
+            unfiltered_total: number;
         };
         /** ImportRunDetailOut */
         ImportRunDetailOut: {
@@ -593,6 +930,54 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** LayoverOut */
+        LayoverOut: {
+            airport: components["schemas"]["AirportBrief"];
+            /** Minutes */
+            minutes: number;
+        };
+        /** LedgerLine */
+        LedgerLine: {
+            /** @description None when the data does not contain the amount */
+            amount: components["schemas"]["MoneyOut"] | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "fare" | "room" | "taxes_and_fees";
+            /** Label */
+            label: string;
+            /** Note */
+            note?: string | null;
+        };
+        /** LocationListOut */
+        LocationListOut: {
+            /** Items */
+            items: components["schemas"]["LocationOut"][];
+        };
+        /** LocationOut */
+        LocationOut: {
+            /** City Name */
+            city_name: string;
+            /** Code */
+            code?: string | null;
+            /** Country */
+            country: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "airport" | "city";
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+            /**
+             * Value
+             * @description Airport code, or city ID: pass it back as the search value
+             */
+            value: string;
+        };
         /** LoginRequest */
         LoginRequest: {
             /**
@@ -607,6 +992,39 @@ export interface components {
         MappingListOut: {
             /** Mappings */
             mappings: string[];
+        };
+        /** MoneyOut */
+        MoneyOut: {
+            /** Amount Minor */
+            amount_minor: number;
+            /** Currency */
+            currency: string;
+        };
+        /** PriceLedger */
+        PriceLedger: {
+            /**
+             * Complete
+             * @description False when some lines are not included in the data
+             */
+            complete: boolean;
+            /**
+             * Converted
+             * @description True when display_total used a conversion rate
+             */
+            converted: boolean;
+            /** @description Total converted to the display currency */
+            display_total: components["schemas"]["MoneyOut"] | null;
+            /** Fx Note */
+            fx_note?: string | null;
+            /** Lines */
+            lines: components["schemas"]["LedgerLine"][];
+            /** @description Sum of the known lines, in the supplier currency */
+            total: components["schemas"]["MoneyOut"] | null;
+        };
+        /** PriceRange */
+        PriceRange: {
+            max: components["schemas"]["MoneyOut"];
+            min: components["schemas"]["MoneyOut"];
         };
         /** ProfileOut */
         ProfileOut: {
@@ -679,6 +1097,36 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** RoomOfferOut */
+        RoomOfferOut: {
+            /** Bed Type */
+            bed_type: string | null;
+            /** Board */
+            board: string | null;
+            /**
+             * Fits Party
+             * @description Enough occupancy and rooms for the requested party
+             */
+            fits_party: boolean;
+            /** Max Occupancy */
+            max_occupancy: number;
+            /** Name */
+            name: string;
+            nightly_rate: components["schemas"]["MoneyOut"] | null;
+            /** Origin */
+            origin: string;
+            /** @description For the requested nights and rooms */
+            price: components["schemas"]["PriceLedger"] | null;
+            /** Refundable */
+            refundable: boolean | null;
+            /**
+             * Room Type Id
+             * Format: uuid
+             */
+            room_type_id: string;
+            /** Total Rooms */
+            total_rooms: number;
+        };
         /**
          * SessionOut
          * @description Returned after sign-in, sign-up and refresh. Tokens travel only in httpOnly cookies.
@@ -690,6 +1138,25 @@ export interface components {
              */
             access_expires_at: string;
             user: components["schemas"]["UserOut"];
+        };
+        /** StayOut */
+        StayOut: {
+            /**
+             * Check In
+             * Format: date
+             */
+            check_in: string;
+            /**
+             * Check Out
+             * Format: date
+             */
+            check_out: string;
+            /** Guests */
+            guests: number;
+            /** Nights */
+            nights: number;
+            /** Rooms */
+            rooms: number;
         };
         /** TravelWindowOut */
         TravelWindowOut: {
@@ -1506,6 +1973,67 @@ export interface operations {
             };
         };
     };
+    search_flights_api_v1_flights_search_get: {
+        parameters: {
+            query: {
+                /** @description Airport code or city ID */
+                origin: string;
+                destination: string;
+                departure_date: string;
+                return_date?: string | null;
+                adults?: number;
+                cabin_class?: "economy" | "premium_economy" | "business" | "first";
+                max_stops?: number | null;
+                airlines?: string[] | null;
+                departure_windows?: ("night" | "morning" | "afternoon" | "evening")[] | null;
+                /** @description Display currency */
+                max_price?: number | null;
+                sort?: "best" | "cheapest" | "fastest" | "earliest";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSearchOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;
@@ -1522,6 +2050,173 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthOut"];
+                };
+            };
+        };
+    };
+    search_hotels_api_v1_hotels_search_get: {
+        parameters: {
+            query: {
+                /** @description City ID from /locations?kind=city */
+                city: string;
+                check_in: string;
+                check_out: string;
+                guests?: number;
+                rooms?: number;
+                stars?: number[] | null;
+                min_rating?: number | null;
+                amenities?: string[] | null;
+                /** @description Per night, display currency */
+                max_price?: number | null;
+                free_cancellation?: boolean;
+                breakfast?: boolean;
+                sort?: "recommended" | "price" | "rating" | "distance" | "stars";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HotelSearchOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    hotel_detail_api_v1_hotels__hotel_id__get: {
+        parameters: {
+            query?: {
+                check_in?: string | null;
+                check_out?: string | null;
+                guests?: number;
+                rooms?: number;
+            };
+            header?: never;
+            path: {
+                hotel_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HotelDetailOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    locations_api_v1_locations_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                kind?: "airport" | "city";
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationListOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };

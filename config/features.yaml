@@ -9,3 +9,7 @@ features:
   registration: true
   # Admin dataset import: upload, profile, dry run, publish, import reports and quarantine.
   data_import: true
+  # Flight search: direct flights and one-stop connections, one-way or return.
+  flight_search: true
+  # Hotel search and hotel details.
+  hotel_search: true

@@ -6,7 +6,8 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 
 FROM node:22-alpine AS build
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NODE_OPTIONS=--max-old-space-size=2048
 # Rewrites are resolved at build time, so the API address is a build argument.
 ARG API_INTERNAL_URL=http://api:8000
 ENV API_INTERNAL_URL=${API_INTERNAL_URL}

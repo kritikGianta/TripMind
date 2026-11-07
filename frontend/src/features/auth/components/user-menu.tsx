@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, UserRound } from "lucide-react";
+import { DatabaseZap, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -67,6 +67,13 @@ export function UserMenu() {
             <UserRound /> Account
           </Link>
         </DropdownMenuItem>
+        {user.role === "admin" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/imports">
+              <DatabaseZap /> Data imports
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem
           disabled={signOut.isPending}
           onSelect={() => signOut.mutate(undefined, { onSettled: () => router.replace("/") })}

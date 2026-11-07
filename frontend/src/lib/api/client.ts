@@ -70,13 +70,19 @@ async function toApiError(response: Response): Promise<ApiError> {
 
 async function send(path: string, options: RequestOptions): Promise<Response> {
   const headers: Record<string, string> = { Accept: "application/json", ...options.headers };
-  if (options.body !== undefined) headers["Content-Type"] = "application/json";
+  const isForm = options.body instanceof FormData;
+  if (isForm) {
+    // Uploads are multipart; the API also requires this header on them (CSRF defence in depth).
+    headers["X-Requested-With"] = "tripmind";
+  } else if (options.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
   try {
     return await fetch(`${API_BASE}${path}`, {
       method: options.method ?? "GET",
       credentials: "same-origin",
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: options.body === undefined ? undefined : isForm ? (options.body as FormData) : JSON.stringify(options.body),
       signal: options.signal,
       cache: "no-store",
     });

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import shutil
 import zipfile
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +18,6 @@ from app.core.clock import FrozenClock
 from app.core.config import Settings
 from app.core.errors import Conflict, ValidationFailed
 from app.core.request_context import RequestMeta
-from app.datagen.generator import GeneratorOptions, generate
 from app.models import AuditLog, Flight, Hotel, HotelAmenity, ImportReject, ImportRun, RoomType
 from app.modules.catalog.models import Airport, City
 from app.modules.ingestion.models import ImportStatus
@@ -28,13 +27,6 @@ from app.modules.ingestion.sources import DirectorySource, ZipSource
 API = "/api/v1"
 ACTOR = Actor(user_id=None, via="cli", meta=RequestMeta(ip_address=None, user_agent="test"))
 UPLOAD_HEADERS = {"X-Requested-With": "tripmind"}
-
-
-@pytest.fixture(scope="session")
-def demo_zip(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    path = tmp_path_factory.mktemp("data") / "synthetic.zip"
-    generate(path, GeneratorOptions(seed=11, start=date(2026, 11, 13), days=3, hotels_scale=0.25))
-    return path
 
 
 def zip_source(path: Path) -> ZipSource:

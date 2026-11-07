@@ -43,6 +43,16 @@ const MESSAGES: Record<string, string> = {
   SESSION_REVOKED: "Your session has ended. Please sign in again.",
   NETWORK_ERROR: "We couldn't reach TripMind. Check your connection and try again.",
   INTERNAL: "Something went wrong on our side. Please try again.",
+  DATE_IN_PAST: "That date has already passed. Choose a later date.",
+  RETURN_BEFORE_DEPARTURE: "The return date must be on or after the departure date.",
+  SAME_LOCATION: "Origin and destination must be different.",
+  LOCATION_NOT_FOUND: "We couldn't find that place in the current dataset.",
+  INVALID_STAY: "Check the dates and the number of rooms and guests.",
+  STAY_TOO_LONG: "Stays can be up to 30 nights.",
+  HOTEL_NOT_FOUND: "This stay is no longer available.",
+  FORBIDDEN: "You don't have access to this page.",
+  IMPORT_IN_PROGRESS: "Another import is running. Try again when it finishes.",
+  PAYLOAD_TOO_LARGE: "The file is too large.",
 };
 
 export function errorMessage(error: unknown): string {

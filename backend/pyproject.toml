@@ -75,7 +75,7 @@ name = "Layered architecture"
 type = "layers"
 layers = [
     "app.main : app.cli : app.models",
-    "app.modules.ingestion | app.datagen",
+    "app.modules.ingestion | app.datagen | app.modules.search",
     "app.modules.auth | app.modules.meta | app.modules.catalog",
     "app.modules.audit",
     "app.db",
