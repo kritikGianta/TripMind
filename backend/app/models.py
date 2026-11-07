@@ -17,6 +17,7 @@ from app.modules.bookings.models import (
     Trip,
 )
 from app.modules.catalog.models import Airport, City, Flight, Hotel, HotelAmenity, RoomType
+from app.modules.groups.models import GroupMember, GroupVote, TripGroup
 from app.modules.ingestion.models import ImportReject, ImportRun
 from app.modules.inventory.models import FlightInventory, InventoryClaim, RoomNightInventory
 from app.modules.loyalty.module import LoyaltyEntry
@@ -38,6 +39,8 @@ __all__ = [
     "Disruption",
     "Flight",
     "FlightInventory",
+    "GroupMember",
+    "GroupVote",
     "Hotel",
     "HotelAmenity",
     "ImportReject",
@@ -53,6 +56,7 @@ __all__ = [
     "RoomType",
     "TravellerProfile",
     "Trip",
+    "TripGroup",
     "TripPlan",
     "User",
 ]

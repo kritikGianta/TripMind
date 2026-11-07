@@ -23,3 +23,5 @@ features:
   ai_search: true
   # Help assistant grounded in TripMind help and the traveller's trips.
   ai_assistant: true
+  # Share a plan with friends: members vote, consensus is computed, the owner decides.
+  group_planning: true

@@ -30,7 +30,8 @@ Every booking lands in **My Trips**. AI helps when it is switched on, and the pl
 | Promo codes from `config/promotions.yaml` (WELCOME10, STAYLONGER, TRIPTOGETHER), priced on the server | Live |
 | Admin console: data imports, disruptions, analytics, audit log | Live |
 | AI: "Describe your trip" search (LLM + rule parser, grounded in the catalog), **Ask TripMind** help assistant (BM25 retrieval over help and policies generated from config, cites sources, never acts). Providers in `config/ai.yaml` tried in order with cooldowns, cache and redaction; rules when none answers | Live |
-| Group planning, trained small models | Planned |
+| Group planning: "Plan with friends" on a plan, invite link, Love/OK/No votes and per-person budgets, consensus rule in `groups/consensus.py`, organiser decides and books | Live |
+| Trained small models | Planned |
 
 ## Quick start (Docker)
 

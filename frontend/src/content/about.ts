@@ -206,7 +206,8 @@ export const capabilities: Capability[] = [
   { name: "Admin console", detail: "Data imports, disruptions, analytics from the database, and the audit log", status: "live" },
   { name: "Natural-language search", detail: "A sentence becomes a filled search form; LLM with a rule parser filling gaps and as fallback", status: "live" },
   { name: "Help assistant", detail: "Answers only from TripMind policies (generated from live config) and your trips, with citations", status: "live" },
-  { name: "Group planning and trained models", detail: "Group voting, hotel ranker, fare estimator and other small models", status: "planned" },
+  { name: "Group planning", detail: "Share a plan by link; members vote Love, OK or No and set budgets; transparent consensus; organiser decides and books", status: "live" },
+  { name: "Trained models", detail: "Hotel ranker, fare estimator and other small CPU models, each with a rule-based fallback", status: "planned" },
   { name: "Monitoring dashboards", detail: "Prometheus metrics and alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger", status: "live" },
 ];
 
@@ -285,7 +286,7 @@ export const proof = {
   measured: [
     { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "7 Nov 2026" },
     { value: "910 / 0", label: "synthetic requests from 8 virtual users in 46 s / server errors; search p95 0.47 s on a laptop in Docker", measuredOn: "7 Nov 2026" },
-    { value: "122", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "125", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
     { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [

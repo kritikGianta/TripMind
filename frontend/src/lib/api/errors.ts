@@ -78,6 +78,12 @@ const MESSAGES: Record<string, string> = {
   PROFILE_NOT_FOUND: "That traveller was not found.",
   PROMO_INVALID: "This promo code can't be used.",
   PROMO_ALREADY_USED: "You've already used this promo code.",
+  GROUP_NOT_FOUND: "This group doesn't exist or you're not a member.",
+  INVITE_INVALID: "This invite link isn't valid.",
+  GROUP_DECIDED: "This group has already decided.",
+  GROUP_FULL: "This group is full.",
+  OWNER_CANNOT_LEAVE: "The organiser can't leave their own group.",
+  PLAN_EMPTY: "This plan has no options to share.",
 };
 
 export function errorMessage(error: unknown): string {

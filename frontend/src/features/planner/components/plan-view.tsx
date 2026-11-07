@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toQuery } from "@/features/search/api";
 import { Stars } from "@/features/search/components/hotel-results";
 import { clockTime, formatDay, formatDuration, formatMoney } from "@/features/search/format";
+import { ShareWithGroupButton } from "@/features/groups/group-view";
 import { errorMessage } from "@/lib/api/errors";
 import { cn } from "@/lib/utils";
 
@@ -189,12 +190,15 @@ export function PlanView() {
 
   return (
     <div className="grid gap-5">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{plan.title}</h1>
-        <p className="text-sm text-muted-foreground">
-          {plan.request.adults} adult{plan.request.adults > 1 ? "s" : ""} · priority: {plan.request.priority} ·{" "}
-          {plan.options.length} complete trips ranked · {saved.length} saved
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{plan.title}</h1>
+          <p className="text-sm text-muted-foreground">
+            {plan.request.adults} adult{plan.request.adults > 1 ? "s" : ""} · priority: {plan.request.priority} ·{" "}
+            {plan.options.length} complete trips ranked · {saved.length} saved
+          </p>
+        </div>
+        {plan.options.length ? <ShareWithGroupButton planId={plan.id} /> : null}
       </div>
       {plan.notices.map((n) => (
         <Alert key={n}>
