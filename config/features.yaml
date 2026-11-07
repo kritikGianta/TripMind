@@ -1,0 +1,9 @@
+# Feature flags. Every module that can be switched off is listed here.
+# Override any flag with an environment variable: FEATURE_<NAME>=true|false
+# Only features that exist in the codebase are listed; new modules add their flag when they land.
+
+features:
+  # One-click sign-in as a seeded demo account. Refused at start-up in production.
+  demo_login: true
+  # Public self-service sign-up.
+  registration: true

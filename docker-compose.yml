@@ -1,0 +1,72 @@
+name: tripmind
+
+x-api-env: &api-env
+  ENVIRONMENT: ${ENVIRONMENT:-local}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  LOG_JSON: ${LOG_JSON:-true}
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-tripmind}:${POSTGRES_PASSWORD:-tripmind}@db:5432/${POSTGRES_DB:-tripmind}
+  JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
+  ACCESS_TOKEN_TTL_MINUTES: ${ACCESS_TOKEN_TTL_MINUTES:-15}
+  REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-7}
+  COOKIE_SECURE: ${COOKIE_SECURE:-false}
+  TRUST_PROXY_HEADERS: ${TRUST_PROXY_HEADERS:-true}
+  DEMO_TRAVELER_EMAIL: ${DEMO_TRAVELER_EMAIL:-demo@tripmind.dev}
+  DEMO_ADMIN_EMAIL: ${DEMO_ADMIN_EMAIL:-admin@tripmind.dev}
+  CONFIG_DIR: /config
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tripmind}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tripmind}
+      POSTGRES_DB: ${POSTGRES_DB:-tripmind}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # One-shot: apply migrations and seed demo accounts, then exit.
+  migrate:
+    build: ./backend
+    command: ["sh", "-c", "alembic upgrade head && python -m app.cli seed"]
+    environment: *api-env
+    volumes:
+      - ./config:/config:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: ./backend
+    environment: *api-env
+    volumes:
+      - ./config:/config:ro
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        API_INTERNAL_URL: http://api:8000
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
