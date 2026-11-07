@@ -7,3 +7,5 @@ features:
   demo_login: true
   # Public self-service sign-up.
   registration: true
+  # Admin dataset import: upload, profile, dry run, publish, import reports and quarantine.
+  data_import: true

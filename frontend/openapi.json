@@ -1,6 +1,192 @@
 {
   "components": {
     "schemas": {
+      "Body_profile_api_v1_admin_imports_profile_post": {
+        "properties": {
+          "dataset": {
+            "default": "finale",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9][a-z0-9_.-]*$",
+            "title": "Dataset",
+            "type": "string"
+          },
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "description": "Dataset ZIP",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_profile_api_v1_admin_imports_profile_post",
+        "type": "object"
+      },
+      "Body_run_import_api_v1_admin_imports_post": {
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "description": "Dataset ZIP",
+            "title": "File",
+            "type": "string"
+          },
+          "mapping": {
+            "maxLength": 64,
+            "title": "Mapping",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "mapping"
+        ],
+        "title": "Body_run_import_api_v1_admin_imports_post",
+        "type": "object"
+      },
+      "ColumnProfileOut": {
+        "properties": {
+          "distinct": {
+            "title": "Distinct",
+            "type": "integer"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "non_null": {
+            "title": "Non Null",
+            "type": "integer"
+          },
+          "null_pct": {
+            "title": "Null Pct",
+            "type": "number"
+          },
+          "samples": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Samples",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "kind",
+          "format",
+          "non_null",
+          "null_pct",
+          "distinct",
+          "samples"
+        ],
+        "title": "ColumnProfileOut",
+        "type": "object"
+      },
+      "DatasetSummaryOut": {
+        "properties": {
+          "by_origin": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Active flights, hotels and room types by provenance",
+            "title": "By Origin",
+            "type": "object"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "dataset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset"
+          },
+          "is_demo_data": {
+            "default": false,
+            "title": "Is Demo Data",
+            "type": "boolean"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "enum": [
+                  "provided",
+                  "synthetic"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "status": {
+            "enum": [
+              "empty",
+              "loaded"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "travel_window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TravelWindowOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "DatasetSummaryOut",
+        "type": "object"
+      },
       "DemoLoginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -15,6 +201,47 @@
           }
         },
         "title": "DemoLoginRequest",
+        "type": "object"
+      },
+      "EntityCountsOut": {
+        "properties": {
+          "accepted": {
+            "default": 0,
+            "title": "Accepted",
+            "type": "integer"
+          },
+          "inserted": {
+            "default": 0,
+            "title": "Inserted",
+            "type": "integer"
+          },
+          "read": {
+            "default": 0,
+            "title": "Read",
+            "type": "integer"
+          },
+          "rejected": {
+            "default": 0,
+            "title": "Rejected",
+            "type": "integer"
+          },
+          "retired": {
+            "default": 0,
+            "title": "Retired",
+            "type": "integer"
+          },
+          "unchanged": {
+            "default": 0,
+            "title": "Unchanged",
+            "type": "integer"
+          },
+          "updated": {
+            "default": 0,
+            "title": "Updated",
+            "type": "integer"
+          }
+        },
+        "title": "EntityCountsOut",
         "type": "object"
       },
       "ErrorBody": {
@@ -86,6 +313,55 @@
         "title": "FeaturesOut",
         "type": "object"
       },
+      "FileProfileOut": {
+        "properties": {
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/ColumnProfileOut"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "encoding": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encoding"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity"
+          },
+          "file": {
+            "title": "File",
+            "type": "string"
+          },
+          "rows": {
+            "title": "Rows",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "file",
+          "rows",
+          "encoding",
+          "columns"
+        ],
+        "title": "FileProfileOut",
+        "type": "object"
+      },
       "HealthOut": {
         "properties": {
           "status": {
@@ -103,6 +379,372 @@
           "version"
         ],
         "title": "HealthOut",
+        "type": "object"
+      },
+      "ImportRunDetailOut": {
+        "properties": {
+          "adjustment_examples": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Adjustment Examples",
+            "type": "object"
+          },
+          "adjustments": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Normalisations applied instead of rejecting rows",
+            "title": "Adjustments",
+            "type": "object"
+          },
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "dry_run": {
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "entity_counts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/EntityCountsOut"
+            },
+            "title": "Entity Counts",
+            "type": "object"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "error_details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Details"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/FileProfileOut"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mapping_name": {
+            "title": "Mapping Name",
+            "type": "string"
+          },
+          "origin": {
+            "enum": [
+              "provided",
+              "synthetic"
+            ],
+            "title": "Origin",
+            "type": "string"
+          },
+          "reject_summary": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            "description": "Rejected rows per entity and reason code",
+            "title": "Reject Summary",
+            "type": "object"
+          },
+          "rejects_total": {
+            "default": 0,
+            "title": "Rejects Total",
+            "type": "integer"
+          },
+          "source_name": {
+            "title": "Source Name",
+            "type": "string"
+          },
+          "source_sha256": {
+            "title": "Source Sha256",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "published",
+              "validated",
+              "blocked",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "travel_window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TravelWindowOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "triggered_via": {
+            "title": "Triggered Via",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "dataset",
+          "mapping_name",
+          "origin",
+          "source_name",
+          "source_sha256",
+          "dry_run",
+          "status",
+          "started_at",
+          "finished_at",
+          "duration_ms",
+          "triggered_via"
+        ],
+        "title": "ImportRunDetailOut",
+        "type": "object"
+      },
+      "ImportRunOut": {
+        "properties": {
+          "adjustment_examples": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Adjustment Examples",
+            "type": "object"
+          },
+          "adjustments": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Normalisations applied instead of rejecting rows",
+            "title": "Adjustments",
+            "type": "object"
+          },
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "dry_run": {
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "entity_counts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/EntityCountsOut"
+            },
+            "title": "Entity Counts",
+            "type": "object"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mapping_name": {
+            "title": "Mapping Name",
+            "type": "string"
+          },
+          "origin": {
+            "enum": [
+              "provided",
+              "synthetic"
+            ],
+            "title": "Origin",
+            "type": "string"
+          },
+          "reject_summary": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            "description": "Rejected rows per entity and reason code",
+            "title": "Reject Summary",
+            "type": "object"
+          },
+          "rejects_total": {
+            "default": 0,
+            "title": "Rejects Total",
+            "type": "integer"
+          },
+          "source_name": {
+            "title": "Source Name",
+            "type": "string"
+          },
+          "source_sha256": {
+            "title": "Source Sha256",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "published",
+              "validated",
+              "blocked",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "travel_window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TravelWindowOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "triggered_via": {
+            "title": "Triggered Via",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "dataset",
+          "mapping_name",
+          "origin",
+          "source_name",
+          "source_sha256",
+          "dry_run",
+          "status",
+          "started_at",
+          "finished_at",
+          "duration_ms",
+          "triggered_via"
+        ],
+        "title": "ImportRunOut",
+        "type": "object"
+      },
+      "ImportRunPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ImportRunOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ImportRunPage",
         "type": "object"
       },
       "LoginRequest": {
@@ -125,6 +767,44 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "MappingListOut": {
+        "properties": {
+          "mappings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Mappings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "mappings"
+        ],
+        "title": "MappingListOut",
+        "type": "object"
+      },
+      "ProfileOut": {
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/FileProfileOut"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "suggested_mapping": {
+            "description": "Draft mapping YAML; review before saving",
+            "title": "Suggested Mapping",
+            "type": "string"
+          }
+        },
+        "required": [
+          "files",
+          "suggested_mapping"
+        ],
+        "title": "ProfileOut",
         "type": "object"
       },
       "ReadinessCheck": {
@@ -210,6 +890,95 @@
         "title": "RegisterRequest",
         "type": "object"
       },
+      "RejectOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "entity": {
+            "title": "Entity",
+            "type": "string"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "raw": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw"
+          },
+          "row_number": {
+            "title": "Row Number",
+            "type": "integer"
+          },
+          "source_file": {
+            "title": "Source File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "source_file",
+          "row_number",
+          "code",
+          "field",
+          "message",
+          "raw"
+        ],
+        "title": "RejectOut",
+        "type": "object"
+      },
+      "RejectPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RejectOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "RejectPage",
+        "type": "object"
+      },
       "SessionOut": {
         "description": "Returned after sign-in, sign-up and refresh. Tokens travel only in httpOnly cookies.",
         "properties": {
@@ -227,6 +996,26 @@
           "access_expires_at"
         ],
         "title": "SessionOut",
+        "type": "object"
+      },
+      "TravelWindowOut": {
+        "properties": {
+          "first_departure": {
+            "format": "date",
+            "title": "First Departure",
+            "type": "string"
+          },
+          "last_departure": {
+            "format": "date",
+            "title": "Last Departure",
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_departure",
+          "last_departure"
+        ],
+        "title": "TravelWindowOut",
         "type": "object"
       },
       "UserOut": {
@@ -276,6 +1065,650 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/imports": {
+      "get": {
+        "operationId": "list_runs_api_v1_admin_imports_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRunPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Import history, newest first",
+        "tags": [
+          "admin: imports"
+        ]
+      },
+      "post": {
+        "operationId": "run_import_api_v1_admin_imports_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-requested-with",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Requested-With"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_run_import_api_v1_admin_imports_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Import a dataset ZIP with a named mapping (dry_run validates without publishing)",
+        "tags": [
+          "admin: imports"
+        ]
+      }
+    },
+    "/api/v1/admin/imports/mappings": {
+      "get": {
+        "operationId": "mappings_api_v1_admin_imports_mappings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MappingListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Dataset mappings available in config/mappings",
+        "tags": [
+          "admin: imports"
+        ]
+      }
+    },
+    "/api/v1/admin/imports/profile": {
+      "post": {
+        "operationId": "profile_api_v1_admin_imports_profile_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-requested-with",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Requested-With"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_profile_api_v1_admin_imports_profile_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Profile a dataset ZIP and draft a mapping (nothing is stored)",
+        "tags": [
+          "admin: imports"
+        ]
+      }
+    },
+    "/api/v1/admin/imports/{run_id}": {
+      "get": {
+        "operationId": "get_run_api_v1_admin_imports__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRunDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "One import report, including the file profiles",
+        "tags": [
+          "admin: imports"
+        ]
+      }
+    },
+    "/api/v1/admin/imports/{run_id}/rejects": {
+      "get": {
+        "operationId": "get_rejects_api_v1_admin_imports__run_id__rejects_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "entity",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity"
+            }
+          },
+          {
+            "in": "query",
+            "name": "code",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Code"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Quarantined rows of one import",
+        "tags": [
+          "admin: imports"
+        ]
+      }
+    },
     "/api/v1/auth/demo-login": {
       "post": {
         "operationId": "demo_login_api_v1_auth_demo_login_post",
@@ -592,6 +2025,27 @@
         "summary": "Create a traveller account and start a session",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/datasets/current": {
+      "get": {
+        "operationId": "current_dataset_api_v1_datasets_current_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The dataset currently live in the catalog",
+        "tags": [
+          "datasets"
         ]
       }
     },

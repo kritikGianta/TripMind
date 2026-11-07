@@ -1,0 +1,50 @@
+# Canonical values and the spellings that map to them. Matching ignores case, accents and
+# punctuation. Values not listed are kept as a slug of the source value.
+
+cabin_classes:
+  economy: [eco, economy class, coach, y, main cabin, standard]
+  premium_economy: [premium economy, premium, w]
+  business: [business class, j, c]
+  first: [first class, f]
+
+boards:
+  room_only: [room only, ro, no meals, none]
+  breakfast: [breakfast, bed and breakfast, bb, b&b, breakfast included]
+  half_board: [half board, hb]
+  full_board: [full board, fb]
+  all_inclusive: [all inclusive, ai]
+
+amenities:
+  wifi: [free wifi, wi-fi, wireless internet, internet, free wi-fi]
+  pool: [swimming pool, outdoor pool, indoor pool]
+  spa: [spa and wellness, wellness centre, wellness center]
+  gym: [fitness centre, fitness center, fitness, gymnasium]
+  parking: [free parking, car park, on-site parking]
+  restaurant: [on-site restaurant, dining]
+  bar: [lounge, bar lounge]
+  breakfast: [breakfast available, free breakfast]
+  airport_shuttle: [airport transfer, airport pickup, shuttle]
+  air_conditioning: [ac, a/c, air conditioned]
+  wheelchair_accessible: [accessible, step-free access, wheelchair access, accessible rooms]
+  pet_friendly: [pets allowed, pets]
+  family_rooms: [family room, kids friendly, family friendly]
+  beach_access: [beachfront, private beach, beach]
+  room_service: [24-hour room service, in-room dining]
+  ev_charging: [electric vehicle charging, ev charger]
+  business_centre: [business center, meeting rooms]
+  laundry: [laundry service, dry cleaning]
+
+# Alternative city names that refer to the same place.
+city_aliases:
+  Delhi: [New Delhi, NCR]
+  Mumbai: [Bombay]
+  Bengaluru: [Bangalore]
+  Chennai: [Madras]
+  Kolkata: [Calcutta]
+  Kochi: [Cochin]
+  Thiruvananthapuram: [Trivandrum]
+  Goa: [Panaji, Panjim, Dabolim]
+  Varanasi: [Benares, Banaras]
+  Gurugram: [Gurgaon]
+  Puducherry: [Pondicherry]
+  Port Blair: [Sri Vijaya Puram]

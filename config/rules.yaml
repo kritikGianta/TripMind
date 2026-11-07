@@ -1,0 +1,28 @@
+# Business rules. Anything the finale data may force us to change lives here, not in code.
+# Values are validated at load time; an invalid file stops the import with a clear error.
+
+ingestion:
+  # Used when an airport has no valid IANA timezone (plan v2, G12). Rows using it are flagged.
+  default_timezone: Asia/Kolkata
+  # Used when a price has no currency column and the mapping sets no constant.
+  default_currency: INR
+  default_cabin_class: economy
+  # Fallbacks for capacity the source does not supply. Each use is counted in the import report.
+  default_seat_capacity: 180
+  default_rooms_per_type: 10
+  default_max_occupancy: 2
+  # A hotel with no room-type file gets one room type with this name, priced from the hotel rate.
+  default_room_name: Standard Room
+  # Longer flights are treated as data errors.
+  max_flight_duration_minutes: 1200
+  # A supplied duration this far from departure/arrival times is reported (the times win).
+  duration_mismatch_minutes: 90
+  # Minimum rapidfuzz score to match a misspelt city to a known one in the same country.
+  city_match_threshold: 90
+  # If more than this share of an entity's rows is rejected, nothing is published.
+  max_reject_ratio: 0.2
+  max_stored_rejects: 5000
+  # Upload and archive limits (protects against oversized or malicious archives).
+  max_upload_mb: 100
+  max_uncompressed_mb: 1024
+  max_archive_members: 200

@@ -25,6 +25,7 @@ from app.core.deps import get_clock, get_rate_limiter, get_settings_dep
 from app.core.rate_limit import InMemoryRateLimiter
 from app.db.session import get_session
 from app.main import create_app
+from app.models import Base
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 TEST_SECRET = "test-secret-that-is-long-enough-for-hs256-signing-0123456789"
@@ -66,10 +67,10 @@ def db_session(engine: Engine) -> Iterator[Session]:
     factory = sessionmaker(bind=engine, expire_on_commit=False, autoflush=False)
     with factory() as session:
         yield session
-    # Each test starts from empty tables (schema is kept).
+    # Each test starts from empty tables (schema is kept). Children first, so FKs never block.
     with engine.begin() as conn:
-        for table in ("audit_log", "refresh_tokens", "users"):
-            conn.execute(text(f"DELETE FROM {table}"))  # noqa: S608 - fixed table names
+        for table in reversed(Base.metadata.sorted_tables):
+            conn.execute(text(f"DELETE FROM {table.name}"))  # noqa: S608 - names from metadata
 
 
 @pytest.fixture

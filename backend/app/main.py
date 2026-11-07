@@ -18,6 +18,8 @@ from app.core.features import load_feature_flags
 from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware
 from app.modules.auth.router import router as auth_router
+from app.modules.ingestion.router import admin_router as imports_admin_router
+from app.modules.ingestion.router import public_router as datasets_router
 from app.modules.meta.router import router as meta_router
 
 log = structlog.get_logger(__name__)
@@ -55,12 +57,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             allow_origins=settings.cors_origins,
             allow_credentials=True,
             allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-            allow_headers=["content-type", "x-request-id", "idempotency-key"],
+            allow_headers=["content-type", "x-request-id", "idempotency-key", "x-requested-with"],
         )
     register_exception_handlers(app)
 
     app.include_router(meta_router, prefix=settings.api_prefix)
     app.include_router(auth_router, prefix=settings.api_prefix)
+    app.include_router(datasets_router, prefix=settings.api_prefix)
+    app.include_router(imports_admin_router, prefix=settings.api_prefix)
 
     # Served on the API's own port only; the web proxy forwards /api/* and never /metrics.
     @app.get("/metrics", include_in_schema=False)

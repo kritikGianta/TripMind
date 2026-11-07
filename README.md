@@ -17,8 +17,9 @@ Every booking lands in **My Trips**. AI helps when it is switched on, and the pl
 | Accounts: sign-up, sign-in, sign-out, one-click demo access, account page | Live |
 | Session security: Argon2id, httpOnly cookies, rotating refresh tokens, reuse detection, rate limits, audit log | Live |
 | Platform: error contract, request IDs, health and readiness checks, Prometheus metrics, feature flags | Live |
-| Web app: navbar, home page, About page (presentation deck) | Live |
-| Data ingestion, search, booking engine, trip planner, recovery, AI assistant, dashboards | Planned (see [plan v2](docs/plan-v2.md)) |
+| Web app: navbar, home page, About page (presentation deck), dataset label | Live |
+| Data: catalog schema, ingestion pipeline (profile, map, validate, quarantine, publish, report), synthetic demo dataset, admin import API | Live |
+| Search, booking engine, trip planner, recovery, AI assistant, dashboards | Planned (see [plan v2](docs/plan-v2.md)) |
 
 ## Quick start (Docker)
 
@@ -32,7 +33,7 @@ docker compose up -d --build
 - Readiness: http://localhost:8000/api/v1/ready
 - Metrics: http://localhost:8000/metrics
 
-`migrate` applies database migrations and creates the demo accounts, then exits; `api` and `web` start once it succeeds.
+`migrate` applies database migrations, creates the demo accounts and, on first start, generates the synthetic demo dataset and imports it through the normal pipeline (about 30 s; skip with `BOOTSTRAP_DEMO_DATA=false`). It then exits; `api` and `web` start once it succeeds.
 
 ## Local development
 
@@ -49,6 +50,27 @@ cd ../frontend
 npm install
 npm run dev                                                 # http://localhost:3000
 ```
+
+## Data
+
+Catalog data (airports, flights, hotels, room types) is only ever loaded through the ingestion pipeline, from a ZIP or folder of CSV, TSV, JSON, JSONL or XLSX files. A YAML mapping in `config/mappings/` says which column feeds which TripMind field ([ADR 0004](docs/adr/0004-ingestion.md)).
+
+```bash
+cd backend
+uv run python -m app.cli data generate                       # ../data/generated/synthetic-v1.zip
+uv run python -m app.cli data import ../data/generated/synthetic-v1.zip --mapping synthetic-v1 --dry-run
+uv run python -m app.cli data import ../data/generated/synthetic-v1.zip --mapping synthetic-v1
+```
+
+Swapping in a new dataset (for example the finale data):
+
+1. `uv run python -m app.cli data profile finale.zip --dataset finale --write ../config/mappings/finale.yaml` drafts a mapping and comments every uncertain guess.
+2. Review the mapping, then import with `--dry-run` and read the report.
+3. Import for real. Rows the new file no longer contains are retired, not deleted.
+
+Each import reports, per entity: rows read, accepted, rejected (with reason codes), inserted, updated, unchanged and retired. It also lists the normalisations applied (defaults filled, timezones assumed, fuzzy city matches). Rejected rows are kept with their file row number and original values. If more than 20% of an entity's rows are rejected, nothing is published (`config/rules.yaml`).
+
+Admins can do the same over HTTP: `/api/v1/admin/imports` (upload, dry run, history), `/admin/imports/{id}/rejects` and `/admin/imports/profile`. Uploads need the `X-Requested-With: tripmind` header. `GET /api/v1/datasets/current` is public and drives the "Demo data" label in the footer.
 
 ## Quality checks
 
@@ -69,12 +91,13 @@ cd ../frontend && npm run gen:api
 ## Repository layout
 
 ```
-config/                 Runtime configuration (feature flags; mappings and rules as they land)
+config/                 Feature flags, business rules, vocabularies, dataset mappings (mappings/)
 docs/                   plan-v2.md and architecture decision records (adr/)
 backend/
   app/core/             Settings, errors, logging, security, metrics, rate limiting, dependencies
   app/db/               SQLAlchemy base and session lifecycle
   app/modules/<name>/   One folder per domain: router → service → repository → models
+  app/datagen/          Synthetic demo dataset generator (writes files, never the database)
   migrations/           Alembic migrations
   tests/                Unit and API tests (SQLite and PostgreSQL)
 frontend/

@@ -192,7 +192,7 @@ export const capabilities: Capability[] = [
   { name: "Health, readiness, metrics", detail: "/health, /ready and Prometheus /metrics", status: "live" },
   { name: "Feature flags", detail: "Modules switched on or off by configuration", status: "live" },
   { name: "One-command stack", detail: "Docker Compose: database, migrations, API, web", status: "live" },
-  { name: "Data ingestion", detail: "Profile, map, validate, quarantine and report on any supplied ZIP", status: "planned" },
+  { name: "Data ingestion", detail: "Profile, map, validate, quarantine and report on any supplied ZIP", status: "live" },
   { name: "Flight and hotel search", detail: "Filter registry, offers with legs, price ledger", status: "planned" },
   { name: "Booking engine", detail: "Holds, idempotency, payment simulator, travellers, My Trips", status: "planned" },
   { name: "Connected-trip planner", detail: "Bundles, ranking, Journey Confidence Report", status: "planned" },
@@ -205,20 +205,21 @@ export const capabilities: Capability[] = [
 
 export const dataPipeline = {
   steps: [
-    { name: "Discover", detail: "List files in the ZIP and profile every column" },
-    { name: "Map", detail: "YAML maps source columns to our model; unknown columns are kept" },
-    { name: "Normalise", detail: "Codes, casing, timezones, money as exact amounts" },
-    { name: "Validate", detail: "Required fields, ranges, references between files" },
-    { name: "Quarantine", detail: "Bad rows are kept with a reason, never silently dropped" },
-    { name: "Publish", detail: "Valid rows go live in one transaction" },
-    { name: "Report", detail: "Counts of valid, rejected and duplicate rows" },
+    { name: "Profile", detail: "Every file and column described; a draft mapping is suggested" },
+    { name: "Map", detail: "A YAML file maps the supplier's columns to TripMind fields" },
+    { name: "Normalise", detail: "Codes, city aliases, local time to UTC, money as exact minor units" },
+    { name: "Validate", detail: "Required fields, ranges, references between files, impossible times" },
+    { name: "Quarantine", detail: "Bad rows are kept with the reason and the original values" },
+    { name: "Publish", detail: "New, changed and retired rows applied in one transaction" },
+    { name: "Report", detail: "Per file: read, accepted, rejected, inserted, updated, retired" },
   ],
   principles: [
     "Missing data is shown as \"not provided\", never guessed.",
     "Demo data is generated as files and imported through the same pipeline, so swapping in the real dataset is a configuration change.",
-    "Re-importing the same file changes nothing.",
+    "Re-importing the same file changes nothing; rows missing from a newer file are retired, not deleted.",
+    "If too many rows fail, nothing is published: a wrong mapping cannot corrupt the catalog.",
   ],
-  status: "planned" as Status,
+  status: "live" as Status,
 };
 
 // ── 10 · AI boundaries ────────────────────────────────────────────────────────────────────────
@@ -256,14 +257,18 @@ export const edgeCases: Capability[] = [
   { name: "Payment fails or the hold expires", detail: "Retry within the hold, or stock is released", status: "planned" },
   { name: "Flight confirmed but hotel fails", detail: "Shown as partial with a recovery path, never as fully confirmed", status: "planned" },
   { name: "AI provider down or rate-limited", detail: "Next provider, then rule-based fallback", status: "planned" },
-  { name: "Bad rows in the dataset", detail: "Quarantined with a reason and counted in the import report", status: "planned" },
+  { name: "Bad rows in the dataset", detail: "Quarantined with a reason and counted in the import report", status: "live" },
+  { name: "Flight lands after midnight in another timezone", detail: "Local times converted with each airport's timezone; arrival rolls to the next day", status: "live" },
+  { name: "Misspelt or renamed city", detail: "Aliases (Bombay, Bangalore) and fuzzy matching, each match listed in the report", status: "live" },
+  { name: "Price missing in the data", detail: "Shown as browse-only; no price is invented", status: "live" },
 ];
 
 // ── 12 · Proof (only measured results) ────────────────────────────────────────────────────────
 
 export const proof = {
   measured: [
-    { value: "33", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "67", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [
     "Sign in with one click as the demo traveller",

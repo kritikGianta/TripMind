@@ -1,0 +1,72 @@
+# Mapping for the synthetic demo dataset (python -m app.cli data generate).
+# Left: TripMind field. Right: the column in the supplied file (see app/modules/ingestion/targets.py
+# for every field TripMind understands). For the finale data, draft a new mapping with
+#   python -m app.cli data profile <finale.zip> --dataset finale --write config/mappings/finale.yaml
+
+dataset: synthetic-v1
+origin: synthetic
+description: Generated demo data. Airports are real reference data; everything else is synthetic.
+
+entities:
+  airports:
+    file: airports.csv
+    fields:
+      code: iata
+      name: airport_name
+      city: city
+      country: country
+      latitude: lat
+      longitude: lon
+      timezone: tz
+
+  flights:
+    file: flights.csv
+    fields:
+      flight_number: flight_no
+      airline_code: airline_code
+      airline_name: airline
+      origin: from
+      destination: to
+      departure_local: {column: departure, format: "%Y-%m-%d %H:%M"}
+      arrival_local: {column: arrival, format: "%Y-%m-%d %H:%M"}
+      duration_minutes: duration
+      cabin_class: cabin
+      fare: fare
+      currency: currency
+      aircraft: aircraft
+      seat_capacity: seats
+
+  hotels:
+    file: hotels.csv
+    fields:
+      source_key: hotel_id
+      name: name
+      city: city
+      country: country
+      address: address
+      latitude: lat
+      longitude: lng
+      star_rating: stars
+      guest_rating: {column: rating, scale: 2}   # source uses 0-5; TripMind stores 0-10
+      review_count: reviews
+      amenities: {column: amenities, split: "|"}
+      check_in_time: checkin
+      check_out_time: checkout
+      nightly_rate: price_per_night
+      currency: currency
+      total_rooms: total_rooms
+      description: description
+
+  room_types:
+    file: rooms.csv
+    fields:
+      source_key: room_id
+      hotel_key: hotel_id
+      name: room_name
+      max_occupancy: max_guests
+      bed_type: bed
+      nightly_rate: price
+      currency: currency
+      total_rooms: rooms_count
+      refundable: refundable
+      board: meal_plan

@@ -17,6 +17,10 @@ dependencies = [
     "structlog>=24.4",
     "prometheus-client>=0.21",
     "pyyaml>=6.0",
+    "pandas>=3.1.1",
+    "rapidfuzz>=3.14.6",
+    "python-multipart>=0.0.33",
+    "openpyxl>=3.1.5",
 ]
 
 [dependency-groups]
@@ -27,6 +31,7 @@ dev = [
     "mypy>=1.13",
     "types-pyyaml>=6.0",
     "import-linter>=2.1",
+    "pandas-stubs>=3.1.0.261029",
 ]
 
 [tool.uv]
@@ -46,6 +51,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106"]
 "migrations/**" = ["E501"]
+"app/datagen/**" = ["S311"]  # seeded randomness for synthetic data, not security
 
 [tool.mypy]
 python_version = "3.12"
@@ -69,7 +75,8 @@ name = "Layered architecture"
 type = "layers"
 layers = [
     "app.main : app.cli : app.models",
-    "app.modules.auth | app.modules.meta",
+    "app.modules.ingestion | app.datagen",
+    "app.modules.auth | app.modules.meta | app.modules.catalog",
     "app.modules.audit",
     "app.db",
     "app.core",
