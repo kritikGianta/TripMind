@@ -31,7 +31,7 @@ Every booking lands in **My Trips**. AI helps when it is switched on, and the pl
 | Admin console: data imports, disruptions, analytics, audit log | Live |
 | AI: "Describe your trip" search (LLM + rule parser, grounded in the catalog), **Ask TripMind** help assistant (BM25 retrieval over help and policies generated from config, cites sources, never acts). Providers in `config/ai.yaml` tried in order with cooldowns, cache and redaction; rules when none answers | Live |
 | Group planning: "Plan with friends" on a plan, invite link, Love/OK/No votes and per-person budgets, consensus rule in `groups/consensus.py`, organiser decides and books | Live |
-| Trained small models | Planned |
+| Models (`models/`): fare anomaly detector in every import, similar stays on hotel pages (live); hotel ranker and fare estimator notebooks for Kaggle, served automatically once their artifacts are added. See [models/README.md](models/README.md) | Live / awaiting training |
 
 ## Quick start (Docker)
 

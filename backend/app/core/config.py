@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     log_json: bool = True
     api_prefix: str = "/api/v1"
     config_dir: Path = _REPO_ROOT / "config"
+    models_dir: Path = _REPO_ROOT / "models"
 
     # Database
     database_url: str = "postgresql+psycopg://tripmind:tripmind@127.0.0.1:5432/tripmind"

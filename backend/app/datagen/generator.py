@@ -494,6 +494,8 @@ class _Generator:
                 lambda r: r.update(flight_no=""),
                 lambda r: r.update(departure="2026-13-45 10:00"),
                 lambda r: r.update(fare=""),
+                # A plausible-looking but wrong price (8x): valid data, caught as an anomaly.
+                lambda r: r.update(fare=f"{float(r['fare']) * 8:.0f}" if r["fare"] else r["fare"]),
                 "duplicate",
             ],
             "hotels": [

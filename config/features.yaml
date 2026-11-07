@@ -23,5 +23,8 @@ features:
   ai_search: true
   # Help assistant grounded in TripMind help and the traveller's trips.
   ai_assistant: true
+  # Trained models (used only when their artifacts exist in models/<name>/artifacts).
+  ml_hotel_ranker: true
+  ml_fare_insight: true
   # Share a plan with friends: members vote, consensus is computed, the owner decides.
   group_planning: true

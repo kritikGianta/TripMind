@@ -1507,6 +1507,24 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** FareInsightOut */
+        FareInsightOut: {
+            /** Basis */
+            basis: string;
+            /**
+             * Label
+             * @enum {string}
+             */
+            label: "below_typical" | "typical" | "above_typical";
+            /** Model Version */
+            model_version: string;
+            /**
+             * Ratio
+             * @description This fare divided by the model's typical fare
+             */
+            ratio: number;
+            typical_per_adult: components["schemas"]["MoneyOut"];
+        };
         /** FeaturesOut */
         FeaturesOut: {
             /** Features */
@@ -1608,6 +1626,7 @@ export interface components {
             bookable: boolean;
             /** Duration Minutes */
             duration_minutes: number;
+            fare_insight?: components["schemas"]["FareInsightOut"] | null;
             /**
              * Id
              * @description Stable offer ID: the legs it is made of
@@ -1794,6 +1813,8 @@ export interface components {
             review_count: number | null;
             /** Rooms */
             rooms: components["schemas"]["RoomOfferOut"][];
+            /** Similar */
+            similar?: components["schemas"]["SimilarHotelOut"][];
             /** Star Rating */
             star_rating: number | null;
             stay: components["schemas"]["StayOut"] | null;
@@ -1900,6 +1921,12 @@ export interface components {
             nights: number;
             /** Notices */
             notices: string[];
+            /**
+             * Ranked By
+             * @description 'model:<version>' or 'rules'
+             * @default rules
+             */
+            ranked_by: string;
             /** Results */
             results: components["schemas"]["HotelResultOut"][];
             /** Rooms */
@@ -2713,6 +2740,28 @@ export interface components {
              */
             access_expires_at: string;
             user: components["schemas"]["UserOut"];
+        };
+        /** SimilarHotelOut */
+        SimilarHotelOut: {
+            /** Distance Km */
+            distance_km: number | null;
+            /** @description Cheapest nightly rate, display currency */
+            from_price: components["schemas"]["MoneyOut"] | null;
+            /** Guest Rating */
+            guest_rating: number | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Shared Amenities */
+            shared_amenities: string[];
+            /** Similarity */
+            similarity: number;
+            /** Star Rating */
+            star_rating: number | null;
         };
         /** StatusOut */
         StatusOut: {

@@ -11,11 +11,20 @@ from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
 from app.core.config import Settings
-from app.core.deps import get_clock, get_settings_dep, rate_limit, require_feature
+from app.core.deps import (
+    get_clock,
+    get_feature_flags,
+    get_settings_dep,
+    rate_limit,
+    require_feature,
+)
 from app.core.errors import ErrorEnvelope, ValidationFailed
+from app.core.features import FeatureFlags
 from app.core.metrics import SEARCH_LATENCY, SEARCHES
 from app.db.session import get_session
 from app.modules.catalog.vocabulary import load_vocabulary
+from app.modules.ml.features import FARE_ESTIMATOR_FEATURES, HOTEL_RANKER_FEATURES
+from app.modules.ml.registry import load_model
 from app.modules.search.flights import FlightQuery, FlightSearchService
 from app.modules.search.hotels import HotelQuery, HotelSearchService, Stay
 from app.modules.search.locations import LocationService
@@ -53,12 +62,19 @@ def _flights(
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings_dep),
     clock: Clock = Depends(get_clock),
+    flags: FeatureFlags = Depends(get_feature_flags),
 ) -> FlightSearchService:
+    fare_model = (
+        load_model(settings.models_dir, "fare_estimator", FARE_ESTIMATOR_FEATURES)
+        if flags.enabled("ml_fare_insight")
+        else None
+    )
     return FlightSearchService(
         session,
         Converter(load_pricing_rules(settings.config_dir)),
         load_search_rules(settings.config_dir),
         _earliest_travel_date(clock),
+        fare_model=fare_model,
     )
 
 
@@ -66,12 +82,19 @@ def _hotels(
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings_dep),
     clock: Clock = Depends(get_clock),
+    flags: FeatureFlags = Depends(get_feature_flags),
 ) -> HotelSearchService:
+    ranker = (
+        load_model(settings.models_dir, "hotel_ranker", HOTEL_RANKER_FEATURES)
+        if flags.enabled("ml_hotel_ranker")
+        else None
+    )
     return HotelSearchService(
         session,
         Converter(load_pricing_rules(settings.config_dir)),
         load_search_rules(settings.config_dir),
         _earliest_travel_date(clock),
+        ranker=ranker,
     )
 
 

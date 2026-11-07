@@ -1,0 +1,21 @@
+{
+  "name": "similar_hotels",
+  "version": "2026.11.07",
+  "trained_at": "2026-11-07T17:18:53.267296+00:00",
+  "framework": "scikit-learn",
+  "framework_version": "1.9.1",
+  "dataset": "TripMind synthetic catalog",
+  "features": [
+    "amenities",
+    "star_class",
+    "rating_band",
+    "price_band"
+  ],
+  "metrics": {
+    "same_star_class": 0.6992143658810326,
+    "within_one_price_band": 0.8249158249158249,
+    "amenity_jaccard_similar": 0.6246985369039241,
+    "amenity_jaccard_random": 0.5576163330372085
+  },
+  "notes": "Computed on demand from the live catalog; this card records the evaluation."
+}

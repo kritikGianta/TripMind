@@ -1646,6 +1646,44 @@
         "title": "FacetOption",
         "type": "object"
       },
+      "FareInsightOut": {
+        "properties": {
+          "basis": {
+            "title": "Basis",
+            "type": "string"
+          },
+          "label": {
+            "enum": [
+              "below_typical",
+              "typical",
+              "above_typical"
+            ],
+            "title": "Label",
+            "type": "string"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "ratio": {
+            "description": "This fare divided by the model's typical fare",
+            "title": "Ratio",
+            "type": "number"
+          },
+          "typical_per_adult": {
+            "$ref": "#/components/schemas/MoneyOut"
+          }
+        },
+        "required": [
+          "label",
+          "typical_per_adult",
+          "ratio",
+          "model_version",
+          "basis"
+        ],
+        "title": "FareInsightOut",
+        "type": "object"
+      },
       "FeaturesOut": {
         "properties": {
           "features": {
@@ -1908,6 +1946,16 @@
           "duration_minutes": {
             "title": "Duration Minutes",
             "type": "integer"
+          },
+          "fare_insight": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FareInsightOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "id": {
             "description": "Stable offer ID: the legs it is made of",
@@ -2455,6 +2503,13 @@
             "title": "Rooms",
             "type": "array"
           },
+          "similar": {
+            "items": {
+              "$ref": "#/components/schemas/SimilarHotelOut"
+            },
+            "title": "Similar",
+            "type": "array"
+          },
           "star_rating": {
             "anyOf": [
               {
@@ -2755,6 +2810,12 @@
             },
             "title": "Notices",
             "type": "array"
+          },
+          "ranked_by": {
+            "default": "rules",
+            "description": "'model:<version>' or 'rules'",
+            "title": "Ranked By",
+            "type": "string"
           },
           "results": {
             "items": {
@@ -4937,6 +4998,86 @@
           "access_expires_at"
         ],
         "title": "SessionOut",
+        "type": "object"
+      },
+      "SimilarHotelOut": {
+        "properties": {
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km"
+          },
+          "from_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cheapest nightly rate, display currency"
+          },
+          "guest_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest Rating"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "shared_amenities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Shared Amenities",
+            "type": "array"
+          },
+          "similarity": {
+            "title": "Similarity",
+            "type": "number"
+          },
+          "star_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Star Rating"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "star_rating",
+          "guest_rating",
+          "distance_km",
+          "from_price",
+          "similarity",
+          "shared_amenities"
+        ],
+        "title": "SimilarHotelOut",
         "type": "object"
       },
       "StatusOut": {

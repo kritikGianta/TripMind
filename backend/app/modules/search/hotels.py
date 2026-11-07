@@ -19,6 +19,9 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import City, Hotel, HotelAmenity, RoomType
+from app.modules.ml.features import HotelRow, hotel_ranker_rows
+from app.modules.ml.registry import LoadedModel
+from app.modules.ml.similar import HotelProfile, similar_hotels
 from app.modules.operations.queries import unavailable_rooms
 from app.modules.search.locations import LocationService
 from app.modules.search.pricing import Converter, LedgerLine, MoneyOut, SearchRules
@@ -32,6 +35,7 @@ from app.modules.search.schemas import (
     HotelSort,
     PriceRange,
     RoomOfferOut,
+    SimilarHotelOut,
     StayOut,
 )
 
@@ -106,12 +110,18 @@ def _distance_km(hotel: Hotel, city: City) -> float | None:
 
 class HotelSearchService:
     def __init__(
-        self, session: Session, converter: Converter, rules: SearchRules, today: date
+        self,
+        session: Session,
+        converter: Converter,
+        rules: SearchRules,
+        today: date,
+        ranker: LoadedModel | None = None,
     ) -> None:
         self._session = session
         self._converter = converter
         self._rules = rules
         self._today = today
+        self._ranker = ranker
         self._out_of_service: dict[tuple[date, date], set[uuid.UUID]] = {}
 
     def validate(self, stay: Stay) -> None:
@@ -237,7 +247,12 @@ class HotelSearchService:
             chosen = self._apply_filters(result, fitting, query)
             if chosen is not None:
                 results.append(chosen)
-        results.sort(key=self._sort_key(query.sort, results))
+        ranked_by = "rules"
+        if query.sort == "recommended" and self._ranker is not None and len(results) > 1:
+            results = self._model_order(results, stay)
+            ranked_by = f"model:{self._ranker.card.version}"
+        else:
+            results.sort(key=self._sort_key(query.sort, results))
         notices = []
         if any(not r.bookable for r in results):
             notices.append("Some stays have no rate in the supplied data and are browse only.")
@@ -254,7 +269,35 @@ class HotelSearchService:
             facets=facets,
             display_currency=self._converter.display_currency,
             notices=notices,
+            ranked_by=ranked_by,
         )
+
+    def _model_order(self, results: list[HotelResultOut], stay: Stay) -> list[HotelResultOut]:
+        """Order by the trained ranker; unpriced stays always go last."""
+        if self._ranker is None:
+            return sorted(results, key=self._sort_key("recommended", results))
+        usd_rate = float(self._converter.rules.fx_rates.get("USD", 0)) or None
+        priced = [r for r in results if self._nightly_display(r.cheapest_room) is not None]
+        unpriced = [r for r in results if r not in priced]
+        if not priced or usd_rate is None:
+            return sorted(results, key=self._sort_key("recommended", results))
+        rows = hotel_ranker_rows(
+            [
+                HotelRow(
+                    star_rating=r.star_rating or 0.0,
+                    review_score=(r.guest_rating or 0.0) / 2,
+                    nightly_usd=(self._nightly_display(r.cheapest_room) or 0) / 100 / usd_rate,
+                )
+                for r in priced
+            ],
+            nights=stay.nights,
+            adults=stay.guests,
+            rooms=stay.rooms,
+            booking_window_days=(stay.check_in - self._today).days,
+        )
+        scores = self._ranker.predict(rows)
+        ordered = [r for _, r in sorted(zip(scores, priced, strict=True), key=lambda x: -x[0])]
+        return ordered + unpriced
 
     def _cheapest(self, rooms: list[RoomOfferOut]) -> RoomOfferOut:
         priced = [r for r in rooms if self._nightly_display(r) is not None]
@@ -436,4 +479,55 @@ class HotelSearchService:
             else None,
             rooms=rooms,
             display_currency=self._converter.display_currency,
+            similar=self._similar(hotel, city),
         )
+
+    def _similar(self, hotel: Hotel, city: City, k: int = 4) -> list[SimilarHotelOut]:
+        """Stays in the same city most like this one (see app/modules/ml/similar.py)."""
+        hotels = list(
+            self._session.scalars(
+                select(Hotel).where(Hotel.city_id == city.id, Hotel.is_active.is_(True))
+            )
+        )
+        ids = [h.id for h in hotels]
+        amenities = self._amenities(ids)
+        cheapest: dict[uuid.UUID, int] = {}
+        for hotel_id, rooms in self._rooms_by_hotel(ids).items():
+            prices = [
+                p
+                for p in (self._nightly_display(self._room(r, None)) for r in rooms)
+                if p is not None
+            ]
+            if prices:
+                cheapest[hotel_id] = min(prices)
+        neighbours = similar_hotels(
+            hotel.id,
+            [
+                HotelProfile(
+                    id=h.id,
+                    amenities=tuple(amenities.get(h.id, [])),
+                    star_rating=h.star_rating,
+                    guest_rating=h.guest_rating,
+                    nightly_price=cheapest.get(h.id),
+                )
+                for h in hotels
+            ],
+            k=k,
+        )
+        by_id = {h.id: h for h in hotels}
+        currency = self._converter.display_currency
+        return [
+            SimilarHotelOut(
+                id=n.id,
+                name=by_id[n.id].name,
+                star_rating=by_id[n.id].star_rating,
+                guest_rating=by_id[n.id].guest_rating,
+                distance_km=_distance_km(by_id[n.id], city),
+                from_price=MoneyOut(amount_minor=cheapest[n.id], currency=currency)
+                if n.id in cheapest
+                else None,
+                similarity=n.similarity,
+                shared_amenities=list(n.shared_amenities),
+            )
+            for n in neighbours
+        ]

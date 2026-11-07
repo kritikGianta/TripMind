@@ -13,6 +13,7 @@ x-api-env: &api-env
   DEMO_TRAVELER_EMAIL: ${DEMO_TRAVELER_EMAIL:-demo@tripmind.dev}
   DEMO_ADMIN_EMAIL: ${DEMO_ADMIN_EMAIL:-admin@tripmind.dev}
   CONFIG_DIR: /config
+  MODELS_DIR: /models
   # Set to http://jaeger:4318 (with the obs profile) to send traces to Jaeger.
   OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
   # Optional hosted LLM keys; AI features fall back to rules without them.
@@ -68,6 +69,7 @@ services:
     volumes:
       - ./config:/config:ro
       - ./docs/help:/docs/help:ro
+      - ./models:/models:ro
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:

@@ -15,6 +15,7 @@ from typing import Any
 import pandas as pd
 
 from app.modules.catalog.models import DataOrigin
+from app.modules.ingestion.anomalies import flag_fare_anomalies
 from app.modules.ingestion.extract import EntityFrame, extract
 from app.modules.ingestion.mapping import DatasetMapping
 from app.modules.ingestion.profiler import profile_table
@@ -108,6 +109,7 @@ def prepare(
         prepared.flights = resolve_flights(
             frames["flights"], AirportIndex(refs, vocabulary), rules, vocabulary, log, origin
         )
+        flag_fare_anomalies(prepared.flights, log)  # warnings only; nothing is rejected
     if "hotels" in frames:
         prepared.hotels = resolve_hotels(frames["hotels"], cities, rules, vocabulary, log, origin)
         prepared.room_types = resolve_room_types(
