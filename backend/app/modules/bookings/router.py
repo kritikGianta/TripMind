@@ -68,9 +68,9 @@ def _service(
     summary="Price items for checkout without holding anything",
 )
 def quote(
-    body: QuoteRequest, _: Traveller, service: BookingService = Depends(_service)
+    body: QuoteRequest, user: Traveller, service: BookingService = Depends(_service)
 ) -> QuoteOut:
-    return service.quote(body.items)
+    return service.quote(user, body.items, body.promo_code)
 
 
 @router.post(

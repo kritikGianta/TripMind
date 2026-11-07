@@ -39,6 +39,7 @@ from app.modules.bookings.models import (
 from app.modules.catalog.models import Airport, Flight, Hotel, RoomType
 from app.modules.inventory.models import FlightInventory
 from app.modules.inventory.service import InventoryService
+from app.modules.loyalty.module import LoyaltyService, load_loyalty_rules
 from app.modules.notifications.service import NotificationService
 from app.modules.operations.models import Disruption, DisruptionKind
 from app.modules.recovery.models import RecoveryCase
@@ -97,6 +98,7 @@ class RecoveryService:
         self._notify = NotificationService(session)
         self._audit = AuditService(session)
         self._currency = self._converter.display_currency
+        self._loyalty_rules = load_loyalty_rules(config)
 
     # ------------------------------------------------------------------ operator side
 
@@ -623,6 +625,9 @@ class RecoveryService:
                 f"Cancelled {item.title}; full refund of {amount / 100:,.2f} {booking.currency}."
             )
             resolution = "refunded"
+            LoyaltyService(self._session, self._loyalty_rules).reverse(
+                booking.user_id, booking.id, amount, booking.reference, now
+            )
             self._session.flush()  # the count below must see this item's new status
             if not self._session.scalar(
                 select(func.count())

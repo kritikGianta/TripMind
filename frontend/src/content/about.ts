@@ -201,6 +201,9 @@ export const capabilities: Capability[] = [
   { name: "Connected-trip planner", detail: "Ranked flight + stay bundles, score breakdown, Journey Confidence Report, booked in one checkout", status: "live" },
   { name: "Disruption recovery", detail: "Cancellations, delays and room outages: options offered, traveller approves, only the affected item is replaced", status: "live" },
   { name: "Notifications", detail: "In-app alerts for confirmations, changes and refunds, with a simulated email copy", status: "live" },
+  { name: "Account extras", detail: "Saved travellers for one-click checkout, loyalty points that follow refunds, printable invoice", status: "live" },
+  { name: "Promo codes", detail: "Rules in config, priced on the server, shown in the breakdown, spread across items so refunds stay exact", status: "live" },
+  { name: "Admin console", detail: "Data imports, disruptions, analytics from the database, and the audit log", status: "live" },
   { name: "AI assistant", detail: "Natural-language search, grounded answers, group planning", status: "planned" },
   { name: "Monitoring dashboards", detail: "Prometheus metrics and alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger", status: "live" },
 ];
@@ -280,7 +283,7 @@ export const proof = {
   measured: [
     { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "7 Nov 2026" },
     { value: "910 / 0", label: "synthetic requests from 8 virtual users in 46 s / server errors; search p95 0.47 s on a laptop in Docker", measuredOn: "7 Nov 2026" },
-    { value: "100", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "105", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
     { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [

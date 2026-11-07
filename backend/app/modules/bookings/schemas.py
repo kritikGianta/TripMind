@@ -35,10 +35,14 @@ class HotelItemIn(BaseModel):
 ItemIn = Annotated[FlightItemIn | HotelItemIn, Field(discriminator="kind")]
 
 
+PromoCode = Annotated[str | None, StringConstraints(strip_whitespace=True, max_length=24)]
+
+
 class QuoteRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     items: Annotated[list[ItemIn], Field(min_length=1, max_length=4)]
+    promo_code: PromoCode = None
 
 
 class TravellerIn(BaseModel):
@@ -63,6 +67,7 @@ class CreateBookingRequest(BaseModel):
     travellers: Annotated[list[TravellerIn], Field(min_length=1, max_length=9)]
     contact: ContactIn
     trip_id: uuid.UUID | None = Field(default=None, description="Add to an existing trip")
+    promo_code: PromoCode = None
     expected_total_minor: int | None = Field(
         default=None, description="Total the traveller saw; a different server price is refused"
     )
@@ -107,6 +112,10 @@ class QuoteItemOut(BaseModel):
 
 class QuoteOut(BaseModel):
     items: list[QuoteItemOut]
+    subtotal: MoneyOut
+    discount: MoneyOut | None = None
+    promo_code: str | None = None
+    promo_description: str | None = None
     total: MoneyOut
     complete: bool
     fx_note: str | None
@@ -165,6 +174,8 @@ class BookingOut(BaseModel):
     confirmed_at: datetime | None
     cancelled_at: datetime | None
     total: MoneyOut
+    discount: MoneyOut | None = None
+    promo_code: str | None = None
     fx_note: str | None
     contact_email: str
     items: list[BookingItemOut]

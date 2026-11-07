@@ -1,6 +1,6 @@
 "use client";
 
-import { CloudLightning, DatabaseZap, LogOut, UserRound } from "lucide-react";
+import { BarChart3, CloudLightning, DatabaseZap, LogOut, ScrollText, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -78,6 +78,20 @@ export function UserMenu() {
           <DropdownMenuItem asChild>
             <Link href="/admin/operations">
               <CloudLightning /> Disruptions
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
+        {user.role === "admin" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/analytics">
+              <BarChart3 /> Analytics
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
+        {user.role === "admin" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/audit">
+              <ScrollText /> Audit log
             </Link>
           </DropdownMenuItem>
         ) : null}

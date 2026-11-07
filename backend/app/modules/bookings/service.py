@@ -21,7 +21,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -50,6 +50,12 @@ from app.modules.bookings.models import (
     Refund,
     Trip,
 )
+from app.modules.bookings.promotions import (
+    PromoInvalid,
+    Promotion,
+    discount_for,
+    load_promotions,
+)
 from app.modules.bookings.schemas import (
     BookingItemOut,
     BookingOut,
@@ -72,6 +78,7 @@ from app.modules.bookings.schemas import (
 )
 from app.modules.catalog.models import Airport, City, Flight, RoomType
 from app.modules.inventory.service import InventoryService, SoldOut
+from app.modules.loyalty.module import LoyaltyService, load_loyalty_rules
 from app.modules.notifications.service import NotificationService
 from app.modules.search.flights import FlightSearchService
 from app.modules.search.hotels import HotelSearchService, Stay
@@ -146,6 +153,7 @@ class BookingService:
         self._inventory = InventoryService(session)
         self._audit = AuditService(session)
         self._notifications = NotificationService(session)
+        self._loyalty = LoyaltyService(session, load_loyalty_rules(config))
 
     # ------------------------------------------------------------------ pricing
 
@@ -269,8 +277,48 @@ class BookingService:
             for i in items
         ]
 
-    def quote(self, items: list[ItemIn]) -> QuoteOut:
+    def _promo(
+        self, user: User, code: str | None, priced: list[PricedItem]
+    ) -> tuple[Promotion | None, int, list[int]]:
+        """Validate a promo code for these items; (promotion, discount, split per item)."""
+        if not code:
+            return None, 0, [0] * len(priced)
+        promo = load_promotions(self._settings.config_dir).get(code.strip().upper())
+        if promo is None:
+            raise PromoInvalid("That promo code does not exist.")
+        confirmed = self._session.scalar(
+            select(func.count())
+            .select_from(Booking)
+            .where(Booking.user_id == user.id, Booking.status == BookingStatus.CONFIRMED)
+        )
+        used = self._session.scalar(
+            select(func.count())
+            .select_from(Booking)
+            .where(
+                Booking.user_id == user.id,
+                Booking.promo_code == promo.code,
+                Booking.status.in_([BookingStatus.CONFIRMED, *OPEN]),
+            )
+        )
+        discount, split = discount_for(
+            promo,
+            items=[
+                (
+                    p.kind,
+                    p.display_minor,
+                    (p.check_out - p.check_in).days if p.check_in and p.check_out else 0,
+                )
+                for p in priced
+            ],
+            today=self._clock.now().date(),
+            has_confirmed_booking=bool(confirmed),
+            already_used=bool(used),
+        )
+        return promo, discount, split
+
+    def quote(self, user: User, items: list[ItemIn], promo_code: str | None = None) -> QuoteOut:
         priced = self._price(items)
+        promo, discount, _ = self._promo(user, promo_code, priced)
         converted = [p for p in priced if p.ledger.converted]
         return QuoteOut(
             items=[
@@ -287,8 +335,17 @@ class BookingService:
                 )
                 for p in priced
             ],
-            total=MoneyOut(
+            subtotal=MoneyOut(
                 amount_minor=sum(p.display_minor for p in priced),
+                currency=self._converter.display_currency,
+            ),
+            discount=MoneyOut(amount_minor=discount, currency=self._converter.display_currency)
+            if promo
+            else None,
+            promo_code=promo.code if promo else None,
+            promo_description=promo.description if promo else None,
+            total=MoneyOut(
+                amount_minor=sum(p.display_minor for p in priced) - discount,
                 currency=self._converter.display_currency,
             ),
             complete=all(p.ledger.complete for p in priced),
@@ -378,7 +435,8 @@ class BookingService:
             return self._replay(existing, request_hash)
         self._validate_party(request)
         priced = self._price(request.items)
-        total = sum(p.display_minor for p in priced)
+        promo, discount, split = self._promo(user, request.promo_code, priced)
+        total = sum(p.display_minor for p in priced) - discount
         if request.expected_total_minor is not None and request.expected_total_minor != total:
             BOOKING_HOLDS.labels(outcome="price_changed").inc()
             raise Conflict(
@@ -400,6 +458,8 @@ class BookingService:
             total_minor=total,
             currency=self._converter.display_currency,
             price_snapshot={"items": [p.ledger.model_dump(mode="json") for p in priced]},
+            promo_code=promo.code if promo else None,
+            discount_minor=discount,
             contact_email=str(request.contact.email).lower(),
             contact_phone=request.contact.phone,
         )
@@ -427,7 +487,10 @@ class BookingService:
                     snapshot={
                         "subtitle": p.subtitle,
                         "policy": p.policy,
-                        "display_minor": p.display_minor,
+                        # What the traveller pays for this item after any promo share, so
+                        # refunds give back exactly what was paid.
+                        "display_minor": p.display_minor - split[position],
+                        "discount_minor": split[position],
                         "details": p.details,
                     },
                 )
@@ -591,6 +654,11 @@ class BookingService:
                 "confirmed",
                 f"Paid with {result.brand} ending {result.last4}. Booking confirmed.",
             )
+            points = self._loyalty.earn(
+                user.id, booking.id, booking.total_minor, booking.reference, self._clock.now()
+            )
+            if points:
+                self._event(booking, "loyalty", f"Earned {points} loyalty points.")
             self._notifications.notify(
                 user_id=user.id,
                 kind="booking_confirmed",
@@ -733,6 +801,8 @@ class BookingService:
                 else " No refund due."
             ),
         )
+        if refunded:
+            self._loyalty.reverse(user.id, booking.id, refunded, booking.reference, now)
         self._notifications.notify(
             user_id=user.id,
             kind="booking_cancelled",
@@ -803,6 +873,10 @@ class BookingService:
             confirmed_at=booking.confirmed_at,
             cancelled_at=booking.cancelled_at,
             total=MoneyOut(amount_minor=booking.total_minor, currency=booking.currency),
+            discount=MoneyOut(amount_minor=booking.discount_minor, currency=booking.currency)
+            if booking.discount_minor
+            else None,
+            promo_code=booking.promo_code,
             fx_note=fx,
             contact_email=booking.contact_email,
             items=[self._item_out(i) for i in items],

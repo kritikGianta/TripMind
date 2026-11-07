@@ -74,6 +74,8 @@ const MESSAGES: Record<string, string> = {
   CASE_RESOLVED: "This has already been sorted.",
   ALREADY_DISRUPTED: "That flight is already cancelled.",
   FLIGHT_NOT_FOUND: "Flight not found.",
+  PROFILE_LIMIT: "You can save up to 10 travellers.",
+  PROFILE_NOT_FOUND: "That traveller was not found.",
 };
 
 export function errorMessage(error: unknown): string {

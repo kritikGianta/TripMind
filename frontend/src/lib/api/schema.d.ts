@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/api/v1/admin/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Business overview from the database */
+        get: operations["analytics_api_v1_admin_analytics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit log, newest first */
+        get: operations["audit_api_v1_admin_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/imports": {
         parameters: {
             query?: never;
@@ -431,6 +465,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/loyalty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My loyalty points and tier */
+        get: operations["my_loyalty_api_v1_me_loyalty_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/travellers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My saved travellers */
+        get: operations["list_profiles_api_v1_me_travellers_get"];
+        put?: never;
+        /** Save a traveller */
+        post: operations["add_profile_api_v1_me_travellers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/travellers/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a saved traveller */
+        delete: operations["delete_profile_api_v1_me_travellers__profile_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/meta/features": {
         parameters: {
             query?: never;
@@ -654,6 +740,68 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** AnalyticsOut */
+        AnalyticsOut: {
+            average_booking_value: components["schemas"]["MoneyOut"] | null;
+            /** Bookings By Status */
+            bookings_by_status: components["schemas"]["CountOut"][];
+            confirmed_value: components["schemas"]["MoneyOut"];
+            /** Connected Trips */
+            connected_trips: number;
+            /** Currency */
+            currency: string;
+            /** Hold Conversion Percent */
+            hold_conversion_percent: number | null;
+            /** Items By Kind */
+            items_by_kind: components["schemas"]["CountOut"][];
+            /** Last 30 Days */
+            last_30_days: components["schemas"]["DayOut"][];
+            net_value: components["schemas"]["MoneyOut"];
+            /** Note */
+            note: string;
+            /** Plans Generated */
+            plans_generated: number;
+            /** Promo Bookings */
+            promo_bookings: number;
+            /** Recovery By Status */
+            recovery_by_status: components["schemas"]["CountOut"][];
+            refunded_value: components["schemas"]["MoneyOut"];
+            /** Top Destinations */
+            top_destinations: components["schemas"]["CountOut"][];
+            /** Travellers */
+            travellers: number;
+        };
+        /** AuditOut */
+        AuditOut: {
+            /** Action */
+            action: string;
+            /** Actor Email */
+            actor_email: string | null;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            } | null;
+            /** Ip Address */
+            ip_address: string | null;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Outcome */
+            outcome: string;
+            /** Request Id */
+            request_id: string | null;
+        };
+        /** AuditPageOut */
+        AuditPageOut: {
+            /** Actions */
+            actions: string[];
+            /** Items */
+            items: components["schemas"]["AuditOut"][];
+            /** Total */
+            total: number;
+        };
         /** Body_profile_api_v1_admin_imports_profile_post */
         Body_profile_api_v1_admin_imports_profile_post: {
             /**
@@ -759,6 +907,7 @@ export interface components {
             confirmed_at: string | null;
             /** Contact Email */
             contact_email: string;
+            discount?: components["schemas"]["MoneyOut"] | null;
             /** Events */
             events: components["schemas"]["EventOut"][];
             /** Fx Note */
@@ -777,6 +926,8 @@ export interface components {
             items: components["schemas"]["BookingItemOut"][];
             /** Payments */
             payments: components["schemas"]["PaymentOut"][];
+            /** Promo Code */
+            promo_code?: string | null;
             /** Reference */
             reference: string;
             /** Refunds */
@@ -926,6 +1077,13 @@ export interface components {
             /** Phone */
             phone?: string | null;
         };
+        /** CountOut */
+        CountOut: {
+            /** Label */
+            label: string;
+            /** Value */
+            value: number;
+        };
         /** CreateBookingRequest */
         CreateBookingRequest: {
             contact: components["schemas"]["ContactIn"];
@@ -936,6 +1094,8 @@ export interface components {
             expected_total_minor?: number | null;
             /** Items */
             items: (components["schemas"]["FlightItemIn"] | components["schemas"]["HotelItemIn"])[];
+            /** Promo Code */
+            promo_code?: string | null;
             /** Travellers */
             travellers: components["schemas"]["TravellerIn"][];
             /**
@@ -974,6 +1134,17 @@ export interface components {
              */
             status: "empty" | "loaded";
             travel_window?: components["schemas"]["TravelWindowOut"] | null;
+        };
+        /** DayOut */
+        DayOut: {
+            /** Bookings */
+            bookings: number;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            value: components["schemas"]["MoneyOut"];
         };
         /** DemoLoginRequest */
         DemoLoginRequest: {
@@ -1650,6 +1821,33 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** LoyaltyEntryOut */
+        LoyaltyEntryOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Points */
+            points: number;
+            /** Reason */
+            reason: string;
+        };
+        /** LoyaltyOut */
+        LoyaltyOut: {
+            /** Balance */
+            balance: number;
+            /** History */
+            history: components["schemas"]["LoyaltyEntryOut"][];
+            /** Next Tier */
+            next_tier: string | null;
+            /** Points Per 100 */
+            points_per_100: number;
+            /** Points To Next Tier */
+            points_to_next_tier: number | null;
+            /** Tier */
+            tier: string;
+        };
         /** MappingListOut */
         MappingListOut: {
             /** Mappings */
@@ -1908,18 +2106,26 @@ export interface components {
         QuoteOut: {
             /** Complete */
             complete: boolean;
+            discount?: components["schemas"]["MoneyOut"] | null;
             /** Fx Note */
             fx_note: string | null;
             /** Hold Minutes */
             hold_minutes: number;
             /** Items */
             items: components["schemas"]["QuoteItemOut"][];
+            /** Promo Code */
+            promo_code?: string | null;
+            /** Promo Description */
+            promo_description?: string | null;
+            subtotal: components["schemas"]["MoneyOut"];
             total: components["schemas"]["MoneyOut"];
         };
         /** QuoteRequest */
         QuoteRequest: {
             /** Items */
             items: (components["schemas"]["FlightItemIn"] | components["schemas"]["HotelItemIn"])[];
+            /** Promo Code */
+            promo_code?: string | null;
         };
         /** ReadinessCheck */
         ReadinessCheck: {
@@ -2200,6 +2406,34 @@ export interface components {
             /** Last Name */
             last_name: string;
         };
+        /** TravellerProfileIn */
+        TravellerProfileIn: {
+            /** Date Of Birth */
+            date_of_birth?: string | null;
+            /** First Name */
+            first_name: string;
+            /** Last Name */
+            last_name: string;
+        };
+        /** TravellerProfileListOut */
+        TravellerProfileListOut: {
+            /** Items */
+            items: components["schemas"]["TravellerProfileOut"][];
+        };
+        /** TravellerProfileOut */
+        TravellerProfileOut: {
+            /** Date Of Birth */
+            date_of_birth?: string | null;
+            /** First Name */
+            first_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Last Name */
+            last_name: string;
+        };
         /** TripListOut */
         TripListOut: {
             /** Items */
@@ -2278,6 +2512,96 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    analytics_api_v1_admin_analytics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyticsOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    audit_api_v1_admin_audit_get: {
+        parameters: {
+            query?: {
+                action?: string | null;
+                outcome?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditPageOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_runs_api_v1_admin_imports_get: {
         parameters: {
             query?: {
@@ -3968,6 +4292,198 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    my_loyalty_api_v1_me_loyalty_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoyaltyOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_profiles_api_v1_me_travellers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TravellerProfileListOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    add_profile_api_v1_me_travellers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TravellerProfileIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TravellerProfileOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_profile_api_v1_me_travellers__profile_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

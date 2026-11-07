@@ -26,7 +26,10 @@ Every booking lands in **My Trips**. AI helps when it is switched on, and the pl
 | Disruption recovery: admin **Disruptions** console (cancel or delay a booked flight, take a room out of service), affected bookings found, unpaid holds released, travellers notified and offered rebooking or a refund; only the affected item is replaced | Live |
 | Notifications: in-app bell with simulated email copies | Live |
 | Monitoring (optional `obs` profile): Prometheus with alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger; synthetic load script | Live |
-| AI assistant and remaining platform features | Planned (see [plan v2](docs/plan-v2.md)) |
+| Account: saved travellers (prefill checkout), loyalty points (earned on payment, reversed on refund), printable invoice | Live |
+| Promo codes from `config/promotions.yaml` (WELCOME10, STAYLONGER, TRIPTOGETHER), priced on the server | Live |
+| Admin console: data imports, disruptions, analytics, audit log | Live |
+| AI features (natural-language search, assistant, RAG, group planning, small models) | Planned (plan v2, step 11) |
 
 ## Quick start (Docker)
 

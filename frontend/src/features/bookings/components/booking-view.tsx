@@ -309,6 +309,12 @@ export function BookingView() {
             <CardTitle>Payment summary</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-2 text-sm">
+            {booking.discount ? (
+              <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
+                <span>Promo {booking.promo_code}</span>
+                <span className="tabular-nums">−{formatMoney(booking.discount)}</span>
+              </div>
+            ) : null}
             <div className="flex justify-between font-semibold">
               <span>Total</span>
               <span className="tabular-nums">{formatMoney(booking.total)}</span>
@@ -331,6 +337,11 @@ export function BookingView() {
             <Button asChild variant="outline" className="mt-2">
               <Link href={`/trips/${booking.trip_id}`}>View trip</Link>
             </Button>
+            {booking.status === "confirmed" || booking.status === "cancelled" ? (
+              <Button asChild variant="outline">
+                <Link href={`/bookings/${booking.id}/invoice`}>Invoice and itinerary</Link>
+              </Button>
+            ) : null}
             {booking.can_cancel ? (
               <Button variant="ghost" className="text-destructive" onClick={() => setCancelItems(liveItems)}>
                 {open ? "Cancel and release" : "Cancel booking"}

@@ -1,0 +1,24 @@
+# Promo codes. Discounts are computed on the server at quote and again at checkout, appear as a
+# line in the price breakdown, and are spread across the booked items so refunds stay exact.
+# Amounts are in the display currency (config/rules.yaml pricing.display_currency).
+
+promotions:
+  - code: WELCOME10
+    description: 10% off your first booking (up to 2,000)
+    percent_off: 10
+    max_discount: 2000
+    first_booking_only: true
+    valid_until: 2026-12-31
+
+  - code: STAYLONGER
+    description: 1,000 off stays of three nights or more
+    amount_off: 1000
+    applies_to: hotel
+    min_nights: 3
+    valid_until: 2026-12-31
+
+  - code: TRIPTOGETHER
+    description: 5% off when a flight and a stay are booked together
+    percent_off: 5
+    requires_flight_and_hotel: true
+    valid_until: 2026-12-31

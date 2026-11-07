@@ -5,7 +5,7 @@ import { DatasetLabel } from "@/features/meta/dataset-label";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t">
+    <footer className="border-t print:hidden">
       <div className="mx-auto grid max-w-6xl gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex sm:items-center sm:justify-between">
         <div className="grid gap-1">
           <p>

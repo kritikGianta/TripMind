@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSavedTravellers } from "@/features/account/api";
 import { useSession } from "@/features/auth/hooks";
 import { PriceBreakdown } from "@/features/search/components/price-breakdown";
 import { formatMoney } from "@/features/search/format";
@@ -46,7 +47,10 @@ export function CheckoutView() {
   const router = useRouter();
   const { user } = useSession();
   const { items, adults, tripId } = useCheckoutItems();
-  const quote = useQuote(items);
+  const [promoInput, setPromoInput] = useState("");
+  const [promo, setPromo] = useState<string | null>(null);
+  const quote = useQuote(items, promo);
+  const saved = useSavedTravellers(Boolean(user));
   const hasFlight = items?.some((i) => i.kind === "flight") ?? false;
   const travellerCount = hasFlight ? adults : 1;
 
@@ -91,6 +95,7 @@ export function CheckoutView() {
         })),
         contact: { email: contactEmail, phone: phone || null },
         trip_id: tripId,
+        promo_code: promo,
         expected_total_minor: quote.data?.total.amount_minor ?? null,
       },
       { onSuccess: (booking) => router.push(`/bookings/${booking.id}`) },
@@ -153,6 +158,30 @@ export function CheckoutView() {
             <CardDescription>Names exactly as on the passport or ID used to travel.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
+            {saved.data?.items.length ? (
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Saved:</span>
+                {saved.data.items.map((s) => (
+                  <Button
+                    key={s.id}
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const slot = travellers.findIndex((t) => !t.first_name && !t.last_name);
+                      const index = slot === -1 ? 0 : slot;
+                      setTravellers((current) =>
+                        current.map((t, i) =>
+                          i === index ? { first_name: s.first_name, last_name: s.last_name, date_of_birth: s.date_of_birth ?? "" } : t,
+                        ),
+                      );
+                    }}
+                  >
+                    {s.first_name} {s.last_name}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
             {travellers.map((t, i) => (
               <fieldset key={i} className="grid gap-3 md:grid-cols-3">
                 <legend className="mb-1 text-sm font-medium">{hasFlight ? `Adult ${i + 1}` : "Guest"}</legend>
@@ -205,6 +234,12 @@ export function CheckoutView() {
                     <span className="tabular-nums">{formatMoney(item.price.display_total)}</span>
                   </div>
                 ))}
+                {quote.data.discount ? (
+                  <div className="flex justify-between gap-2 text-emerald-700 dark:text-emerald-400">
+                    <span>Promo {quote.data.promo_code}</span>
+                    <span className="tabular-nums">−{formatMoney(quote.data.discount)}</span>
+                  </div>
+                ) : null}
                 <div className="flex justify-between border-t pt-3 text-base font-semibold">
                   <span>Total</span>
                   <span className="tabular-nums">{formatMoney(quote.data.total)}</span>
@@ -216,6 +251,29 @@ export function CheckoutView() {
               </>
             ) : (
               <Skeleton className="h-16 w-full" />
+            )}
+            <div className="flex gap-2">
+              <Input
+                aria-label="Promo code"
+                placeholder="Promo code"
+                value={promoInput}
+                onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+              />
+              <Button type="button" variant="outline" onClick={() => setPromo(promoInput.trim() || null)}>
+                Apply
+              </Button>
+            </div>
+            {promo && quote.error ? (
+              <p className="text-xs text-destructive">
+                {errorMessage(quote.error)}{" "}
+                <button type="button" className="underline" onClick={() => { setPromo(null); setPromoInput(""); }}>
+                  Remove code
+                </button>
+              </p>
+            ) : quote.data?.promo_description ? (
+              <p className="text-xs text-muted-foreground">{quote.data.promo_description}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">Try WELCOME10, STAYLONGER or TRIPTOGETHER.</p>
             )}
             {formError || create.error ? (
               <Alert variant="destructive">

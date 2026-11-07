@@ -13,10 +13,10 @@ export type PaymentInput = Schemas["PaymentRequest"];
 export type Trip = Schemas["TripOut"];
 export type CancellationQuote = Schemas["CancellationQuoteOut"];
 
-export function useQuote(items: ItemIn[] | null) {
+export function useQuote(items: ItemIn[] | null, promoCode: string | null = null) {
   return useQuery({
-    queryKey: ["quote", items],
-    queryFn: () => apiFetch<Quote>("/bookings/quote", { method: "POST", body: { items } }),
+    queryKey: ["quote", items, promoCode],
+    queryFn: () => apiFetch<Quote>("/bookings/quote", { method: "POST", body: { items, promo_code: promoCode } }),
     enabled: items !== null && items.length > 0,
     staleTime: 60_000,
   });

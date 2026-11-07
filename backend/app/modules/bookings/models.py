@@ -96,6 +96,10 @@ class Booking(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     price_snapshot: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     contact_email: Mapped[str] = mapped_column(String(320), nullable=False)
     contact_phone: Mapped[str | None] = mapped_column(String(32))
+    promo_code: Mapped[str | None] = mapped_column(String(24))
+    discount_minor: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
 
 
 class BookingItem(UUIDPrimaryKeyMixin, TimestampMixin, Base):

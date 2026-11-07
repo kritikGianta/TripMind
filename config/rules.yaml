@@ -74,3 +74,11 @@ recovery:
   # Rebooking alternatives are searched on the original day and the following days.
   search_days: 2
   max_alternatives: 4
+
+loyalty:
+  # Points earned per 100 units of the display currency paid; refunds take points back.
+  points_per_100: 1
+  tiers:            # minimum lifetime points
+    Explorer: 0
+    Silver: 500
+    Gold: 2000
