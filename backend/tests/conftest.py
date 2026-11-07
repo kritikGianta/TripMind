@@ -49,6 +49,7 @@ def settings(database_url: str) -> Settings:
         jwt_secret=TEST_SECRET,  # type: ignore[arg-type]
         log_json=False,
         log_level="WARNING",
+        background_jobs=False,
     )
 
 
@@ -113,3 +114,21 @@ def demo_zip(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("data") / "synthetic.zip"
     generate(path, GeneratorOptions(seed=11, start=date(2026, 11, 13), days=3, hotels_scale=0.25))
     return path
+
+
+@pytest.fixture
+def catalog(db_session: Session, settings: Settings, clock: FrozenClock, demo_zip: Path) -> None:
+    """The synthetic dataset imported through the real pipeline."""
+    from app.core.request_context import RequestMeta
+    from app.modules.ingestion.service import Actor, ImportService
+    from app.modules.ingestion.sources import ZipSource
+
+    source = ZipSource(
+        demo_zip.read_bytes(), name="demo.zip", max_members=50, max_uncompressed_mb=200
+    )
+    ImportService(db_session, settings, clock).run_import(
+        source,
+        mapping_name="synthetic-v1",
+        dry_run=False,
+        actor=Actor(user_id=None, via="cli", meta=RequestMeta(None, None)),
+    )

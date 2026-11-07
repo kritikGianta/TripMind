@@ -143,3 +143,8 @@ class Converter:
             complete=complete,
             fx_note=self.rules.fx_note if converted else None,
         )
+
+
+def rules_section(config_dir: Path, name: str) -> object:
+    """One top-level section of config/rules.yaml (cached until the file changes)."""
+    return _section(config_dir, name)

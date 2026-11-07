@@ -72,6 +72,338 @@
         "title": "Body_run_import_api_v1_admin_imports_post",
         "type": "object"
       },
+      "BookingItemOut": {
+        "properties": {
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "policy": {
+            "title": "Policy",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "refundable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refundable"
+          },
+          "replaced_by_item_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By Item Id"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subtitle": {
+            "title": "Subtitle",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "title",
+          "subtitle",
+          "starts_at",
+          "ends_at",
+          "price",
+          "refundable",
+          "policy",
+          "details",
+          "replaced_by_item_id"
+        ],
+        "title": "BookingItemOut",
+        "type": "object"
+      },
+      "BookingOut": {
+        "properties": {
+          "can_cancel": {
+            "title": "Can Cancel",
+            "type": "boolean"
+          },
+          "can_pay": {
+            "title": "Can Pay",
+            "type": "boolean"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          },
+          "contact_email": {
+            "title": "Contact Email",
+            "type": "string"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "fx_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fx Note"
+          },
+          "hold_expires_at": {
+            "format": "date-time",
+            "title": "Hold Expires At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BookingItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentOut"
+            },
+            "title": "Payments",
+            "type": "array"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "refunds": {
+            "items": {
+              "$ref": "#/components/schemas/RefundOut"
+            },
+            "title": "Refunds",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "travellers": {
+            "items": {
+              "$ref": "#/components/schemas/TravellerOut"
+            },
+            "title": "Travellers",
+            "type": "array"
+          },
+          "trip_id": {
+            "format": "uuid",
+            "title": "Trip Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "trip_id",
+          "status",
+          "hold_expires_at",
+          "confirmed_at",
+          "cancelled_at",
+          "total",
+          "fx_note",
+          "contact_email",
+          "items",
+          "travellers",
+          "payments",
+          "refunds",
+          "events",
+          "can_pay",
+          "can_cancel"
+        ],
+        "title": "BookingOut",
+        "type": "object"
+      },
+      "BookingSummaryOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BookingItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyOut"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "status",
+          "total",
+          "items",
+          "created_at"
+        ],
+        "title": "BookingSummaryOut",
+        "type": "object"
+      },
+      "CancelRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "item_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cancel only these items; all items when omitted",
+            "title": "Item Ids"
+          }
+        },
+        "title": "CancelRequest",
+        "type": "object"
+      },
+      "CancellationLineOut": {
+        "properties": {
+          "item_id": {
+            "format": "uuid",
+            "title": "Item Id",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "refund": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_id",
+          "title",
+          "refund",
+          "reason"
+        ],
+        "title": "CancellationLineOut",
+        "type": "object"
+      },
+      "CancellationQuoteOut": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CancellationLineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "total_refund": {
+            "$ref": "#/components/schemas/MoneyOut"
+          }
+        },
+        "required": [
+          "lines",
+          "total_refund"
+        ],
+        "title": "CancellationQuoteOut",
+        "type": "object"
+      },
       "CityOut": {
         "properties": {
           "country": {
@@ -154,6 +486,105 @@
           "samples"
         ],
         "title": "ColumnProfileOut",
+        "type": "object"
+      },
+      "ContactIn": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "ContactIn",
+        "type": "object"
+      },
+      "CreateBookingRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/ContactIn"
+          },
+          "expected_total_minor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Total the traveller saw; a different server price is refused",
+            "title": "Expected Total Minor"
+          },
+          "items": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "flight": "#/components/schemas/FlightItemIn",
+                  "hotel": "#/components/schemas/HotelItemIn"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/FlightItemIn"
+                },
+                {
+                  "$ref": "#/components/schemas/HotelItemIn"
+                }
+              ]
+            },
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          },
+          "travellers": {
+            "items": {
+              "$ref": "#/components/schemas/TravellerIn"
+            },
+            "maxItems": 9,
+            "minItems": 1,
+            "title": "Travellers",
+            "type": "array"
+          },
+          "trip_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Add to an existing trip",
+            "title": "Trip Id"
+          }
+        },
+        "required": [
+          "items",
+          "travellers",
+          "contact"
+        ],
+        "title": "CreateBookingRequest",
         "type": "object"
       },
       "DatasetSummaryOut": {
@@ -351,6 +782,30 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "EventOut": {
+        "properties": {
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "message",
+          "occurred_at"
+        ],
+        "title": "EventOut",
+        "type": "object"
+      },
       "FacetOption": {
         "properties": {
           "count": {
@@ -490,6 +945,35 @@
           "price_range"
         ],
         "title": "FlightFacets",
+        "type": "object"
+      },
+      "FlightItemIn": {
+        "additionalProperties": false,
+        "properties": {
+          "adults": {
+            "default": 1,
+            "maximum": 9.0,
+            "minimum": 1.0,
+            "title": "Adults",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "flight",
+            "default": "flight",
+            "title": "Kind",
+            "type": "string"
+          },
+          "offer_id": {
+            "maxLength": 80,
+            "minLength": 36,
+            "title": "Offer Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "offer_id"
+        ],
+        "title": "FlightItemIn",
         "type": "object"
       },
       "FlightLegOut": {
@@ -1019,6 +1503,53 @@
           "price_range"
         ],
         "title": "HotelFacets",
+        "type": "object"
+      },
+      "HotelItemIn": {
+        "additionalProperties": false,
+        "properties": {
+          "check_in": {
+            "format": "date",
+            "title": "Check In",
+            "type": "string"
+          },
+          "check_out": {
+            "format": "date",
+            "title": "Check Out",
+            "type": "string"
+          },
+          "guests": {
+            "default": 2,
+            "maximum": 16.0,
+            "minimum": 1.0,
+            "title": "Guests",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "hotel",
+            "default": "hotel",
+            "title": "Kind",
+            "type": "string"
+          },
+          "room_type_id": {
+            "format": "uuid",
+            "title": "Room Type Id",
+            "type": "string"
+          },
+          "rooms": {
+            "default": 1,
+            "maximum": 8.0,
+            "minimum": 1.0,
+            "title": "Rooms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "room_type_id",
+          "check_in",
+          "check_out"
+        ],
+        "title": "HotelItemIn",
         "type": "object"
       },
       "HotelResultOut": {
@@ -1793,6 +2324,94 @@
         "title": "MoneyOut",
         "type": "object"
       },
+      "PaymentOut": {
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "card_brand": {
+            "title": "Card Brand",
+            "type": "string"
+          },
+          "card_last4": {
+            "title": "Card Last4",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "amount",
+          "card_brand",
+          "card_last4",
+          "failure_code",
+          "created_at"
+        ],
+        "title": "PaymentOut",
+        "type": "object"
+      },
+      "PaymentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "card_number": {
+            "maxLength": 23,
+            "minLength": 12,
+            "title": "Card Number",
+            "type": "string"
+          },
+          "cardholder_name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Cardholder Name",
+            "type": "string"
+          },
+          "cvc": {
+            "pattern": "^\\d{3,4}$",
+            "title": "Cvc",
+            "type": "string"
+          },
+          "expiry_month": {
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Expiry Month",
+            "type": "integer"
+          },
+          "expiry_year": {
+            "maximum": 2100.0,
+            "minimum": 2000.0,
+            "title": "Expiry Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "card_number",
+          "expiry_month",
+          "expiry_year",
+          "cvc",
+          "cardholder_name"
+        ],
+        "title": "PaymentRequest",
+        "type": "object"
+      },
       "PriceLedger": {
         "properties": {
           "complete": {
@@ -1894,6 +2513,147 @@
         "title": "ProfileOut",
         "type": "object"
       },
+      "QuoteItemOut": {
+        "properties": {
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "flight",
+              "hotel"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "policy": {
+            "title": "Policy",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceLedger"
+          },
+          "refundable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refundable"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "subtitle": {
+            "title": "Subtitle",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "subtitle",
+          "starts_at",
+          "ends_at",
+          "price",
+          "refundable",
+          "policy",
+          "details"
+        ],
+        "title": "QuoteItemOut",
+        "type": "object"
+      },
+      "QuoteOut": {
+        "properties": {
+          "complete": {
+            "title": "Complete",
+            "type": "boolean"
+          },
+          "fx_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fx Note"
+          },
+          "hold_minutes": {
+            "title": "Hold Minutes",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/QuoteItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyOut"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "complete",
+          "fx_note",
+          "hold_minutes"
+        ],
+        "title": "QuoteOut",
+        "type": "object"
+      },
+      "QuoteRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "flight": "#/components/schemas/FlightItemIn",
+                  "hotel": "#/components/schemas/HotelItemIn"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/FlightItemIn"
+                },
+                {
+                  "$ref": "#/components/schemas/HotelItemIn"
+                }
+              ]
+            },
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "QuoteRequest",
+        "type": "object"
+      },
       "ReadinessCheck": {
         "properties": {
           "detail": {
@@ -1946,6 +2706,35 @@
           "checks"
         ],
         "title": "ReadinessOut",
+        "type": "object"
+      },
+      "RefundOut": {
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "booking_item_id": {
+            "format": "uuid",
+            "title": "Booking Item Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "booking_item_id",
+          "amount",
+          "reason",
+          "created_at"
+        ],
+        "title": "RefundOut",
         "type": "object"
       },
       "RegisterRequest": {
@@ -2237,6 +3026,188 @@
           "last_departure"
         ],
         "title": "TravelWindowOut",
+        "type": "object"
+      },
+      "TravellerIn": {
+        "additionalProperties": false,
+        "properties": {
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "first_name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Last Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name"
+        ],
+        "title": "TravellerIn",
+        "type": "object"
+      },
+      "TravellerOut": {
+        "properties": {
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name",
+          "date_of_birth"
+        ],
+        "title": "TravellerOut",
+        "type": "object"
+      },
+      "TripListOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TripOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "TripListOut",
+        "type": "object"
+      },
+      "TripOut": {
+        "properties": {
+          "bookings": {
+            "items": {
+              "$ref": "#/components/schemas/BookingSummaryOut"
+            },
+            "title": "Bookings",
+            "type": "array"
+          },
+          "destination_city_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destination City Id"
+          },
+          "destination_city_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destination City Name"
+          },
+          "ends_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends On"
+          },
+          "has_flight": {
+            "title": "Has Flight",
+            "type": "boolean"
+          },
+          "has_stay": {
+            "title": "Has Stay",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "starts_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts On"
+          },
+          "state": {
+            "enum": [
+              "upcoming",
+              "in_progress",
+              "past",
+              "cancelled",
+              "pending"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "starts_on",
+          "ends_on",
+          "destination_city_id",
+          "destination_city_name",
+          "state",
+          "has_flight",
+          "has_stay",
+          "bookings"
+        ],
+        "title": "TripOut",
         "type": "object"
       },
       "UserOut": {
@@ -3249,6 +4220,628 @@
         ]
       }
     },
+    "/api/v1/bookings": {
+      "post": {
+        "operationId": "create_booking_api_v1_bookings_post",
+        "parameters": [
+          {
+            "description": "Unique per checkout attempt; retries with the same key are safe",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Unique per checkout attempt; retries with the same key are safe",
+              "maxLength": 80,
+              "minLength": 8,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Hold seats and rooms and create a booking awaiting payment",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/quote": {
+      "post": {
+        "operationId": "quote_api_v1_bookings_quote_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Price items for checkout without holding anything",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{booking_id}": {
+      "get": {
+        "operationId": "get_booking_api_v1_bookings__booking_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "booking_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Booking Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "One booking with its items, travellers, payments and timeline",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{booking_id}/cancel": {
+      "post": {
+        "operationId": "cancel_api_v1_bookings__booking_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "booking_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Booking Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Cancel a booking or some of its items, refunding under the policy",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{booking_id}/cancellation": {
+      "get": {
+        "operationId": "cancellation_quote_api_v1_bookings__booking_id__cancellation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "booking_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Booking Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "item_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationQuoteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "What cancelling would refund, before committing",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{booking_id}/payments": {
+      "post": {
+        "operationId": "pay_api_v1_bookings__booking_id__payments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "booking_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Booking Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique per checkout attempt; retries with the same key are safe",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Unique per checkout attempt; retries with the same key are safe",
+              "maxLength": 80,
+              "minLength": 8,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Pay for a held booking (simulated card processor)",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
     "/api/v1/datasets/current": {
       "get": {
         "operationId": "current_dataset_api_v1_datasets_current_get",
@@ -4002,6 +5595,180 @@
         "summary": "Readiness: database reachable and schema migrated",
         "tags": [
           "meta"
+        ]
+      }
+    },
+    "/api/v1/trips": {
+      "get": {
+        "operationId": "trips_api_v1_trips_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "My Trips",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/trips/{trip_id}": {
+      "get": {
+        "operationId": "trip_api_v1_trips__trip_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "trip_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Trip Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "One trip with all its bookings",
+        "tags": [
+          "bookings"
         ]
       }
     }

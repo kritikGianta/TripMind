@@ -11,11 +11,12 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from itertools import pairwise
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.errors import ValidationFailed
+from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import Airport, City, Flight
 from app.modules.catalog.repository import CatalogRepository
 from app.modules.search.locations import LocationService
@@ -118,6 +119,35 @@ class FlightSearchService:
             travel_window=travel,
             notices=notices,
         )
+
+    def price_offer(self, flight_ids: list[uuid.UUID], adults: int) -> FlightOfferOut:
+        """Re-price an offer from the catalog (used by checkout; never trusts client prices).
+
+        Checks that every leg still exists, is active, departs in the future, joins the previous
+        leg at the same airport with a legal connection time, and has a fare.
+        """
+        if not 1 <= len(flight_ids) <= 2:
+            raise ValidationFailed("An offer has one or two flights.", code="OFFER_INVALID")
+        found = {f.id: f for f in self._flights(Flight.id.in_(flight_ids))}
+        if len(found) != len(set(flight_ids)):
+            raise NotFound("This flight is no longer available.", code="OFFER_UNAVAILABLE")
+        flights = [found[i] for i in flight_ids]
+        min_gap = timedelta(minutes=self._rules.min_connection_minutes)
+        max_gap = timedelta(minutes=self._rules.max_connection_minutes)
+        for first, second in pairwise(flights):
+            gap = _utc(second.departure_at) - _utc(first.arrival_at)
+            if first.destination_airport_id != second.origin_airport_id or not (
+                min_gap <= gap <= max_gap
+            ):
+                raise ValidationFailed("These flights do not connect.", code="OFFER_INVALID")
+        if flights[0].departure_local.date() < self._today:
+            raise ValidationFailed("This flight has already departed.", code="DATE_IN_PAST")
+        if any(f.fare_minor is None for f in flights):
+            raise ValidationFailed(
+                "This flight has no fare and cannot be booked.", code="OFFER_NOT_BOOKABLE"
+            )
+        self._load_airports()
+        return self._offer(flights, adults)
 
     # ------------------------------------------------------------------ building offers
 

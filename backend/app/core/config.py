@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     demo_traveler_email: str = "demo@tripmind.dev"
     demo_admin_email: str = "admin@tripmind.dev"
 
+    # In-process background jobs (hold expiry). Tests switch them off.
+    background_jobs: bool = True
+
     # CORS is only needed for cross-origin callers; the web app uses a same-origin proxy.
     cors_origins: list[str] = Field(default_factory=list)
 

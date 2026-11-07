@@ -4,37 +4,16 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from pathlib import Path
 from typing import Any
 
-import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 
-from app.core.clock import FrozenClock
-from app.core.config import Settings
 from app.core.deps import get_feature_flags
 from app.core.features import FeatureFlags
-from app.core.request_context import RequestMeta
-from app.modules.ingestion.service import Actor, ImportService
-from app.modules.ingestion.sources import ZipSource
 from app.modules.search.pricing import Converter, LedgerLine, MoneyOut, PricingRules
 
 API = "/api/v1"
 DAY = "2026-11-13"
-
-
-@pytest.fixture
-def catalog(db_session: Session, settings: Settings, clock: FrozenClock, demo_zip: Path) -> None:
-    source = ZipSource(
-        demo_zip.read_bytes(), name="demo.zip", max_members=50, max_uncompressed_mb=200
-    )
-    ImportService(db_session, settings, clock).run_import(
-        source,
-        mapping_name="synthetic-v1",
-        dry_run=False,
-        actor=Actor(user_id=None, via="cli", meta=RequestMeta(None, None)),
-    )
 
 
 def city_id(client: TestClient, name: str) -> str:

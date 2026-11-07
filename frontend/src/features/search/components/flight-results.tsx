@@ -2,7 +2,7 @@
 
 import { AlertCircle, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -114,6 +114,7 @@ function OfferList({
 
 export function FlightResultsView() {
   const { params, update } = useUrlState();
+  const router = useRouter();
   const from = params.get("from");
   const to = params.get("to");
   const depart = params.get("depart");
@@ -274,9 +275,17 @@ export function FlightResultsView() {
           </div>
           <Button
             disabled={!tripTotal}
-            onClick={() => toast.info("Checkout is the next build step. Your selection is kept on this page.")}
+            onClick={() =>
+              router.push(
+                `/checkout?${toQuery({
+                  flight: [picked.outbound!.id, ...(picked.inbound ? [picked.inbound.id] : [])],
+                  adults,
+                  trip: params.get("trip"),
+                })}`,
+              )
+            }
           >
-            Continue
+            Continue to checkout
           </Button>
         </div>
       ) : null}

@@ -358,6 +358,28 @@ class HotelSearchService:
 
         return score
 
+    def price_room(self, room_type_id: uuid.UUID, stay: Stay) -> tuple[Hotel, City, RoomOfferOut]:
+        """Re-price one room type for a stay (used by checkout; never trusts client prices)."""
+        self.validate(stay)
+        room = self._session.get(RoomType, room_type_id)
+        hotel = self._session.get(Hotel, room.hotel_id) if room else None
+        city = self._session.get(City, hotel.city_id) if hotel else None
+        if (
+            room is None
+            or hotel is None
+            or city is None
+            or not (room.is_active and hotel.is_active)
+        ):
+            raise NotFound("This room is no longer available.", code="OFFER_UNAVAILABLE")
+        offer = self._room(room, stay)
+        if not offer.fits_party:
+            raise ValidationFailed("This room does not fit your party.", code="ROOM_TOO_SMALL")
+        if offer.nightly_rate is None:
+            raise ValidationFailed(
+                "This room has no rate and cannot be booked.", code="OFFER_NOT_BOOKABLE"
+            )
+        return hotel, city, offer
+
     # ------------------------------------------------------------------ details
 
     def detail(self, hotel_id: uuid.UUID, stay: Stay | None) -> HotelDetailOut:

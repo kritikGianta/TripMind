@@ -187,7 +187,7 @@ export function HotelResultsView() {
     });
   }, [city, checkIn, checkOut, guests, rooms, sort, params]);
 
-  const stayQuery = toQuery({ checkIn, checkOut, guests, rooms });
+  const stayQuery = toQuery({ checkIn, checkOut, guests, rooms, trip: params.get("trip") });
   const { data, error, isPending, isFetching } = useHotelSearch(query);
 
   const panel = (

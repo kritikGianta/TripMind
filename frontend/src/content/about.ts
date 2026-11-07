@@ -161,7 +161,7 @@ export const differentiators: Array<{ typical: string; tripmind: string; status:
   { typical: "Filters and shortlists lost on navigation", tripmind: "A persistent trip record of intent, picks and rejections", status: "planned" },
   { typical: "Confirmation is the end", tripmind: "Recovery: rebuilds the trip when a flight is disrupted", status: "planned" },
   { typical: "Chatbot that can invent facts", tripmind: "AI grounded in data; it suggests, the traveller decides", status: "planned" },
-  { typical: "Bundle-only or AI-only flows", tripmind: "Every product bookable on its own, with AI switched off", status: "planned" },
+  { typical: "Bundle-only or AI-only flows", tripmind: "Every product bookable on its own, with AI switched off", status: "live" },
 ];
 
 // ── 8 · Implementation and workflow ───────────────────────────────────────────────────────────
@@ -196,7 +196,8 @@ export const capabilities: Capability[] = [
   { name: "Flight and hotel search", detail: "Direct and one-stop flights, return trips, stays by party size, filters with live counts", status: "live" },
   { name: "Price breakdown", detail: "Every price itemised; taxes the data lacks are listed as not included", status: "live" },
   { name: "Admin data console", detail: "Upload a dataset, dry-run it, read the report and the quarantined rows", status: "live" },
-  { name: "Booking engine", detail: "Holds, idempotency, payment simulator, travellers, My Trips", status: "planned" },
+  { name: "Booking engine", detail: "Holds, idempotency, payment simulator, travellers, refunds, My Trips", status: "live" },
+  { name: "Add-on booking", detail: "Add a stay to a flight trip (or the reverse) with dates prefilled", status: "live" },
   { name: "Connected-trip planner", detail: "Bundles, ranking, Journey Confidence Report", status: "planned" },
   { name: "Disruption recovery", detail: "Item-level rebooking with traveller approval", status: "planned" },
   { name: "AI assistant", detail: "Natural-language search, grounded answers, group planning", status: "planned" },
@@ -254,9 +255,11 @@ export const edgeCases: Capability[] = [
   { name: "Stolen session token reused", detail: "Reuse is detected and every session from that sign-in is ended", status: "live" },
   { name: "Session expires mid-use", detail: "Renewed silently once; otherwise the user is asked to sign in again", status: "live" },
   { name: "Malicious redirect link", detail: "Only TripMind pages are accepted as post-sign-in destinations", status: "live" },
-  { name: "Two people book the last seat", detail: "Atomic stock update: exactly one succeeds", status: "planned" },
-  { name: "Double-click or retry on pay", detail: "Idempotency keys return the first result", status: "planned" },
-  { name: "Payment fails or the hold expires", detail: "Retry within the hold, or stock is released", status: "planned" },
+  { name: "Two people book the last seat", detail: "Atomic stock update: exactly one succeeds", status: "live" },
+  { name: "Double-click or retry on pay", detail: "Idempotency keys return the first result", status: "live" },
+  { name: "Payment fails or the hold expires", detail: "Retry within the hold, or stock is released", status: "live" },
+  { name: "Price changes during checkout", detail: "The server re-prices; a different total is shown before anything is held", status: "live" },
+  { name: "Cancel only part of a booking", detail: "Item-level cancellation: drop the flight, keep the stay, refund per policy", status: "live" },
   { name: "Flight confirmed but hotel fails", detail: "Shown as partial with a recovery path, never as fully confirmed", status: "planned" },
   { name: "AI provider down or rate-limited", detail: "Next provider, then rule-based fallback", status: "planned" },
   { name: "Bad rows in the dataset", detail: "Quarantined with a reason and counted in the import report", status: "live" },
@@ -272,7 +275,8 @@ export const edgeCases: Capability[] = [
 
 export const proof = {
   measured: [
-    { value: "78", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "7 Nov 2026" },
+    { value: "89", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
     { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [

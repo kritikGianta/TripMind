@@ -3,7 +3,6 @@
 import { AlertCircle, ArrowLeft, BedDouble, Clock, MapPin, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +42,7 @@ export function HotelDetailView({ id }: { id: string }) {
   const checkOut = params.get("checkOut");
   const guests = params.get("guests") ?? "2";
   const rooms = params.get("rooms") ?? "1";
+  const trip = params.get("trip");
   const query = toQuery({ check_in: checkIn, check_out: checkOut, guests, rooms });
   const { data, error, isPending } = useHotel(id, query);
 
@@ -66,7 +66,7 @@ export function HotelDetailView({ id }: { id: string }) {
     );
   }
 
-  const backQuery = toQuery({ city: data.city.id, cityName: data.city.name, checkIn, checkOut, guests, rooms });
+  const backQuery = toQuery({ city: data.city.id, cityName: data.city.name, checkIn, checkOut, guests, rooms, trip });
 
   return (
     <div className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-8">
@@ -148,12 +148,17 @@ export function HotelDetailView({ id }: { id: string }) {
             </div>
             <div className="flex items-center justify-between gap-4 md:justify-end">
               {room.price ? <PriceBreakdown ledger={room.price} caption="for your stay" /> : null}
-              <Button
-                disabled={!room.fits_party || !room.nightly_rate || !data.stay}
-                onClick={() => toast.info("Checkout is the next build step.")}
-              >
-                Reserve
-              </Button>
+              {room.fits_party && room.nightly_rate && data.stay ? (
+                <Button asChild>
+                  <Link
+                    href={`/checkout?${toQuery({ room: room.room_type_id, checkIn, checkOut, rooms, guests, trip })}`}
+                  >
+                    Reserve
+                  </Link>
+                </Button>
+              ) : (
+                <Button disabled>{room.fits_party ? "Not bookable" : "Too small"}</Button>
+              )}
             </div>
           </Card>
         ))}

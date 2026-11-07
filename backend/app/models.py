@@ -7,20 +7,40 @@ import it so that metadata is complete; application code imports models from the
 from app.db.base import Base
 from app.modules.audit.models import AuditLog
 from app.modules.auth.models import RefreshToken, User
+from app.modules.bookings.models import (
+    Booking,
+    BookingEvent,
+    BookingItem,
+    BookingTraveller,
+    Payment,
+    Refund,
+    Trip,
+)
 from app.modules.catalog.models import Airport, City, Flight, Hotel, HotelAmenity, RoomType
 from app.modules.ingestion.models import ImportReject, ImportRun
+from app.modules.inventory.models import FlightInventory, InventoryClaim, RoomNightInventory
 
 __all__ = [
     "Airport",
     "AuditLog",
     "Base",
+    "Booking",
+    "BookingEvent",
+    "BookingItem",
+    "BookingTraveller",
     "City",
     "Flight",
+    "FlightInventory",
     "Hotel",
     "HotelAmenity",
     "ImportReject",
     "ImportRun",
+    "InventoryClaim",
+    "Payment",
     "RefreshToken",
+    "Refund",
+    "RoomNightInventory",
     "RoomType",
+    "Trip",
     "User",
 ]

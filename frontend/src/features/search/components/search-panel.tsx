@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeftRight, BedDouble, Plane, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,7 @@ function Field({ label, htmlFor, children }: { label: string; htmlFor: string; c
 
 function FlightForm({ initial }: { initial?: Partial<FlightFormValues> }) {
   const router = useRouter();
+  const trip = useSearchParams().get("trip"); // set when adding a flight to an existing trip
   const { start, window } = useDefaultDate();
   const [from, setFrom] = useState<PickedLocation | null>(initial?.from ?? null);
   const [to, setTo] = useState<PickedLocation | null>(initial?.to ?? null);
@@ -81,6 +82,7 @@ function FlightForm({ initial }: { initial?: Partial<FlightFormValues> }) {
         return: tripType === "return" ? returnValue : undefined,
         adults,
         cabin,
+        trip,
       })}`,
     );
   }
@@ -181,6 +183,7 @@ function FlightForm({ initial }: { initial?: Partial<FlightFormValues> }) {
 
 function StayForm({ initial }: { initial?: Partial<StayFormValues> }) {
   const router = useRouter();
+  const trip = useSearchParams().get("trip"); // set when adding a stay to an existing trip
   const { start } = useDefaultDate();
   const [city, setCity] = useState<PickedLocation | null>(initial?.city ?? null);
   const [checkIn, setCheckIn] = useState(initial?.checkIn ?? "");
@@ -199,7 +202,7 @@ function StayForm({ initial }: { initial?: Partial<StayFormValues> }) {
     if (rooms > guests) return setError("Each room needs at least one guest.");
     setError(null);
     router.push(
-      `/stays?${toQuery({ city: city.value, cityName: city.label, checkIn: inValue, checkOut: outValue, guests, rooms })}`,
+      `/stays?${toQuery({ city: city.value, cityName: city.label, checkIn: inValue, checkOut: outValue, guests, rooms, trip })}`,
     );
   }
 

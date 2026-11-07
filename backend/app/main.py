@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -18,6 +19,8 @@ from app.core.features import load_feature_flags
 from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware
 from app.modules.auth.router import router as auth_router
+from app.modules.bookings.jobs import run_hold_sweeper
+from app.modules.bookings.router import router as bookings_router
 from app.modules.ingestion.router import admin_router as imports_admin_router
 from app.modules.ingestion.router import public_router as datasets_router
 from app.modules.meta.router import router as meta_router
@@ -39,7 +42,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             version=__version__,
             features=flags.as_dict(),
         )
+        jobs = []
+        if settings.background_jobs and flags.enabled("bookings"):
+            jobs.append(asyncio.create_task(run_hold_sweeper(settings)))
         yield
+        for job in jobs:
+            job.cancel()
         log.info("api_stopped")
 
     app = FastAPI(
@@ -66,6 +74,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_router, prefix=settings.api_prefix)
     app.include_router(datasets_router, prefix=settings.api_prefix)
     app.include_router(search_router, prefix=settings.api_prefix)
+    app.include_router(bookings_router, prefix=settings.api_prefix)
     app.include_router(imports_admin_router, prefix=settings.api_prefix)
 
     # Served on the API's own port only; the web proxy forwards /api/* and never /metrics.

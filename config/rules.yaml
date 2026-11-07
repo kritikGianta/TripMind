@@ -53,3 +53,15 @@ search:
   max_connection_minutes: 360
   max_results: 200
   max_hotel_nights: 30
+
+bookings:
+  # How long seats and rooms are held while the traveller pays.
+  hold_minutes: 15
+  max_travellers: 9
+  # The supplied data has no fare rules, so cancellation follows this TripMind demo policy.
+  # Flights: full refund within this many hours of booking, otherwise this share of the fare.
+  flight_free_cancellation_hours: 24
+  flight_refund_percent_after_window: 0
+  # Hotels: refundable rooms are refunded in full until this many hours before check-in
+  # (14:00 local on the check-in day); non-refundable rooms are not refunded.
+  hotel_free_cancellation_hours_before_check_in: 24

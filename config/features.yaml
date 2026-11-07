@@ -13,3 +13,5 @@ features:
   flight_search: true
   # Hotel search and hotel details.
   hotel_search: true
+  # Checkout, payments (simulated), cancellations and My Trips.
+  bookings: true

@@ -53,6 +53,21 @@ const MESSAGES: Record<string, string> = {
   FORBIDDEN: "You don't have access to this page.",
   IMPORT_IN_PROGRESS: "Another import is running. Try again when it finishes.",
   PAYLOAD_TOO_LARGE: "The file is too large.",
+  SOLD_OUT: "Sorry, that just sold out for your party. Please choose another option.",
+  PRICE_CHANGED: "The price changed while you were checking out.",
+  OFFER_UNAVAILABLE: "This option is no longer available.",
+  OFFER_NOT_BOOKABLE: "This option can't be booked because the data has no price for it.",
+  ROOM_TOO_SMALL: "This room doesn't fit your party.",
+  TRAVELLERS_MISMATCH: "Enter details for every traveller.",
+  CARD_DECLINED: "Your card was declined. Try another card.",
+  INSUFFICIENT_FUNDS: "The card has insufficient funds. Try another card.",
+  CARD_INVALID: "That card number isn't valid.",
+  CARD_EXPIRED: "That card has expired.",
+  HOLD_EXPIRED: "Your hold expired. Please search again.",
+  BOOKING_NOT_PAYABLE: "This booking can no longer be paid.",
+  NOTHING_TO_CANCEL: "There's nothing left to cancel.",
+  BOOKING_NOT_FOUND: "Booking not found.",
+  TRIP_NOT_FOUND: "Trip not found.",
 };
 
 export function errorMessage(error: unknown): string {

@@ -18,7 +18,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.replace(`/sign-in?next=${encodeURIComponent(pathname)}`);
+      // Keep the query string: a checkout selection lives in the URL and must survive sign-in.
+      router.replace(`/sign-in?next=${encodeURIComponent(pathname + window.location.search)}`);
     }
   }, [status, router, pathname]);
 

@@ -12,6 +12,7 @@ export const siteConfig = {
     { href: "/", label: "Home" },
     { href: "/flights", label: "Flights" },
     { href: "/stays", label: "Stays" },
+    { href: "/trips", label: "My Trips" },
     { href: "/about", label: "About" },
   ],
 } as const;
