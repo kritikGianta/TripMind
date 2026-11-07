@@ -156,9 +156,9 @@ export const bookingModes: Capability[] = [
 // ── 7 · How TripMind differs ──────────────────────────────────────────────────────────────────
 
 export const differentiators: Array<{ typical: string; tripmind: string; status: Status }> = [
-  { typical: "Flights and hotels sorted separately", tripmind: "Ranks complete, feasible flight + stay bundles", status: "planned" },
+  { typical: "Flights and hotels sorted separately", tripmind: "Ranks complete, feasible flight + stay bundles", status: "live" },
   { typical: "A headline price", tripmind: "An itemised price ledger that marks unknown fees", status: "live" },
-  { typical: "Filters and shortlists lost on navigation", tripmind: "A persistent trip record of intent, picks and rejections", status: "planned" },
+  { typical: "Filters and shortlists lost on navigation", tripmind: "A persistent trip record of intent, picks and rejections", status: "live" },
   { typical: "Confirmation is the end", tripmind: "Recovery: rebuilds the trip when a flight is disrupted", status: "planned" },
   { typical: "Chatbot that can invent facts", tripmind: "AI grounded in data; it suggests, the traveller decides", status: "planned" },
   { typical: "Bundle-only or AI-only flows", tripmind: "Every product bookable on its own, with AI switched off", status: "live" },
@@ -198,7 +198,7 @@ export const capabilities: Capability[] = [
   { name: "Admin data console", detail: "Upload a dataset, dry-run it, read the report and the quarantined rows", status: "live" },
   { name: "Booking engine", detail: "Holds, idempotency, payment simulator, travellers, refunds, My Trips", status: "live" },
   { name: "Add-on booking", detail: "Add a stay to a flight trip (or the reverse) with dates prefilled", status: "live" },
-  { name: "Connected-trip planner", detail: "Bundles, ranking, Journey Confidence Report", status: "planned" },
+  { name: "Connected-trip planner", detail: "Ranked flight + stay bundles, score breakdown, Journey Confidence Report, booked in one checkout", status: "live" },
   { name: "Disruption recovery", detail: "Item-level rebooking with traveller approval", status: "planned" },
   { name: "AI assistant", detail: "Natural-language search, grounded answers, group planning", status: "planned" },
   { name: "Monitoring dashboards", detail: "Prometheus + Grafana + tracing", status: "planned" },
@@ -276,7 +276,7 @@ export const edgeCases: Capability[] = [
 export const proof = {
   measured: [
     { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "7 Nov 2026" },
-    { value: "89", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "94", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
     { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [

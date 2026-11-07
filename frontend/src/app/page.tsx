@@ -28,8 +28,8 @@ const modes = [
   {
     icon: Route,
     title: "Plan the whole trip",
-    description: "Describe your trip and compare complete flight-and-hotel options side by side.",
-    href: null,
+    description: "Give dates and a destination; compare complete flight-and-stay trips, ranked with reasons.",
+    href: "/plan",
   },
 ] as const;
 

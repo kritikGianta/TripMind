@@ -15,3 +15,5 @@ features:
   hotel_search: true
   # Checkout, payments (simulated), cancellations and My Trips.
   bookings: true
+  # Connected-trip planner: ranked flight + stay bundles with the Journey Confidence Report.
+  trip_planner: true

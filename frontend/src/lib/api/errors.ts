@@ -68,6 +68,8 @@ const MESSAGES: Record<string, string> = {
   NOTHING_TO_CANCEL: "There's nothing left to cancel.",
   BOOKING_NOT_FOUND: "Booking not found.",
   TRIP_NOT_FOUND: "Trip not found.",
+  PLAN_NOT_FOUND: "Plan not found.",
+  OPTION_NOT_FOUND: "That option is no longer in this plan.",
 };
 
 export function errorMessage(error: unknown): string {

@@ -22,7 +22,8 @@ Every booking lands in **My Trips**. AI helps when it is switched on, and the pl
 | Search: airports and cities with aliases, flights (direct and one-stop, one-way or return), stays by party size, hotel details, filters with counts, sorting, itemised prices, currency conversion | Live |
 | Admin data console: upload, dry run, import history, report and quarantined rows (`/admin/imports`) | Live |
 | Bookings: checkout with traveller details, 15-minute holds on seats and rooms, idempotent requests, simulated card payments (4242 4242 4242 4242 succeeds, 4000 0000 0000 0002 declines), item-level cancellation with refunds, My Trips with add-on bookings | Live |
-| Connected-trip planner, disruption recovery, AI assistant, dashboards | Planned (see [plan v2](docs/plan-v2.md)) |
+| Connected-trip planner (`/plan`): ranked flight + stay bundles with weights from `config/ranking.yaml`, an explanation and a Journey Confidence Report per option, saved/dismissed decisions, one-checkout booking | Live |
+| Disruption recovery, AI assistant, dashboards | Planned (see [plan v2](docs/plan-v2.md)) |
 
 ## Quick start (Docker)
 

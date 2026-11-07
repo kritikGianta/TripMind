@@ -413,6 +413,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My saved plans */
+        get: operations["list_plans_api_v1_plans_get"];
+        put?: never;
+        /** Plan a connected trip: ranked flight + stay bundles with confidence checks */
+        post: operations["create_plan_api_v1_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One plan */
+        get: operations["get_plan_api_v1_plans__plan_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plans/{plan_id}/options/{option_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save or dismiss an option; the decision is remembered */
+        put: operations["set_option_state_api_v1_plans__plan_id__options__option_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ready": {
         parameters: {
             query?: never;
@@ -607,6 +659,30 @@ export interface components {
             status: string;
             total: components["schemas"]["MoneyOut"];
         };
+        /** BundleOut */
+        BundleOut: {
+            /** Complete */
+            complete: boolean;
+            confidence: components["schemas"]["ConfidenceOut"];
+            /** Explanation */
+            explanation: string[];
+            hotel: components["schemas"]["HotelResultOut"];
+            /** Id */
+            id: string;
+            inbound: components["schemas"]["FlightOfferOut"];
+            outbound: components["schemas"]["FlightOfferOut"];
+            /** Rank */
+            rank: number;
+            scores: components["schemas"]["ScoresOut"];
+            /**
+             * State
+             * @default none
+             * @enum {string}
+             */
+            state: "saved" | "dismissed" | "none";
+            stay: components["schemas"]["StayPlanOut"];
+            total: components["schemas"]["MoneyOut"];
+        };
         /** CancelRequest */
         CancelRequest: {
             /**
@@ -633,6 +709,18 @@ export interface components {
             /** Lines */
             lines: components["schemas"]["CancellationLineOut"][];
             total_refund: components["schemas"]["MoneyOut"];
+        };
+        /** CheckOut */
+        CheckOut: {
+            /** Message */
+            message: string;
+            /** Name */
+            name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "info" | "warn" | "risk";
         };
         /** CityOut */
         CityOut: {
@@ -662,6 +750,18 @@ export interface components {
             null_pct: number;
             /** Samples */
             samples: string[];
+        };
+        /** ConfidenceOut */
+        ConfidenceOut: {
+            /** Checks */
+            checks: components["schemas"]["CheckOut"][];
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "high" | "medium" | "low";
+            /** Summary */
+            summary: string;
         };
         /** ContactIn */
         ContactIn: {
@@ -1353,6 +1453,14 @@ export interface components {
             /** Currency */
             currency: string;
         };
+        /** OptionStateIn */
+        OptionStateIn: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "saved" | "dismissed" | "none";
+        };
         /** PaymentOut */
         PaymentOut: {
             amount: components["schemas"]["MoneyOut"];
@@ -1382,6 +1490,109 @@ export interface components {
             expiry_month: number;
             /** Expiry Year */
             expiry_year: number;
+        };
+        /** PlanListOut */
+        PlanListOut: {
+            /** Items */
+            items: components["schemas"]["PlanSummaryOut"][];
+        };
+        /** PlanOut */
+        PlanOut: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Notices */
+            notices: string[];
+            /** Options */
+            options: components["schemas"]["BundleOut"][];
+            request: components["schemas"]["PlanRequest"];
+            /** Title */
+            title: string;
+            /** Weights */
+            weights: {
+                [key: string]: number;
+            };
+        };
+        /** PlanRequest */
+        PlanRequest: {
+            /**
+             * Adults
+             * @default 1
+             */
+            adults: number;
+            /**
+             * Depart Date
+             * Format: date
+             */
+            depart_date: string;
+            /**
+             * Destination City Id
+             * Format: uuid
+             */
+            destination_city_id: string;
+            /**
+             * Max Budget
+             * @description Whole trip, display currency
+             */
+            max_budget?: number | null;
+            /** Min Stars */
+            min_stars?: number | null;
+            /**
+             * Origin
+             * @description Airport code or city
+             */
+            origin: string;
+            /**
+             * Priority
+             * @default balanced
+             * @enum {string}
+             */
+            priority: "balanced" | "cheapest" | "fastest" | "comfort";
+            /**
+             * Return Date
+             * Format: date
+             */
+            return_date: string;
+        };
+        /** PlanSummaryOut */
+        PlanSummaryOut: {
+            /** Adults */
+            adults: number;
+            /**
+             * Depart Date
+             * Format: date
+             */
+            depart_date: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Options */
+            options: number;
+            /** Priority */
+            priority: string;
+            /**
+             * Return Date
+             * Format: date
+             */
+            return_date: string;
+            /** Saved */
+            saved: number;
+            /** Title */
+            title: string;
         };
         /** PriceLedger */
         PriceLedger: {
@@ -1574,6 +1785,19 @@ export interface components {
             /** Total Rooms */
             total_rooms: number;
         };
+        /** ScoresOut */
+        ScoresOut: {
+            /** Convenience */
+            convenience: number;
+            /** Price */
+            price: number;
+            /** Stay */
+            stay: number;
+            /** Time */
+            time: number;
+            /** Total */
+            total: number;
+        };
         /**
          * SessionOut
          * @description Returned after sign-in, sign-up and refresh. Tokens travel only in httpOnly cookies.
@@ -1588,6 +1812,25 @@ export interface components {
         };
         /** StayOut */
         StayOut: {
+            /**
+             * Check In
+             * Format: date
+             */
+            check_in: string;
+            /**
+             * Check Out
+             * Format: date
+             */
+            check_out: string;
+            /** Guests */
+            guests: number;
+            /** Nights */
+            nights: number;
+            /** Rooms */
+            rooms: number;
+        };
+        /** StayPlanOut */
+        StayPlanOut: {
             /**
              * Check In
              * Format: date
@@ -3212,6 +3455,243 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FeaturesOut"];
+                };
+            };
+        };
+    };
+    list_plans_api_v1_plans_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanListOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_plan_api_v1_plans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_plan_api_v1_plans__plan_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    set_option_state_api_v1_plans__plan_id__options__option_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+                option_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptionStateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };

@@ -1,0 +1,30 @@
+# Connected-trip ranking. Each profile weighs four scores between 0 and 1 (higher is better):
+#   price        cheapest bundle / this bundle
+#   time         shortest total flying time / this bundle's
+#   stay         guest rating (70%) and stars (30%)
+#   convenience  fewer stops, short waits before check-in and after check-out, short transfers
+# Weights in a profile must add up to 1. The UI shows each bundle's breakdown, so every rank
+# can be explained with the numbers behind it.
+
+profiles:
+  balanced:    {price: 0.40, time: 0.20, stay: 0.20, convenience: 0.20}
+  cheapest:    {price: 0.70, time: 0.10, stay: 0.10, convenience: 0.10}
+  fastest:     {price: 0.20, time: 0.50, stay: 0.10, convenience: 0.20}
+  comfort:     {price: 0.15, time: 0.15, stay: 0.40, convenience: 0.30}
+
+candidates:
+  flights_per_direction: 8
+  hotels: 10
+  max_options: 20
+  max_options_per_hotel: 3
+
+confidence:
+  # Waits and transfers beyond these become warnings in the Journey Confidence Report.
+  wait_before_check_in_warn_hours: 4
+  wait_before_check_in_risk_hours: 10
+  gap_after_check_out_warn_hours: 6
+  transfer_warn_km: 30
+  # Straight-line distance is converted to a time estimate at this average city speed.
+  transfer_speed_kmh: 25
+  transfer_buffer_minutes: 15
+  low_availability_seats: 9

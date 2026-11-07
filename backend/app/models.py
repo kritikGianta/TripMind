@@ -19,6 +19,7 @@ from app.modules.bookings.models import (
 from app.modules.catalog.models import Airport, City, Flight, Hotel, HotelAmenity, RoomType
 from app.modules.ingestion.models import ImportReject, ImportRun
 from app.modules.inventory.models import FlightInventory, InventoryClaim, RoomNightInventory
+from app.modules.planner.models import TripPlan
 
 __all__ = [
     "Airport",
@@ -42,5 +43,6 @@ __all__ = [
     "RoomNightInventory",
     "RoomType",
     "Trip",
+    "TripPlan",
     "User",
 ]

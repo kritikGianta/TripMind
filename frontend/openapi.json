@@ -333,6 +333,75 @@
         "title": "BookingSummaryOut",
         "type": "object"
       },
+      "BundleOut": {
+        "properties": {
+          "complete": {
+            "title": "Complete",
+            "type": "boolean"
+          },
+          "confidence": {
+            "$ref": "#/components/schemas/ConfidenceOut"
+          },
+          "explanation": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Explanation",
+            "type": "array"
+          },
+          "hotel": {
+            "$ref": "#/components/schemas/HotelResultOut"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/FlightOfferOut"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/FlightOfferOut"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "scores": {
+            "$ref": "#/components/schemas/ScoresOut"
+          },
+          "state": {
+            "default": "none",
+            "enum": [
+              "saved",
+              "dismissed",
+              "none"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "stay": {
+            "$ref": "#/components/schemas/StayPlanOut"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyOut"
+          }
+        },
+        "required": [
+          "id",
+          "rank",
+          "outbound",
+          "inbound",
+          "hotel",
+          "stay",
+          "total",
+          "complete",
+          "scores",
+          "explanation",
+          "confidence"
+        ],
+        "title": "BundleOut",
+        "type": "object"
+      },
       "CancelRequest": {
         "additionalProperties": false,
         "properties": {
@@ -402,6 +471,35 @@
           "total_refund"
         ],
         "title": "CancellationQuoteOut",
+        "type": "object"
+      },
+      "CheckOut": {
+        "properties": {
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "info",
+              "warn",
+              "risk"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "status",
+          "message"
+        ],
+        "title": "CheckOut",
         "type": "object"
       },
       "CityOut": {
@@ -486,6 +584,37 @@
           "samples"
         ],
         "title": "ColumnProfileOut",
+        "type": "object"
+      },
+      "ConfidenceOut": {
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/CheckOut"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "level": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "summary",
+          "checks"
+        ],
+        "title": "ConfidenceOut",
         "type": "object"
       },
       "ContactIn": {
@@ -2324,6 +2453,25 @@
         "title": "MoneyOut",
         "type": "object"
       },
+      "OptionStateIn": {
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "saved",
+              "dismissed",
+              "none"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "title": "OptionStateIn",
+        "type": "object"
+      },
       "PaymentOut": {
         "properties": {
           "amount": {
@@ -2410,6 +2558,211 @@
           "cardholder_name"
         ],
         "title": "PaymentRequest",
+        "type": "object"
+      },
+      "PlanListOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlanSummaryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PlanListOut",
+        "type": "object"
+      },
+      "PlanOut": {
+        "properties": {
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "notices": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notices",
+            "type": "array"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/BundleOut"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "request": {
+            "$ref": "#/components/schemas/PlanRequest"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "weights": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Weights",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "request",
+          "weights",
+          "generated_at",
+          "options",
+          "notices"
+        ],
+        "title": "PlanOut",
+        "type": "object"
+      },
+      "PlanRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "adults": {
+            "default": 1,
+            "maximum": 9.0,
+            "minimum": 1.0,
+            "title": "Adults",
+            "type": "integer"
+          },
+          "depart_date": {
+            "format": "date",
+            "title": "Depart Date",
+            "type": "string"
+          },
+          "destination_city_id": {
+            "format": "uuid",
+            "title": "Destination City Id",
+            "type": "string"
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whole trip, display currency",
+            "title": "Max Budget"
+          },
+          "min_stars": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Stars"
+          },
+          "origin": {
+            "description": "Airport code or city",
+            "maxLength": 64,
+            "minLength": 2,
+            "title": "Origin",
+            "type": "string"
+          },
+          "priority": {
+            "default": "balanced",
+            "enum": [
+              "balanced",
+              "cheapest",
+              "fastest",
+              "comfort"
+            ],
+            "title": "Priority",
+            "type": "string"
+          },
+          "return_date": {
+            "format": "date",
+            "title": "Return Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin",
+          "destination_city_id",
+          "depart_date",
+          "return_date"
+        ],
+        "title": "PlanRequest",
+        "type": "object"
+      },
+      "PlanSummaryOut": {
+        "properties": {
+          "adults": {
+            "title": "Adults",
+            "type": "integer"
+          },
+          "depart_date": {
+            "format": "date",
+            "title": "Depart Date",
+            "type": "string"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "options": {
+            "title": "Options",
+            "type": "integer"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "string"
+          },
+          "return_date": {
+            "format": "date",
+            "title": "Return Date",
+            "type": "string"
+          },
+          "saved": {
+            "title": "Saved",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "depart_date",
+          "return_date",
+          "adults",
+          "priority",
+          "options",
+          "saved",
+          "generated_at"
+        ],
+        "title": "PlanSummaryOut",
         "type": "object"
       },
       "PriceLedger": {
@@ -2954,6 +3307,39 @@
         "title": "RoomOfferOut",
         "type": "object"
       },
+      "ScoresOut": {
+        "properties": {
+          "convenience": {
+            "title": "Convenience",
+            "type": "number"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          },
+          "stay": {
+            "title": "Stay",
+            "type": "number"
+          },
+          "time": {
+            "title": "Time",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "price",
+          "time",
+          "stay",
+          "convenience",
+          "total"
+        ],
+        "title": "ScoresOut",
+        "type": "object"
+      },
       "SessionOut": {
         "description": "Returned after sign-in, sign-up and refresh. Tokens travel only in httpOnly cookies.",
         "properties": {
@@ -3006,6 +3392,41 @@
           "rooms"
         ],
         "title": "StayOut",
+        "type": "object"
+      },
+      "StayPlanOut": {
+        "properties": {
+          "check_in": {
+            "format": "date",
+            "title": "Check In",
+            "type": "string"
+          },
+          "check_out": {
+            "format": "date",
+            "title": "Check Out",
+            "type": "string"
+          },
+          "guests": {
+            "title": "Guests",
+            "type": "integer"
+          },
+          "nights": {
+            "title": "Nights",
+            "type": "integer"
+          },
+          "rooms": {
+            "title": "Rooms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "check_in",
+          "check_out",
+          "nights",
+          "rooms",
+          "guests"
+        ],
+        "title": "StayPlanOut",
         "type": "object"
       },
       "TravelWindowOut": {
@@ -5564,6 +5985,301 @@
         "summary": "Enabled feature flags",
         "tags": [
           "meta"
+        ]
+      }
+    },
+    "/api/v1/plans": {
+      "get": {
+        "operationId": "list_plans_api_v1_plans_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "My saved plans",
+        "tags": [
+          "planner"
+        ]
+      },
+      "post": {
+        "operationId": "create_plan_api_v1_plans_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Plan a connected trip: ranked flight + stay bundles with confidence checks",
+        "tags": [
+          "planner"
+        ]
+      }
+    },
+    "/api/v1/plans/{plan_id}": {
+      "get": {
+        "operationId": "get_plan_api_v1_plans__plan_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "One plan",
+        "tags": [
+          "planner"
+        ]
+      }
+    },
+    "/api/v1/plans/{plan_id}/options/{option_id}": {
+      "put": {
+        "operationId": "set_option_state_api_v1_plans__plan_id__options__option_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "option_id",
+            "required": true,
+            "schema": {
+              "title": "Option Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptionStateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Save or dismiss an option; the decision is remembered",
+        "tags": [
+          "planner"
         ]
       }
     },
