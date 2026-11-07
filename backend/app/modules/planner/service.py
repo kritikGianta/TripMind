@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.errors import NotFound, ValidationFailed
+from app.core.metrics import PLANS
 from app.modules.auth.models import User
 from app.modules.catalog.models import Airport, City, Hotel
 from app.modules.inventory.service import InventoryService
@@ -197,6 +198,7 @@ class PlannerService:
         )
         self._session.add(plan)
         self._session.commit()
+        PLANS.labels(priority=request.priority).inc()
         return self._out(plan)
 
     def get(self, user: User, plan_id: uuid.UUID) -> PlanOut:

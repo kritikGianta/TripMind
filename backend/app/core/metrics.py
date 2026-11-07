@@ -25,3 +25,44 @@ AUTH_EVENTS = Counter(
     "Authentication events by type and outcome.",
     ["event", "outcome"],
 )
+
+# ── Business signals (plan v2, section 5). Labels are small fixed sets. ─────────────────────────
+
+SEARCHES = Counter(
+    "searches_total",
+    "User searches by vertical and whether anything was found.",
+    ["vertical", "result"],  # result: found | empty
+)
+
+SEARCH_LATENCY = Histogram(
+    "search_duration_seconds",
+    "Search latency by vertical.",
+    ["vertical"],
+    buckets=(0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5),
+)
+
+BOOKING_HOLDS = Counter(
+    "booking_holds_total",
+    "Checkout hold attempts by outcome.",
+    ["outcome"],  # created | sold_out | price_changed | replayed
+)
+
+PAYMENTS = Counter("payments_total", "Simulated card payments by outcome.", ["outcome"])
+
+BOOKING_REVENUE = Counter(
+    "booking_revenue_minor_total", "Confirmed booking value in minor units.", ["currency"]
+)
+
+REFUNDS = Counter("refunds_minor_total", "Refunded value in minor units.", ["currency", "reason"])
+
+HOLDS_EXPIRED = Counter("holds_expired_total", "Unpaid holds that expired and were released.")
+
+PLANS = Counter("trip_plans_total", "Connected-trip plans generated, by priority.", ["priority"])
+
+DISRUPTIONS = Counter("disruptions_total", "Recorded disruptions by kind.", ["kind"])
+
+RECOVERY_RESOLUTIONS = Counter(
+    "recovery_resolutions_total",
+    "Recovery cases resolved by the traveller's choice.",
+    ["resolution"],
+)

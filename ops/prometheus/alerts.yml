@@ -1,0 +1,45 @@
+# Alert rules, kept in the repo and reviewed like code. They fire in Prometheus (Alerts tab);
+# routing to a pager would need Alertmanager, which is out of scope for the demo.
+groups:
+  - name: tripmind
+    rules:
+      - alert: ApiDown
+        expr: up{job="tripmind-api"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: The TripMind API is not answering /metrics.
+
+      - alert: HighServerErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(http_requests_total[5m])), 1e-9) > 0.05
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: More than 5% of requests fail with a server error.
+
+      - alert: SlowSearch
+        expr: histogram_quantile(0.95, sum by (le, vertical) (rate(search_duration_seconds_bucket[5m]))) > 1
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: "95th percentile {{ $labels.vertical }} search time is above 1 second."
+
+      - alert: ManyEmptySearches
+        expr: |
+          sum(rate(searches_total{result="empty"}[15m]))
+            / clamp_min(sum(rate(searches_total[15m])), 1e-9) > 0.5
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: Over half of searches find nothing (check the dataset's travel window).
+
+      - alert: PaymentDeclineSpike
+        expr: |
+          sum(increase(payments_total{outcome="declined"}[10m])) > 5
+            and sum(increase(payments_total{outcome="declined"}[10m]))
+              / clamp_min(sum(increase(payments_total[10m])), 1) > 0.5
+        labels: {severity: warning}
+        annotations:
+          summary: More than half of recent payments were declined.

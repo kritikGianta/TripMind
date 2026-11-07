@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.errors import Conflict, NotFound, ValidationFailed
+from app.core.metrics import DISRUPTIONS, RECOVERY_RESOLUTIONS
 from app.core.request_context import RequestMeta
 from app.modules.audit.service import AuditService
 from app.modules.auth.models import User
@@ -226,6 +227,7 @@ class RecoveryService:
             },
         )
         self._session.commit()
+        DISRUPTIONS.labels(kind=request.kind).inc()
         return self._disruption_out(disruption)
 
     def _affected_items(self, request: DisruptionIn) -> list[BookingItem]:
@@ -665,6 +667,7 @@ class RecoveryService:
             details={"case_id": str(case.id), "option": option.id},
         )
         self._session.commit()
+        RECOVERY_RESOLUTIONS.labels(resolution=resolution).inc()
         return self._case_out(case)
 
     def _new_item(self, old: BookingItem, **fields: Any) -> BookingItem:

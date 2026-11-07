@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     # In-process background jobs (hold expiry). Tests switch them off.
     background_jobs: bool = True
 
+    # Tracing is off unless an OTLP endpoint is configured (Compose `obs` profile sets it).
+    otel_exporter_otlp_endpoint: str | None = None
+    otel_service_name: str = "tripmind-api"
+
     # CORS is only needed for cross-origin callers; the web app uses a same-origin proxy.
     cors_origins: list[str] = Field(default_factory=list)
 

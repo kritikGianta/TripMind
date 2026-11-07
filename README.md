@@ -25,7 +25,8 @@ Every booking lands in **My Trips**. AI helps when it is switched on, and the pl
 | Connected-trip planner (`/plan`): ranked flight + stay bundles with weights from `config/ranking.yaml`, an explanation and a Journey Confidence Report per option, saved/dismissed decisions, one-checkout booking | Live |
 | Disruption recovery: admin **Disruptions** console (cancel or delay a booked flight, take a room out of service), affected bookings found, unpaid holds released, travellers notified and offered rebooking or a refund; only the affected item is replaced | Live |
 | Notifications: in-app bell with simulated email copies | Live |
-| AI assistant, monitoring dashboards and other platform features | Planned (see [plan v2](docs/plan-v2.md)) |
+| Monitoring (optional `obs` profile): Prometheus with alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger; synthetic load script | Live |
+| AI assistant and remaining platform features | Planned (see [plan v2](docs/plan-v2.md)) |
 
 ## Quick start (Docker)
 
@@ -77,6 +78,19 @@ Swapping in a new dataset (for example the finale data):
 Each import reports, per entity: rows read, accepted, rejected (with reason codes), inserted, updated, unchanged and retired. It also lists the normalisations applied (defaults filled, timezones assumed, fuzzy city matches). Rejected rows are kept with their file row number and original values. If more than 20% of an entity's rows are rejected, nothing is published (`config/rules.yaml`).
 
 Admins can do the same over HTTP: `/api/v1/admin/imports` (upload, dry run, history), `/admin/imports/{id}/rejects` and `/admin/imports/profile`. Uploads need the `X-Requested-With: tripmind` header. `GET /api/v1/datasets/current` is public and drives the "Demo data" label in the footer.
+
+## Monitoring (optional)
+
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318 docker compose --profile obs up -d
+cd backend && uv run python scripts/loadtest.py --base-url http://localhost:8000 --users 8 --duration 60
+```
+
+- Grafana: http://localhost:3001 (opens on the **TripMind overview** dashboard; anonymous viewer)
+- Prometheus: http://localhost:9090 (Alerts tab shows the rules in `ops/prometheus/alerts.yml`)
+- Jaeger: http://localhost:16686 (service `tripmind-api`; each request shows its SQL statements)
+
+Dashboards are code: edit `ops/grafana/build_dashboard.py`, run it, commit the JSON. Metrics use small label sets (no user or booking IDs). The app runs the same with the stack off.
 
 ## Quality checks
 

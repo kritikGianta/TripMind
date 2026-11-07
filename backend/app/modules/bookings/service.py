@@ -28,6 +28,13 @@ from sqlalchemy.orm import Session
 from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.errors import Conflict, DomainError, NotFound, ValidationFailed
+from app.core.metrics import (
+    BOOKING_HOLDS,
+    BOOKING_REVENUE,
+    HOLDS_EXPIRED,
+    PAYMENTS,
+    REFUNDS,
+)
 from app.core.request_context import RequestMeta
 from app.modules.audit.service import AuditService
 from app.modules.auth.models import User
@@ -367,11 +374,13 @@ class BookingService:
         request_hash = self._request_hash(request)
         existing = self._existing(user, key)
         if existing is not None:
+            BOOKING_HOLDS.labels(outcome="replayed").inc()
             return self._replay(existing, request_hash)
         self._validate_party(request)
         priced = self._price(request.items)
         total = sum(p.display_minor for p in priced)
         if request.expected_total_minor is not None and request.expected_total_minor != total:
+            BOOKING_HOLDS.labels(outcome="price_changed").inc()
             raise Conflict(
                 "The price has changed since you started checkout.",
                 code="PRICE_CHANGED",
@@ -464,7 +473,9 @@ class BookingService:
             return self._replay(existing, request_hash)
         except SoldOut:
             self._session.rollback()
+            BOOKING_HOLDS.labels(outcome="sold_out").inc()
             raise
+        BOOKING_HOLDS.labels(outcome="created").inc()
         return booking
 
     def _replay(self, booking: Booking, request_hash: str) -> Booking:
@@ -504,6 +515,7 @@ class BookingService:
         for item in items:
             item.status = ItemStatus.RELEASED
         booking.status = BookingStatus.EXPIRED
+        HOLDS_EXPIRED.inc()
         self._event(
             booking, "hold_expired", "The hold expired before payment; nothing was charged."
         )
@@ -605,6 +617,9 @@ class BookingService:
             details={"booking_id": str(booking.id), "failure_code": result.failure_code},
         )
         self._session.commit()
+        PAYMENTS.labels(outcome="succeeded" if result.succeeded else "declined").inc()
+        if result.succeeded:
+            BOOKING_REVENUE.labels(currency=booking.currency).inc(booking.total_minor)
         if not result.succeeded:
             raise PaymentDeclined(
                 code=result.failure_code or "PAYMENT_DECLINED",
@@ -739,6 +754,8 @@ class BookingService:
             details={"booking_id": str(booking.id), "items": len(items), "refund_minor": refunded},
         )
         self._session.commit()
+        if refunded:
+            REFUNDS.labels(currency=booking.currency, reason="traveller").inc(refunded)
         return self.to_out(booking)
 
     # ------------------------------------------------------------------ views

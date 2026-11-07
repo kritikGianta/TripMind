@@ -13,6 +13,7 @@ from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.deps import get_clock, get_settings_dep, rate_limit, require_feature
 from app.core.errors import ErrorEnvelope, ValidationFailed
+from app.core.metrics import SEARCH_LATENCY, SEARCHES
 from app.db.session import get_session
 from app.modules.catalog.vocabulary import load_vocabulary
 from app.modules.search.flights import FlightQuery, FlightSearchService
@@ -114,21 +115,24 @@ def search_flights(
     sort: FlightSort = "best",
     service: FlightSearchService = Depends(_flights),
 ) -> FlightSearchOut:
-    return service.search(
-        FlightQuery(
-            origin=origin,
-            destination=destination,
-            departure_date=departure_date,
-            return_date=return_date,
-            adults=adults,
-            cabin_class=cabin_class,
-            max_stops=max_stops,
-            airlines=tuple(a.upper() for a in airlines or ()),
-            departure_windows=tuple(departure_windows or ()),
-            max_price=max_price,
-            sort=sort,
+    with SEARCH_LATENCY.labels(vertical="flights").time():
+        result = service.search(
+            FlightQuery(
+                origin=origin,
+                destination=destination,
+                departure_date=departure_date,
+                return_date=return_date,
+                adults=adults,
+                cabin_class=cabin_class,
+                max_stops=max_stops,
+                airlines=tuple(a.upper() for a in airlines or ()),
+                departure_windows=tuple(departure_windows or ()),
+                max_price=max_price,
+                sort=sort,
+            )
         )
-    )
+    SEARCHES.labels(vertical="flights", result="found" if result.outbound.total else "empty").inc()
+    return result
 
 
 @router.get(
@@ -155,19 +159,22 @@ def search_hotels(
 ) -> HotelSearchOut:
     if any(s < 0 or s > 5 for s in stars or ()):
         raise ValidationFailed("Stars must be between 0 and 5.")
-    return service.search(
-        HotelQuery(
-            city=city,
-            stay=Stay(check_in=check_in, check_out=check_out, guests=guests, rooms=rooms),
-            stars=tuple(stars or ()),
-            min_rating=min_rating,
-            amenities=tuple(amenities or ()),
-            max_price=max_price,
-            free_cancellation=free_cancellation,
-            breakfast=breakfast,
-            sort=sort,
+    with SEARCH_LATENCY.labels(vertical="hotels").time():
+        result = service.search(
+            HotelQuery(
+                city=city,
+                stay=Stay(check_in=check_in, check_out=check_out, guests=guests, rooms=rooms),
+                stars=tuple(stars or ()),
+                min_rating=min_rating,
+                amenities=tuple(amenities or ()),
+                max_price=max_price,
+                free_cancellation=free_cancellation,
+                breakfast=breakfast,
+                sort=sort,
+            )
         )
-    )
+    SEARCHES.labels(vertical="hotels", result="found" if result.total else "empty").inc()
+    return result
 
 
 @router.get(

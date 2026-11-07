@@ -18,6 +18,8 @@ from app.core.errors import register_exception_handlers
 from app.core.features import load_feature_flags
 from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware
+from app.core.tracing import configure_tracing
+from app.db.session import get_engine
 from app.modules.auth.router import router as auth_router
 from app.modules.bookings.jobs import run_hold_sweeper
 from app.modules.bookings.router import router as bookings_router
@@ -73,6 +75,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             allow_headers=["content-type", "x-request-id", "idempotency-key", "x-requested-with"],
         )
     register_exception_handlers(app)
+    if configure_tracing(app, settings, get_engine):
+        log.info("tracing_enabled", endpoint=settings.otel_exporter_otlp_endpoint)
 
     app.include_router(meta_router, prefix=settings.api_prefix)
     app.include_router(auth_router, prefix=settings.api_prefix)
