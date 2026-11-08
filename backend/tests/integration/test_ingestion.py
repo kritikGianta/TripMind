@@ -342,7 +342,8 @@ def test_admin_import_flow_and_public_summary(client: TestClient, demo_zip: Path
         "travel_window": None,
     }
     sign_in(client, "admin")
-    assert client.get(f"{API}/admin/imports/mappings").json()["mappings"] == ["synthetic-v1"]
+    mappings = client.get(f"{API}/admin/imports/mappings").json()["mappings"]
+    assert {"synthetic-v1", "synthetic-schedules"} <= set(mappings)
 
     created = upload(client, demo_zip)
     assert created.status_code == 201, created.text
