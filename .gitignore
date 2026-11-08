@@ -44,3 +44,6 @@ models/**/*.zip
 
 # Original media as supplied; the page uses the copies in frontend/public/home
 Images&Videos/
+
+# Home page media is part of the site, unlike the photos ignored above
+!frontend/public/home/*
