@@ -363,7 +363,7 @@ class PlannerService:
         }
         rows = self._session.execute(
             select(Airport.code, Airport.latitude, Airport.longitude).where(Airport.code.in_(codes))
-        ).tuples()
+        )
         return {
             code: (lat, lon) if lat is not None and lon is not None else None
             for code, lat, lon in rows

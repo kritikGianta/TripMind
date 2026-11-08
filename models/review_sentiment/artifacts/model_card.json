@@ -1,0 +1,19 @@
+{
+  "name": "review_sentiment",
+  "version": "2026.11.08",
+  "trained_at": "2026-11-08T08:04:33.608217+00:00",
+  "framework": "scikit-learn",
+  "framework_version": "1.6.1",
+  "dataset": "Trip Advisor Hotel Reviews (Kaggle andrewmvd/trip-advisor-hotel-reviews)",
+  "features": [
+    "tfidf-logreg-v1"
+  ],
+  "metrics": {
+    "macro_f1": 0.7291366144379724,
+    "accuracy": 0.8543547206635764,
+    "baseline_macro_f1": 0.5635558483990747,
+    "baseline_accuracy": 0.7894608441083191,
+    "test_rows": 4099.0
+  },
+  "notes": "1-2 stars negative, 3 neutral, 4-5 positive; 80/20 stratified split, seed 7."
+}

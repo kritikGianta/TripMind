@@ -6,16 +6,27 @@ Each public method is one use case and owns its transaction: it either commits a
 
 from __future__ import annotations
 
+import hashlib
+import secrets
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
 from app.core.config import Settings
-from app.core.errors import Conflict, Forbidden, NotFound, Unauthorized
+from app.core.errors import (
+    Conflict,
+    Forbidden,
+    NotFound,
+    RateLimited,
+    Unauthorized,
+    ValidationFailed,
+)
+from app.core.kv import InMemoryStore, KeyValueStore
 from app.core.metrics import AUTH_EVENTS
 from app.core.request_context import RequestMeta
 from app.core.security import (
@@ -27,7 +38,7 @@ from app.core.security import (
     verify_password,
 )
 from app.modules.audit.service import AuditService
-from app.modules.auth.models import RefreshToken, User, UserRole
+from app.modules.auth.models import PasswordResetToken, RefreshToken, User, UserRole
 from app.modules.auth.repository import RefreshTokenRepository, UserRepository
 
 
@@ -46,8 +57,15 @@ def _as_aware(value: datetime, reference: datetime) -> datetime:
 
 
 class AuthService:
-    def __init__(self, session: Session, settings: Settings, clock: Clock) -> None:
+    def __init__(
+        self,
+        session: Session,
+        settings: Settings,
+        clock: Clock,
+        store: KeyValueStore | None = None,
+    ) -> None:
         self._session = session
+        self._store = store or InMemoryStore()
         self._settings = settings
         self._clock = clock
         self._users = UserRepository(session)
@@ -86,15 +104,39 @@ class AuthService:
         AUTH_EVENTS.labels(event="register", outcome="success").inc()
         return issued
 
+    def _lock_key(self, email: str) -> str:
+        return "auth:" + hashlib.sha256(email.lower().encode()).hexdigest()[:32]
+
+    def _record_failed_login(self, email: str) -> None:
+        """Lock an address after repeated failures; unknown addresses behave the same, so the
+        lock does not reveal which accounts exist."""
+        minutes = self._settings.login_lockout_minutes
+        allowed, _ = self._store.window_hit(
+            self._lock_key(email) + ":fails",
+            limit=self._settings.login_lockout_attempts - 1,  # refused on the Nth failure
+            window_seconds=minutes * 60,
+        )
+        if not allowed:
+            self._store.set(self._lock_key(email) + ":locked", "1", minutes * 60)
+
     def login(self, *, email: str, password: str, meta: RequestMeta) -> IssuedSession:
+        if self._store.get(self._lock_key(email) + ":locked"):
+            self._fail("login", meta, reason="locked")
+            raise RateLimited(
+                "Too many failed sign-ins. Try again later or reset your password.",
+                code="ACCOUNT_LOCKED",
+                headers={"Retry-After": str(self._settings.login_lockout_minutes * 60)},
+            )
         user = self._users.get_by_email(email)
         if user is None:
             burn_password_check(password)
+            self._record_failed_login(email)
             self._fail("login", meta, reason="unknown_email")
             raise Unauthorized("Email or password is incorrect.", code="INVALID_CREDENTIALS")
 
         valid, upgraded_hash = verify_password(password, user.password_hash)
         if not valid:
+            self._record_failed_login(email)
             self._fail("login", meta, reason="wrong_password", actor=user.id)
             raise Unauthorized("Email or password is incorrect.", code="INVALID_CREDENTIALS")
         if not user.is_active:
@@ -186,6 +228,88 @@ class AuthService:
         )
         self._session.commit()
         AUTH_EVENTS.labels(event="logout", outcome="success").inc()
+
+    def logout_everywhere(self, user: User, meta: RequestMeta) -> None:
+        self._tokens.revoke_all_for_user(user.id, self._clock.now())
+        self._audit.record(
+            action="auth.logout_all", outcome="success", meta=meta, actor_user_id=user.id
+        )
+        self._session.commit()
+
+    def update_profile(self, user: User, full_name: str, meta: RequestMeta) -> User:
+        user.full_name = full_name
+        self._audit.record(
+            action="auth.profile_updated", outcome="success", meta=meta, actor_user_id=user.id
+        )
+        self._session.commit()
+        return user
+
+    def change_password(
+        self, user: User, current: str, new: str, meta: RequestMeta
+    ) -> IssuedSession:
+        """Every other session ends; this device gets a fresh one."""
+        valid, _ = verify_password(current, user.password_hash)
+        if not valid:
+            self._fail("password_change", meta, reason="wrong_password", actor=user.id)
+            raise ValidationFailed("Your current password is incorrect.", code="WRONG_PASSWORD")
+        user.password_hash = hash_password(new)
+        self._tokens.revoke_all_for_user(user.id, self._clock.now())
+        issued = self._start_session(user, meta)
+        self._audit.record(
+            action="auth.password_changed", outcome="success", meta=meta, actor_user_id=user.id
+        )
+        self._session.commit()
+        return issued
+
+    def forgot_password(self, email: str, meta: RequestMeta) -> str | None:
+        """The answer is the same whether or not the account exists. Email is simulated."""
+        user = self._users.get_by_email(email)
+        token = None
+        if user is not None and user.is_active:
+            token = secrets.token_urlsafe(32)
+            self._session.add(
+                PasswordResetToken(
+                    user_id=user.id,
+                    token_hash=hash_refresh_token(token),
+                    expires_at=self._clock.now()
+                    + timedelta(minutes=self._settings.password_reset_minutes),
+                )
+            )
+        self._audit.record(
+            action="auth.password_reset_requested",
+            outcome="success",
+            meta=meta,
+            actor_user_id=user.id if user else None,
+        )
+        self._session.commit()
+        return token if self._settings.environment in ("local", "test") else None
+
+    def reset_password(self, token: str, new: str, meta: RequestMeta) -> None:
+        now = self._clock.now()
+        record = self._session.scalar(
+            select(PasswordResetToken)
+            .where(PasswordResetToken.token_hash == hash_refresh_token(token))
+            .with_for_update()
+        )
+        user = self._users.get(record.user_id) if record else None
+        if (
+            record is None
+            or user is None
+            or record.used_at is not None
+            or _as_aware(record.expires_at, now) <= now
+        ):
+            self._fail("password_reset", meta, reason="invalid_token")
+            raise ValidationFailed(
+                "This reset link is invalid or has expired.", code="RESET_TOKEN_INVALID"
+            )
+        record.used_at = now
+        user.password_hash = hash_password(new)
+        self._tokens.revoke_all_for_user(user.id, now)
+        self._store.delete(self._lock_key(user.email) + ":locked")
+        self._audit.record(
+            action="auth.password_reset", outcome="success", meta=meta, actor_user_id=user.id
+        )
+        self._session.commit()
 
     # ── Internals ──────────────────────────────────────────────────────────
 

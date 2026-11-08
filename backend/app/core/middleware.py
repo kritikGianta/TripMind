@@ -67,3 +67,58 @@ class RequestContextMiddleware:
                 )
             structlog.contextvars.clear_contextvars()
             reset_request_id(token)
+
+
+class SecurityHeadersMiddleware:
+    """Safe response headers on every API response, and a cap on request bodies.
+
+    Personal data must not sit in shared caches, so anything under /auth or /me is `no-store`.
+    Dataset uploads (admin imports) are exempt from the body cap and enforce their own.
+    """
+
+    def __init__(self, app: ASGIApp, *, hsts: bool, max_body_bytes: int) -> None:
+        self.app = app
+        self._hsts = hsts
+        self._max_body = max_body_bytes
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        path = scope.get("path", "")
+        declared = dict(scope.get("headers") or []).get(b"content-length", b"0")
+        if declared.isdigit() and int(declared) > self._max_body and "/admin/imports" not in path:
+            body = (
+                b'{"error":{"code":"PAYLOAD_TOO_LARGE",'
+                b'"message":"This request is too large.","request_id":null}}'
+            )
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 413,
+                    "headers": [(b"content-type", b"application/json")],
+                }
+            )
+            await send({"type": "http.response.body", "body": body})
+            return
+
+        async def send_wrapper(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers") or [])
+                headers += [
+                    (b"x-content-type-options", b"nosniff"),
+                    (b"x-frame-options", b"DENY"),
+                    (b"referrer-policy", b"strict-origin-when-cross-origin"),
+                ]
+                if self._hsts:
+                    headers.append(
+                        (b"strict-transport-security", b"max-age=31536000; includeSubDomains")
+                    )
+                if ("/auth" in path or "/me" in path or "/admin" in path) and not any(
+                    k.lower() == b"cache-control" for k, _ in headers
+                ):
+                    headers.append((b"cache-control", b"no-store"))
+                message["headers"] = headers
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)

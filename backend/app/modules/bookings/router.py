@@ -6,7 +6,7 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Header, Query, status
+from fastapi import APIRouter, Depends, Header, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
@@ -31,6 +31,7 @@ from app.modules.bookings.changes import (
     ChangeQuoteOut,
     ChangeRequest,
 )
+from app.modules.bookings.connected import ConnectedTripService, TripSuggestionsOut
 from app.modules.bookings.schemas import (
     BookingOut,
     CancellationQuoteOut,
@@ -282,6 +283,43 @@ def extras_purchase(
     meta: RequestMeta = Depends(get_request_meta),
 ) -> BookingOut:
     return service.purchase(user, booking_id, item_id, body, key, meta)
+
+
+def _connected(
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
+) -> ConnectedTripService:
+    return ConnectedTripService(session, settings, clock)
+
+
+@router.get(
+    "/trips/{trip_id}/suggestions",
+    response_model=TripSuggestionsOut,
+    responses=_ERRORS,
+    summary="What this trip is missing, with stays and flights ready to add",
+)
+def trip_suggestions(
+    trip_id: uuid.UUID, user: Traveller, service: ConnectedTripService = Depends(_connected)
+) -> TripSuggestionsOut:
+    return service.suggestions(user, trip_id)
+
+
+@router.get(
+    "/trips/{trip_id}/calendar.ics",
+    responses=_ERRORS,
+    response_class=Response,
+    summary="Add the trip to any calendar app",
+)
+def trip_calendar(
+    trip_id: uuid.UUID, user: Traveller, service: ConnectedTripService = Depends(_connected)
+) -> Response:
+    filename, body = service.calendar(user, trip_id)
+    return Response(
+        content=body,
+        media_type="text/calendar; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/trips", response_model=TripListOut, responses=_ERRORS, summary="My Trips")

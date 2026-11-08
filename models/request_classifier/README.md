@@ -5,7 +5,8 @@ baggage and seats, check-in, flight status, insurance, new booking, existing boo
 person). Routes support tickets and helps the assistant.
 
 - **Model:** TF-IDF + logistic regression, exported as JSON (no pickle); used when its top
-  probability is at least 0.45, otherwise keyword rules decide.
+  probability is at least 0.7 (86% right on 56 hand-written messages, against 80% at 0.45 and 73%
+  for rules alone; the threshold was chosen on those same messages), otherwise keyword rules decide.
 - **Data:** Bitext travel customer-support dataset (`bitext/Bitext-travel-llm-chatbot-training-dataset`
   on Hugging Face, about 31,700 rows, 33 intents, CDLA-Sharing-1.0). The 33 intents map to
   TripMind categories in `backend/app/modules/ml/request_classifier.py` (`INTENT_CATEGORIES`).

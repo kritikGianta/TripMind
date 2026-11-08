@@ -39,6 +39,14 @@ class RefreshTokenRepository:
         stmt = select(RefreshToken).where(RefreshToken.token_hash == token_hash).with_for_update()
         return self._session.scalar(stmt)
 
+    def revoke_all_for_user(self, user_id: uuid.UUID, at: datetime) -> int:
+        result = self._session.execute(
+            update(RefreshToken)
+            .where(RefreshToken.user_id == user_id, RefreshToken.revoked_at.is_(None))
+            .values(revoked_at=at)
+        )
+        return int(result.rowcount or 0)  # type: ignore[attr-defined]
+
     def revoke_family(self, family_id: uuid.UUID, at: datetime) -> int:
         result = self._session.execute(
             update(RefreshToken)

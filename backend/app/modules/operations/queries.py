@@ -34,7 +34,7 @@ def flight_delays(session: Session, flight_ids: list[uuid.UUID]) -> dict[uuid.UU
         select(Disruption.flight_id, Disruption.delay_minutes).where(
             Disruption.kind == DisruptionKind.FLIGHT_DELAYED, Disruption.flight_id.in_(flight_ids)
         )
-    ).tuples()
+    )
     delays: dict[uuid.UUID, int] = {}
     for flight_id, minutes in rows:
         if flight_id is not None and minutes:

@@ -241,23 +241,17 @@ class GroupService:
         self._session.commit()
 
     def mine(self, user: User) -> list[GroupSummaryOut]:
-        rows = (
-            self._session.execute(
-                select(TripGroup, TripPlan.title)
-                .join(GroupMember, GroupMember.group_id == TripGroup.id)
-                .join(TripPlan, TripPlan.id == TripGroup.plan_id)
-                .where(GroupMember.user_id == user.id)
-                .order_by(TripGroup.created_at.desc())
-            )
-            .tuples()
-            .all()
-        )
+        rows = self._session.execute(
+            select(TripGroup, TripPlan.title)
+            .join(GroupMember, GroupMember.group_id == TripGroup.id)
+            .join(TripPlan, TripPlan.id == TripGroup.plan_id)
+            .where(GroupMember.user_id == user.id)
+            .order_by(TripGroup.created_at.desc())
+        ).all()
         counts = dict(
             self._session.execute(
                 select(GroupMember.group_id, func.count()).group_by(GroupMember.group_id)
-            )
-            .tuples()
-            .all()
+            ).all()
         )
         return [
             GroupSummaryOut(
@@ -277,16 +271,12 @@ class GroupService:
         plan = self._plan(group)
         request = PlanRequest.model_validate(plan.request)
         options = [BundleOut.model_validate(o) for o in plan.options]
-        members = (
-            self._session.execute(
-                select(GroupMember, User)
-                .join(User, User.id == GroupMember.user_id)
-                .where(GroupMember.group_id == group_id)
-                .order_by(GroupMember.joined_at)
-            )
-            .tuples()
-            .all()
-        )
+        members = self._session.execute(
+            select(GroupMember, User)
+            .join(User, User.id == GroupMember.user_id)
+            .where(GroupMember.group_id == group_id)
+            .order_by(GroupMember.joined_at)
+        ).all()
         votes = list(self._session.scalars(select(GroupVote).where(GroupVote.group_id == group_id)))
         first_names = {u.id: u.full_name.split()[0] for _, u in members}
 

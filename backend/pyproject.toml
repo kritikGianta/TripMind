@@ -87,9 +87,9 @@ root_package = "app"
 name = "Layered architecture"
 type = "layers"
 layers = [
-    "app.main : app.cli : app.models : app.worker",
+    "app.main : app.cli : app.models : app.worker : app.demo",
     "app.worker_jobs",
-    "app.modules.admin | app.modules.ai",
+    "app.modules.admin | app.modules.ai | app.modules.privacy",
     "app.modules.recovery | app.modules.groups | app.modules.reviews | app.modules.support",
     "app.modules.bookings | app.modules.planner",
     "app.modules.loyalty | app.modules.watchlist",

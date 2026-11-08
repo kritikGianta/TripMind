@@ -48,3 +48,37 @@ class SessionOut(BaseModel):
 
     user: UserOut
     access_expires_at: datetime
+
+
+class ProfileUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    full_name: Annotated[str, Field(min_length=1, max_length=120)]
+
+
+class PasswordChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    current_password: Annotated[str, Field(min_length=1, max_length=128)]
+    new_password: Password
+
+
+class PasswordForgot(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    email: EmailStr
+
+
+class PasswordReset(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    token: Annotated[str, Field(min_length=20, max_length=200)]
+    new_password: Password
+
+
+class PasswordForgotOut(BaseModel):
+    message: str
+    dev_reset_token: str | None = Field(
+        default=None,
+        description="Email is simulated, so outside staging and production the token is returned",
+    )

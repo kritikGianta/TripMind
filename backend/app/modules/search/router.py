@@ -32,6 +32,7 @@ from app.modules.ml.features import FARE_ESTIMATOR_FEATURES, HOTEL_RANKER_FEATUR
 from app.modules.ml.interactions import HotelInteraction, record_interaction
 from app.modules.ml.preferences import UserPreference, learned
 from app.modules.ml.registry import load_model
+from app.modules.search.discover import DiscoverService, ExploreOut, FareCalendarOut
 from app.modules.search.flights import FlightQuery, FlightSearchService
 from app.modules.search.history import (
     SearchHistoryListOut,
@@ -402,3 +403,54 @@ def reset_preferences(
     user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ) -> None:
     forget(session, user.id)
+
+
+def _discover(
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
+) -> DiscoverService:
+    return DiscoverService(
+        session,
+        Converter(load_pricing_rules(settings.config_dir)),
+        load_search_rules(settings.config_dir),
+        _earliest_travel_date(clock),
+    )
+
+
+@router.get(
+    "/flights/calendar",
+    response_model=FareCalendarOut,
+    responses=_ERRORS,
+    dependencies=[Depends(require_feature("flight_search"))],
+    summary="Cheapest direct fare per day, to find the best day to fly",
+)
+def fare_calendar(
+    origin: Annotated[str, Query(min_length=2, max_length=64)],
+    destination: Annotated[str, Query(min_length=2, max_length=64)],
+    start: date,
+    days: Annotated[int, Query(ge=1, le=62)] = 30,
+    adults: Annotated[int, Query(ge=1, le=9)] = 1,
+    cabin_class: CabinClass = "economy",
+    service: DiscoverService = Depends(_discover),
+) -> FareCalendarOut:
+    return service.calendar(origin, destination, start, days, adults, cabin_class)
+
+
+@router.get(
+    "/explore",
+    response_model=ExploreOut,
+    responses=_ERRORS,
+    dependencies=[Depends(require_feature("flight_search"))],
+    summary="Where can I go? Flight + stay totals per destination, cheapest first",
+)
+def explore(
+    origin: Annotated[str, Query(min_length=2, max_length=64)],
+    departure_date: date,
+    nights: Annotated[int, Query(ge=1, le=30)] = 3,
+    adults: Annotated[int, Query(ge=1, le=9)] = 2,
+    budget: Annotated[int | None, Query(gt=0, description="Display currency, whole units")] = None,
+    min_rating: Annotated[float, Query(ge=0, le=10)] = 7.0,
+    service: DiscoverService = Depends(_discover),
+) -> ExploreOut:
+    return service.explore(origin, departure_date, nights, adults, budget, min_rating)

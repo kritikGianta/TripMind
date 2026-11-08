@@ -37,3 +37,7 @@ data/generated/
 Thumbs.db
 .idea/
 .vscode/
+
+# Raw training data stays out of git (large, and dataset licences restrict redistribution).
+models/**/*.csv
+models/**/*.zip

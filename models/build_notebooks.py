@@ -29,6 +29,9 @@ def code(text: str) -> dict[str, object]:
 
 
 def write(path: Path, cells: list[dict[str, object]]) -> None:
+    if path.exists() and any(c.get("outputs") for c in json.loads(path.read_text(encoding="utf-8"))["cells"]):
+        print(f"Kept {path.relative_to(HERE.parent)}: it holds executed results (delete it to rebuild)")
+        return
     notebook = {
         "nbformat": 4, "nbformat_minor": 5, "cells": cells,
         "metadata": {"kernelspec": {"name": "python3", "display_name": "Python 3",

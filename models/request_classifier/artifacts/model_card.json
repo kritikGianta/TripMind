@@ -1,0 +1,20 @@
+{
+  "name": "request_classifier",
+  "version": "2026.11.08",
+  "trained_at": "2026-11-08T08:07:32.177127+00:00",
+  "framework": "scikit-learn",
+  "framework_version": "1.6.1",
+  "dataset": "Bitext travel customer-support dataset (bitext/Bitext-travel-llm-chatbot-training-dataset, CDLA-Sharing-1.0)",
+  "features": [
+    "tfidf-logreg-v1"
+  ],
+  "metrics": {
+    "macro_f1": 0.9941360634933376,
+    "accuracy": 0.994630448515477,
+    "baseline_accuracy": 0.684459886291851,
+    "handwritten_accuracy": 0.7222222222222222,
+    "handwritten_baseline_accuracy": 0.7222222222222222,
+    "test_rows": 6332.0
+  },
+  "notes": "33 Bitext intents grouped into TripMind categories; 80/20 stratified split, seed 7. Synthetic source data."
+}

@@ -5,13 +5,15 @@ with a README, a notebook and an `artifacts/` folder.
 
 | Model | What it does in the product | Trained where | Status |
 |---|---|---|---|
-| [hotel_ranker](hotel_ranker/) | Orders "Recommended" stays from real click and booking behaviour (LightGBM LambdaRank) | Kaggle (Expedia data) | Notebook ready; artifact awaited |
-| [fare_estimator](fare_estimator/) | Labels a fare below typical, typical or above typical (LightGBM regression) | Kaggle (Indian domestic fares) | Notebook ready; artifact awaited |
+| [hotel_ranker](hotel_ranker/) | Orders "Recommended" stays from real click and booking behaviour (LightGBM LambdaRank) | Kaggle (Expedia data) | Live |
+| [fare_estimator](fare_estimator/) | Labels a fare below typical, typical or above typical (LightGBM regression) | Kaggle (Indian domestic fares) | Live |
 | [price_anomaly](price_anomaly/) | Flags suspicious fares in the import report (Isolation Forest) | Fitted per import; evaluated locally | Live |
 | [similar_hotels](similar_hotels/) | "Similar stays" on the hotel page (TF-IDF + cosine similarity) | Computed on demand; evaluated locally | Live |
-| [review_sentiment](review_sentiment/) | Review sentiment and per-aspect highlights on a stay (TF-IDF + logistic regression, JSON) | Kaggle (TripAdvisor reviews) | Notebook ready; word-list rules until trained |
+| [review_sentiment](review_sentiment/) | Review sentiment and per-aspect highlights on a stay (TF-IDF + logistic regression, JSON) | Kaggle (TripAdvisor reviews) | Live |
 | [preference_model](preference_model/) | Blends a signed-in traveller's taste into "Recommended" and says why (per-user logistic regression) | Per user by the worker; evaluated locally on simulated travellers | Live |
-| [request_classifier](request_classifier/) | Routes support tickets by category (TF-IDF + logistic regression, JSON) | Local or Kaggle (Bitext travel intents) | Notebook ready; keyword rules until trained |
+| [request_classifier](request_classifier/) | Routes support tickets by category (TF-IDF + logistic regression, JSON) | Local or Kaggle (Bitext travel intents) | Live |
+
+The admin console shows live status and metrics: `GET /api/v1/admin/models`.
 
 ## Contract every model follows
 

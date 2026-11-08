@@ -89,7 +89,7 @@ class Classification:
 
 
 class RequestClassifier:
-    def __init__(self, models_dir: Path, min_confidence: float = 0.45) -> None:
+    def __init__(self, models_dir: Path, min_confidence: float = 0.7) -> None:
         self._model: TextModel | None = load_text_model(
             models_dir, "request_classifier", MODEL_CATEGORIES
         )

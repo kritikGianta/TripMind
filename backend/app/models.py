@@ -6,7 +6,7 @@ import it so that metadata is complete; application code imports models from the
 
 from app.db.base import Base
 from app.modules.audit.models import AuditLog
-from app.modules.auth.models import RefreshToken, User
+from app.modules.auth.models import PasswordResetToken, RefreshToken, User
 from app.modules.bookings.models import (
     Booking,
     BookingEvent,
@@ -66,6 +66,7 @@ __all__ = [
     "InventoryClaim",
     "LoyaltyEntry",
     "Notification",
+    "PasswordResetToken",
     "Payment",
     "PriceAlert",
     "RecoveryCase",

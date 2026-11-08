@@ -116,11 +116,18 @@ def test_login_failures_are_indistinguishable_and_audited(
 
 
 def test_login_is_rate_limited(client: TestClient) -> None:
-    payload = {"email": "nobody@example.com", "password": "nope-nope-nope"}
-    statuses = [client.post(f"{API}/auth/login", json=payload).status_code for _ in range(11)]
+    # A different address each time: this is the per-client limit, not the per-account lockout.
+    statuses = [
+        client.post(
+            f"{API}/auth/login", json={"email": f"nobody{i}@example.com", "password": "nope-nope"}
+        ).status_code
+        for i in range(11)
+    ]
     assert statuses[:10] == [401] * 10
     assert statuses[10] == 429
-    limited = client.post(f"{API}/auth/login", json=payload)
+    limited = client.post(
+        f"{API}/auth/login", json={"email": "nobody@example.com", "password": "nope-nope"}
+    )
     assert int(limited.headers["retry-after"]) >= 1
     assert error_code(limited) == "RATE_LIMITED"
 

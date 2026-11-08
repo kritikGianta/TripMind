@@ -74,6 +74,13 @@ class Settings(BaseSettings):
     # CORS is only needed for cross-origin callers; the web app uses a same-origin proxy.
     cors_origins: list[str] = Field(default_factory=list)
 
+    # Sign-in protection and password reset.
+    login_lockout_attempts: int = 8
+    login_lockout_minutes: int = 15
+    password_reset_minutes: int = 30
+    # Largest JSON body accepted; dataset uploads have their own limit.
+    max_request_mb: int = 2
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

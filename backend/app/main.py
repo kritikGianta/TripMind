@@ -17,7 +17,7 @@ from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.features import load_feature_flags
 from app.core.logging import configure_logging
-from app.core.middleware import RequestContextMiddleware
+from app.core.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
 from app.core.tracing import configure_tracing
 from app.db.session import get_engine
 from app.modules.admin.module import router as admin_console_router
@@ -32,6 +32,7 @@ from app.modules.loyalty.module import router as loyalty_router
 from app.modules.meta.router import router as meta_router
 from app.modules.notifications.router import router as notifications_router
 from app.modules.planner.router import router as planner_router
+from app.modules.privacy.module import router as privacy_router
 from app.modules.profiles.module import router as profiles_router
 from app.modules.recovery.router import admin_router as operations_router
 from app.modules.recovery.router import router as recovery_router
@@ -73,6 +74,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
 
+    app.add_middleware(
+        SecurityHeadersMiddleware,
+        hsts=settings.cookie_secure,
+        max_body_bytes=settings.max_request_mb * 1024 * 1024,
+    )
     app.add_middleware(RequestContextMiddleware)
     if settings.cors_origins:
         app.add_middleware(
@@ -103,6 +109,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(watchlist_router, prefix=settings.api_prefix)
     app.include_router(reviews_router, prefix=settings.api_prefix)
     app.include_router(support_router, prefix=settings.api_prefix)
+    app.include_router(privacy_router, prefix=settings.api_prefix)
     app.include_router(imports_admin_router, prefix=settings.api_prefix)
 
     # Served on the API's own port only; the web proxy forwards /api/* and never /metrics.

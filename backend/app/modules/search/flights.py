@@ -168,21 +168,17 @@ class FlightSearchService:
     # ------------------------------------------------------------------ building offers
 
     def _load_airports(self) -> None:
-        rows = (
-            self._session.execute(
-                select(
-                    Airport.id,
-                    Airport.code,
-                    Airport.name,
-                    City.name,
-                    Airport.latitude,
-                    Airport.longitude,
-                    Airport.country,
-                ).join(City, City.id == Airport.city_id)
-            )
-            .tuples()
-            .all()
-        )
+        rows = self._session.execute(
+            select(
+                Airport.id,
+                Airport.code,
+                Airport.name,
+                City.name,
+                Airport.latitude,
+                Airport.longitude,
+                Airport.country,
+            ).join(City, City.id == Airport.city_id)
+        ).all()
         self._airports = {
             i: AirportBrief(code=code, name=name, city_name=city)
             for i, code, name, city, _, _, _ in rows

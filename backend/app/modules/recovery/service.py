@@ -106,26 +106,20 @@ class RecoveryService:
     def booked_flights(self) -> BookedFlightListOut:
         """Upcoming flights with seats sold, so an operator (or a demo) can disrupt one."""
         now = self._clock.now()
-        rows = (
-            self._session.execute(
-                select(Flight, FlightInventory.reserved)
-                .join(FlightInventory, FlightInventory.flight_id == Flight.id)
-                .where(FlightInventory.reserved > 0, Flight.departure_at > now)
-                .order_by(Flight.departure_at)
-                .limit(50)
-            )
-            .tuples()
-            .all()
-        )
-        codes = dict(self._session.execute(select(Airport.id, Airport.code)).tuples().all())
+        rows = self._session.execute(
+            select(Flight, FlightInventory.reserved)
+            .join(FlightInventory, FlightInventory.flight_id == Flight.id)
+            .where(FlightInventory.reserved > 0, Flight.departure_at > now)
+            .order_by(Flight.departure_at)
+            .limit(50)
+        ).all()
+        codes = dict(self._session.execute(select(Airport.id, Airport.code)).all())
         disrupted = dict(
             self._session.execute(
                 select(Disruption.flight_id, Disruption.kind).where(
                     Disruption.flight_id.in_([f.id for f, _ in rows])
                 )
-            )
-            .tuples()
-            .all()
+            ).all()
         )
         return BookedFlightListOut(
             items=[

@@ -45,7 +45,7 @@ class LocationService:
             select(Airport, City)
             .join(City, City.id == Airport.city_id)
             .where(Airport.is_active.is_(True))
-        ).tuples()
+        )
         return [
             _Candidate(
                 LocationOut(

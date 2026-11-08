@@ -202,6 +202,10 @@ export const capabilities: Capability[] = [
   { name: "Saved stays, price alerts, recent searches", detail: "Save stays, watch a flight search or a stay for a drop (the worker re-prices and notifies once), pick up recent searches or clear them (API done; screens come with the UI pass)", status: "planned" },
   { name: "Hotel reviews", detail: "Supplied and verified-stay reviews with a sentiment and per-aspect summary (location, staff, cleanliness...); travellers review a stay after check-out (API done; screens come with the UI pass)", status: "planned" },
   { name: "Support requests", detail: "Tickets filed by category automatically (request classifier, or keyword rules until trained), urgent when the trip is within 72 hours, admin queue with replies, re-filing and audit (API done; screens come with the UI pass)", status: "planned" },
+  { name: "Fare calendar and Explore", detail: "Cheapest day to fly, and where a budget can take you with flight and stay totals (API done; screens come with the UI pass)", status: "planned" },
+  { name: "Connected-trip suggestions", detail: "Sees what a trip is missing and offers stays or return flights ready to add; trip export to any calendar (API done; screens come with the UI pass)", status: "planned" },
+  { name: "Account security and privacy", detail: "Password change and reset, sign-in lockout, sign out everywhere, data export and account deletion, automatic retention (API done; screens come with the UI pass)", status: "planned" },
+  { name: "Admin: models and users", detail: "See which models are live with their metrics; find and disable accounts, audited (API done; screens come with the UI pass)", status: "planned" },
   { name: "Add-on booking", detail: "Add a stay to a flight trip (or the reverse) with dates prefilled", status: "live" },
   { name: "Connected-trip planner", detail: "Ranked flight + stay bundles, score breakdown, Journey Confidence Report, booked in one checkout", status: "live" },
   { name: "Disruption recovery", detail: "Cancellations, delays and room outages: options offered, traveller approves, only the affected item is replaced", status: "live" },
@@ -215,8 +219,10 @@ export const capabilities: Capability[] = [
   { name: "Price anomaly detector", detail: "Isolation Forest flags suspicious fares in every import; 100% precision and recall on injected errors", status: "live" },
   { name: "Similar stays", detail: "TF-IDF similarity over amenities, stars, rating and price band, shown on every hotel page", status: "live" },
   { name: "Personalised recommendations", detail: "Per-traveller model learned from stays opened, saved and booked; blended 30% into Recommended with plain reasons; viewable and resettable; offline check on simulated travellers (MRR 0.38 to 0.41 at the served blend)", status: "live" },
-  { name: "Review sentiment and request classifier", detail: "TF-IDF + logistic regression exported as JSON (no pickle); notebooks on public data (TripAdvisor reviews, Bitext travel intents) must beat the rules they replace; rules run until trained", status: "planned" },
-  { name: "Hotel ranker and fare estimator", detail: "LightGBM models trained on public Kaggle data; notebooks ready, used once trained, with rule fallbacks", status: "planned" },
+  { name: "Review sentiment", detail: "TF-IDF + logistic regression on public hotel reviews, macro F1 0.73 against 0.56 for word lists; exported as JSON, never a pickle", status: "live" },
+  { name: "Request classifier", detail: "Files support requests by category; 86% right on 56 hand-written messages against 73% for keyword rules, which take over when the model is unsure", status: "live" },
+  { name: "Hotel ranker", detail: "LightGBM LambdaRank on Expedia click and booking data; NDCG@5 0.259 against 0.237 for the rule-based order", status: "live" },
+  { name: "Fare estimator", detail: "LightGBM on 300,000 Indian domestic fares; 15.5% average error against 36.5% for a median baseline; domestic routes only", status: "live" },
   { name: "Monitoring dashboards", detail: "Prometheus metrics and alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger", status: "live" },
 ];
 

@@ -1,0 +1,26 @@
+{
+  "name": "hotel_ranker",
+  "version": "2026.11.08",
+  "trained_at": "2026-11-08T08:28:00.039233+00:00",
+  "framework": "lightgbm",
+  "framework_version": "4.6.0",
+  "dataset": "Expedia Personalize Hotel Search (Kaggle), randomly ordered result lists only",
+  "features": [
+    "star_rating",
+    "review_score",
+    "log_price_usd",
+    "price_rank_pct",
+    "star_rank_pct",
+    "length_of_stay",
+    "adults",
+    "rooms",
+    "booking_window_days"
+  ],
+  "metrics": {
+    "ndcg5_model": 0.2593663399169437,
+    "ndcg5_rules_baseline": 0.23652980170785934,
+    "train_searches": 97237.0,
+    "valid_searches": 24309.0
+  },
+  "notes": "LambdaRank; labels: booking 5, click 1. Prices may mix per-night and per-stay values."
+}

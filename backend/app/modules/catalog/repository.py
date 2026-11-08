@@ -59,4 +59,4 @@ class CatalogRepository:
             .join(City, City.id == Airport.city_id)
             .where(Airport.is_active.is_(True))
         )
-        return [(airport, city_key) for airport, city_key in rows.tuples()]
+        return [(airport, city_key) for airport, city_key in rows]

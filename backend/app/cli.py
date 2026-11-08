@@ -7,6 +7,7 @@ python -m app.cli data generate        Write the synthetic demo dataset ZIP
 python -m app.cli data profile PATH    Describe a dataset and draft a mapping for it
 python -m app.cli data import PATH     Import a dataset ZIP or folder with a named mapping
 python -m app.cli data bootstrap       Import the synthetic dataset if none is published yet
+python -m app.cli demo-scenario        Fill the demo traveller with a ready-made story
 """
 
 from __future__ import annotations
@@ -215,6 +216,10 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("seed", help="Create demo accounts")
+    demo = sub.add_parser("demo-scenario", help="Fill the demo traveller with a ready-made story")
+    demo.add_argument(
+        "--fresh", action="store_true", help="Archive the current demo traveller and start again"
+    )
     admin = sub.add_parser("create-admin", help="Create an admin account")
     admin.add_argument("--email", required=True)
     admin.add_argument("--name", default="Administrator")
@@ -261,6 +266,11 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.command == "seed":
         return seed()
+    if args.command == "demo-scenario":
+        from app.demo import run  # imported lazily: pulls in every service
+
+        print(run(get_settings(), fresh=args.fresh))
+        return 0
     if args.command == "openapi":
         return export_openapi(args.path)
     if args.command == "create-admin":

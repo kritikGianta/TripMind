@@ -190,13 +190,9 @@ class PlaceResolver:
 
     def __init__(self, session: Session, vocabulary: Vocabulary) -> None:
         self._cities = list(session.scalars(select(City).where(City.is_active.is_(True))))
-        airports = (
-            session.execute(
-                select(Airport.city_id, Airport.code).where(Airport.is_active.is_(True))
-            )
-            .tuples()
-            .all()
-        )
+        airports = session.execute(
+            select(Airport.city_id, Airport.code).where(Airport.is_active.is_(True))
+        ).all()
         self._airport = {city_id: code for city_id, code in airports}
         codes = {code.lower(): city_id for city_id, code in airports}
         aliases = vocabulary.city_alias_index()

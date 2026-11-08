@@ -56,18 +56,14 @@ class InventoryService:
         capacity = dict(
             self._session.execute(
                 select(Flight.id, Flight.seat_capacity).where(Flight.id.in_(flight_ids))
-            )
-            .tuples()
-            .all()
+            ).all()
         )
         reserved = dict(
             self._session.execute(
                 select(FlightInventory.flight_id, FlightInventory.reserved).where(
                     FlightInventory.flight_id.in_(flight_ids)
                 )
-            )
-            .tuples()
-            .all()
+            ).all()
         )
         return {fid: cap - reserved.get(fid, 0) for fid, cap in capacity.items()}
 

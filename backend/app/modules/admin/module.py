@@ -1,7 +1,9 @@
-"""Admin console reads: business analytics and the audit log. Read-only; admins only."""
+"""Admin console: analytics, the audit log, model status and account management. Admins only."""
 
 from __future__ import annotations
 
+import json
+import uuid
 from datetime import date, datetime, timedelta
 from typing import Annotated, Any
 
@@ -11,14 +13,24 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
-from app.core.deps import get_clock
-from app.core.errors import ErrorEnvelope
+from app.core.config import Settings
+from app.core.deps import get_clock, get_request_meta, get_settings_dep
+from app.core.errors import Conflict, ErrorEnvelope, NotFound
+from app.core.request_context import RequestMeta
 from app.db.session import get_session
 from app.modules.audit.models import AuditLog
+from app.modules.audit.service import AuditService
 from app.modules.auth.dependencies import require_role
 from app.modules.auth.models import User, UserRole
+from app.modules.auth.repository import RefreshTokenRepository
 from app.modules.bookings.models import Booking, BookingItem, BookingStatus, Refund, Trip
 from app.modules.catalog.models import City
+from app.modules.ml.features import FARE_ESTIMATOR_FEATURES, HOTEL_RANKER_FEATURES
+from app.modules.ml.preferences import UserPreference
+from app.modules.ml.registry import load_model
+from app.modules.ml.request_classifier import MODEL_CATEGORIES
+from app.modules.ml.sentiment import CLASSES as SENTIMENT_CLASSES
+from app.modules.ml.text import load_text_model
 from app.modules.planner.models import TripPlan
 from app.modules.recovery.models import RecoveryCase
 from app.modules.search.pricing import MoneyOut
@@ -89,9 +101,7 @@ def analytics(
         return MoneyOut(amount_minor=int(value or 0), currency=currency)
 
     by_status = dict(
-        session.execute(select(Booking.status, func.count()).group_by(Booking.status))
-        .tuples()
-        .all()
+        session.execute(select(Booking.status, func.count()).group_by(Booking.status)).all()
     )
     confirmed_value = int(
         session.scalar(
@@ -115,9 +125,7 @@ def analytics(
             select(BookingItem.kind, func.count())
             .where(BookingItem.status == "confirmed")
             .group_by(BookingItem.kind)
-        )
-        .tuples()
-        .all()
+        ).all()
     )
     connected = int(
         session.scalar(
@@ -132,39 +140,29 @@ def analytics(
         )
         or 0
     )
-    destinations = (
-        session.execute(
-            select(City.name, func.count())
-            .join(Trip, Trip.destination_city_id == City.id)
-            .join(Booking, Booking.trip_id == Trip.id)
-            .where(Booking.confirmed_at.is_not(None))
-            .group_by(City.name)
-            .order_by(func.count().desc())
-            .limit(5)
-        )
-        .tuples()
-        .all()
-    )
+    destinations = session.execute(
+        select(City.name, func.count())
+        .join(Trip, Trip.destination_city_id == City.id)
+        .join(Booking, Booking.trip_id == Trip.id)
+        .where(Booking.confirmed_at.is_not(None))
+        .group_by(City.name)
+        .order_by(func.count().desc())
+        .limit(5)
+    ).all()
     recovery = dict(
         session.execute(
             select(
                 func.coalesce(RecoveryCase.resolution, RecoveryCase.status), func.count()
             ).group_by(func.coalesce(RecoveryCase.resolution, RecoveryCase.status))
-        )
-        .tuples()
-        .all()
+        ).all()
     )
     since = clock.now() - timedelta(days=30)
-    days = (
-        session.execute(
-            select(func.date(Booking.confirmed_at), func.count(), func.sum(Booking.total_minor))
-            .where(Booking.confirmed_at >= since)
-            .group_by(func.date(Booking.confirmed_at))
-            .order_by(func.date(Booking.confirmed_at))
-        )
-        .tuples()
-        .all()
-    )
+    days = session.execute(
+        select(func.date(Booking.confirmed_at), func.count(), func.sum(Booking.total_minor))
+        .where(Booking.confirmed_at >= since)
+        .group_by(func.date(Booking.confirmed_at))
+        .order_by(func.date(Booking.confirmed_at))
+    ).all()
     return AnalyticsOut(
         currency=currency,
         travellers=int(
@@ -224,11 +222,9 @@ def audit(
     if outcome:
         query = query.where(AuditLog.outcome == outcome)
         count = count.where(AuditLog.outcome == outcome)
-    rows = (
-        session.execute(query.order_by(AuditLog.occurred_at.desc()).limit(limit).offset(offset))
-        .tuples()
-        .all()
-    )
+    rows = session.execute(
+        query.order_by(AuditLog.occurred_at.desc()).limit(limit).offset(offset)
+    ).all()
     actions = list(session.scalars(select(AuditLog.action).distinct().order_by(AuditLog.action)))
     return AuditPageOut(
         items=[
@@ -246,3 +242,161 @@ def audit(
         total=int(session.scalar(count) or 0),
         actions=actions,
     )
+
+
+# ------------------------------------------------------------------------------ models
+
+_MODELS = (
+    ("hotel_ranker", "Orders Recommended stays", "Weighted score: rating, value, stars"),
+    ("fare_estimator", "Labels fares below, at or above typical", "No fare label shown"),
+    ("review_sentiment", "Review sentiment and aspect highlights", "Word lists with negation"),
+    ("request_classifier", "Files support requests by category", "Keyword rules"),
+    ("preference_model", "Personalises Recommended per traveller", "Normal Recommended order"),
+    ("price_anomaly", "Flags suspicious fares in import reports", "No warning shown"),
+    ("similar_hotels", "Similar stays on the hotel page", "Section hidden"),
+)
+
+
+class ModelStatusOut(BaseModel):
+    name: str
+    purpose: str
+    in_use: bool
+    fallback: str
+    version: str | None
+    trained_at: str | None
+    dataset: str | None
+    metrics: dict[str, float]
+
+
+class ModelListOut(BaseModel):
+    models: list[ModelStatusOut]
+    travellers_with_preferences: int
+
+
+def _model_in_use(name: str, settings: Settings, has_card: bool) -> bool:
+    if name == "hotel_ranker":
+        return load_model(settings.models_dir, name, HOTEL_RANKER_FEATURES) is not None
+    if name == "fare_estimator":
+        return load_model(settings.models_dir, name, FARE_ESTIMATOR_FEATURES) is not None
+    if name == "review_sentiment":
+        return load_text_model(settings.models_dir, name, SENTIMENT_CLASSES) is not None
+    if name == "request_classifier":
+        return load_text_model(settings.models_dir, name, MODEL_CATEGORIES) is not None
+    return has_card  # fitted per import, on demand or per user: live once evaluated
+
+
+@router.get("/models", response_model=ModelListOut, summary="Which models are live, with metrics")
+def model_status(
+    _: Admin,
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+) -> ModelListOut:
+    out = []
+    for name, purpose, fallback in _MODELS:
+        path = settings.models_dir / name / "artifacts" / "model_card.json"
+        card = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        out.append(
+            ModelStatusOut(
+                name=name,
+                purpose=purpose,
+                in_use=_model_in_use(name, settings, bool(card)),
+                fallback=fallback,
+                version=card.get("version"),
+                trained_at=card.get("trained_at"),
+                dataset=card.get("dataset"),
+                metrics=card.get("metrics", {}),
+            )
+        )
+    count = session.scalar(select(func.count()).select_from(UserPreference))
+    return ModelListOut(models=out, travellers_with_preferences=int(count or 0))
+
+
+# ------------------------------------------------------------------------------ users
+
+
+class AdminUserOut(BaseModel):
+    id: uuid.UUID
+    email: str
+    full_name: str
+    role: str
+    is_active: bool
+    created_at: datetime
+    last_login_at: datetime | None
+    bookings: int
+
+
+class AdminUserPageOut(BaseModel):
+    items: list[AdminUserOut]
+    total: int
+
+
+class UserStatusIn(BaseModel):
+    active: bool
+
+
+def _user_out(session: Session, user: User) -> AdminUserOut:
+    bookings = session.scalar(
+        select(func.count()).select_from(Booking).where(Booking.user_id == user.id)
+    )
+    return AdminUserOut(
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        is_active=user.is_active,
+        created_at=user.created_at,
+        last_login_at=user.last_login_at,
+        bookings=int(bookings or 0),
+    )
+
+
+@router.get("/users", response_model=AdminUserPageOut, summary="Find accounts")
+def list_users(
+    _: Admin,
+    session: Session = Depends(get_session),
+    q: Annotated[str | None, Query(max_length=120)] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> AdminUserPageOut:
+    query = select(User)
+    if q:
+        needle = f"%{q.strip().lower()}%"
+        query = query.where(
+            func.lower(User.email).like(needle) | func.lower(User.full_name).like(needle)
+        )
+    total = session.scalar(select(func.count()).select_from(query.subquery()))
+    users = session.scalars(query.order_by(User.created_at.desc()).limit(limit).offset(offset))
+    return AdminUserPageOut(items=[_user_out(session, u) for u in users], total=int(total or 0))
+
+
+@router.post(
+    "/users/{user_id}/status",
+    response_model=AdminUserOut,
+    responses={404: {"model": ErrorEnvelope}, 409: {"model": ErrorEnvelope}},
+    summary="Disable or re-enable an account (audited; disabling ends its sessions)",
+)
+def set_user_status(
+    user_id: uuid.UUID,
+    body: UserStatusIn,
+    admin: Admin,
+    session: Session = Depends(get_session),
+    clock: Clock = Depends(get_clock),
+    meta: RequestMeta = Depends(get_request_meta),
+) -> AdminUserOut:
+    user = session.get(User, user_id)
+    if user is None:
+        raise NotFound("Account not found.", code="USER_NOT_FOUND")
+    if user.id == admin.id:
+        raise Conflict("You cannot change your own account status.", code="CANNOT_CHANGE_SELF")
+    user.is_active = body.active
+    if not body.active:
+        RefreshTokenRepository(session).revoke_all_for_user(user.id, clock.now())
+    AuditService(session).record(
+        action="admin.user_status",
+        outcome="success",
+        meta=meta,
+        actor_user_id=admin.id,
+        details={"user_id": str(user.id), "active": body.active},
+    )
+    session.commit()
+    return _user_out(session, user)

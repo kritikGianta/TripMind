@@ -276,7 +276,10 @@ class ImportService:
         now = self._clock.now()
         run.status = ImportStatus.FAILED
         run.finished_at = now
-        run.duration_ms = int((now - run.started_at).total_seconds() * 1000)
+        started = (
+            run.started_at if run.started_at.tzinfo else run.started_at.replace(tzinfo=now.tzinfo)
+        )
+        run.duration_ms = int((now - started).total_seconds() * 1000)
         run.error = (
             exc.message
             if isinstance(exc, DomainError)

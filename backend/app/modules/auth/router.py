@@ -11,12 +11,14 @@ from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.deps import (
     get_clock,
+    get_kv_store,
     get_request_meta,
     get_settings_dep,
     rate_limit,
     require_feature,
 )
 from app.core.errors import ErrorEnvelope
+from app.core.kv import KeyValueStore
 from app.core.request_context import RequestMeta
 from app.db.session import get_session
 from app.modules.auth.cookies import REFRESH_COOKIE, clear_session_cookies, set_session_cookies
@@ -25,6 +27,11 @@ from app.modules.auth.models import User, UserRole
 from app.modules.auth.schemas import (
     DemoLoginRequest,
     LoginRequest,
+    PasswordChange,
+    PasswordForgot,
+    PasswordForgotOut,
+    PasswordReset,
+    ProfileUpdate,
     RegisterRequest,
     SessionOut,
     UserOut,
@@ -45,8 +52,9 @@ def get_auth_service(
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings_dep),
     clock: Clock = Depends(get_clock),
+    store: KeyValueStore = Depends(get_kv_store),
 ) -> AuthService:
-    return AuthService(session, settings, clock)
+    return AuthService(session, settings, clock, store)
 
 
 def _session_response(
@@ -181,3 +189,86 @@ def logout(
 )
 def me(user: User = Depends(get_current_user)) -> UserOut:
     return UserOut.model_validate(user)
+
+
+@router.patch("/me", response_model=UserOut, responses=_ERRORS, summary="Update my profile")
+def update_me(
+    body: ProfileUpdate,
+    user: User = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service),
+    meta: RequestMeta = Depends(get_request_meta),
+) -> UserOut:
+    return UserOut.model_validate(service.update_profile(user, body.full_name, meta))
+
+
+@router.post(
+    "/logout-all",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=_ERRORS,
+    summary="Sign out on every device",
+)
+def logout_all(
+    user: User = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service),
+    meta: RequestMeta = Depends(get_request_meta),
+    settings: Settings = Depends(get_settings_dep),
+) -> Response:
+    service.logout_everywhere(user, meta)
+    response = Response(status_code=status.HTTP_204_NO_CONTENT)
+    clear_session_cookies(response, settings)
+    return response
+
+
+@router.post(
+    "/password",
+    response_model=SessionOut,
+    responses=_ERRORS,
+    dependencies=[Depends(rate_limit("password_change", limit=10, window_seconds=300))],
+    summary="Change my password; other devices are signed out",
+)
+def change_password(
+    body: PasswordChange,
+    response: Response,
+    user: User = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service),
+    meta: RequestMeta = Depends(get_request_meta),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
+) -> SessionOut:
+    issued = service.change_password(user, body.current_password, body.new_password, meta)
+    return _session_response(response, issued, settings, clock)
+
+
+@router.post(
+    "/password/forgot",
+    response_model=PasswordForgotOut,
+    status_code=status.HTTP_202_ACCEPTED,
+    responses=_ERRORS,
+    dependencies=[Depends(rate_limit("password_forgot", limit=5, window_seconds=300))],
+    summary="Request a password reset (same answer whether or not the account exists)",
+)
+def forgot_password(
+    body: PasswordForgot,
+    service: AuthService = Depends(get_auth_service),
+    meta: RequestMeta = Depends(get_request_meta),
+) -> PasswordForgotOut:
+    token = service.forgot_password(str(body.email), meta)
+    return PasswordForgotOut(
+        message="If that address has an account, a reset link is on its way.",
+        dev_reset_token=token,
+    )
+
+
+@router.post(
+    "/password/reset",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=_ERRORS,
+    dependencies=[Depends(rate_limit("password_reset", limit=10, window_seconds=300))],
+    summary="Set a new password with a reset token; every session ends",
+)
+def reset_password(
+    body: PasswordReset,
+    service: AuthService = Depends(get_auth_service),
+    meta: RequestMeta = Depends(get_request_meta),
+) -> None:
+    service.reset_password(body.token, body.new_password, meta)

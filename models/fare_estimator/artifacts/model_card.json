@@ -1,0 +1,23 @@
+{
+  "name": "fare_estimator",
+  "version": "2026.11.08",
+  "trained_at": "2026-11-08T07:50:51.577032+00:00",
+  "framework": "lightgbm",
+  "framework_version": "4.6.0",
+  "dataset": "Flight Price Prediction (Kaggle), Indian domestic fares between six metros",
+  "features": [
+    "distance_km",
+    "duration_minutes",
+    "stops",
+    "days_left",
+    "departure_hour",
+    "business"
+  ],
+  "metrics": {
+    "mape_model": 0.15491029531794376,
+    "mape_median_baseline": 0.36518761643466335,
+    "mae_inr_model": 2115.5399014123054,
+    "rows": 300153.0
+  },
+  "notes": "Predicts log(fare in INR) per adult. Airline identity is deliberately not a feature."
+}

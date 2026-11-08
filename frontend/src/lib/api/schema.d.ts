@@ -124,6 +124,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Which models are live, with metrics */
+        get: operations["model_status_api_v1_admin_models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/operations/booked-flights": {
         parameters: {
             query?: never;
@@ -205,6 +222,40 @@ export interface paths {
         put?: never;
         /** Reply as an agent (the traveller is notified) */
         post: operations["agent_reply_api_v1_admin_support_tickets__ticket_id__messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Find accounts */
+        get: operations["list_users_api_v1_admin_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disable or re-enable an account (audited; disabling ends its sessions) */
+        post: operations["set_user_status_api_v1_admin_users__user_id__status_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -313,6 +364,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/logout-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign out on every device */
+        post: operations["logout_all_api_v1_auth_logout_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/me": {
         parameters: {
             query?: never;
@@ -324,6 +392,58 @@ export interface paths {
         get: operations["me_api_v1_auth_me_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update my profile */
+        patch: operations["update_me_api_v1_auth_me_patch"];
+        trace?: never;
+    };
+    "/api/v1/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change my password; other devices are signed out */
+        post: operations["change_password_api_v1_auth_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request a password reset (same answer whether or not the account exists) */
+        post: operations["forgot_password_api_v1_auth_password_forgot_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set a new password with a reset token; every session ends */
+        post: operations["reset_password_api_v1_auth_password_reset_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -586,6 +706,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/explore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Where can I go? Flight + stay totals per destination, cheapest first */
+        get: operations["explore_api_v1_explore_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/flights/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cheapest direct fare per day, to find the best day to fly */
+        get: operations["fare_calendar_api_v1_flights_calendar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/flights/search": {
         parameters: {
             query?: never;
@@ -783,6 +937,40 @@ export interface paths {
         };
         /** Airports (for flights) or cities (for stays) matching a search box */
         get: operations["locations_api_v1_locations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete my account (bookings kept for accounting, without personal details) */
+        delete: operations["delete_my_account_api_v1_me_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download everything TripMind holds about me */
+        get: operations["export_my_data_api_v1_me_export_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1291,6 +1479,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/trips/{trip_id}/calendar.ics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Add the trip to any calendar app */
+        get: operations["trip_calendar_api_v1_trips__trip_id__calendar_ics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trips/{trip_id}/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What this trip is missing, with stays and flights ready to add */
+        get: operations["trip_suggestions_api_v1_trips__trip_id__suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1306,6 +1528,38 @@ export interface components {
             href: string;
             /** Label */
             label: string;
+        };
+        /** AdminUserOut */
+        AdminUserOut: {
+            /** Bookings */
+            bookings: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Email */
+            email: string;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Last Login At */
+            last_login_at: string | null;
+            /** Role */
+            role: string;
+        };
+        /** AdminUserPageOut */
+        AdminUserPageOut: {
+            /** Items */
+            items: components["schemas"]["AdminUserOut"][];
+            /** Total */
+            total: number;
         };
         /** AgentReplyIn */
         AgentReplyIn: {
@@ -1382,6 +1636,11 @@ export interface components {
              * @description 'ai:<provider>' or 'rules'
              */
             source: string;
+            /**
+             * Topic
+             * @description Support category of the question (request classifier)
+             */
+            topic?: string | null;
         };
         /** AssistantRequest */
         AssistantRequest: {
@@ -1639,6 +1898,23 @@ export interface components {
             stay: components["schemas"]["StayPlanOut"];
             total: components["schemas"]["MoneyOut"];
         };
+        /** CalendarDayOut */
+        CalendarDayOut: {
+            /** @description Lowest direct fare for the party; None: no flight */
+            cheapest: components["schemas"]["MoneyOut"] | null;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Flights */
+            flights: number;
+            /**
+             * Level
+             * @description Compared with the other days shown
+             */
+            level: ("low" | "typical" | "high") | null;
+        };
         /** CancelRequest */
         CancelRequest: {
             /**
@@ -1875,6 +2151,11 @@ export interface components {
             /** Option Id */
             option_id: string;
         };
+        /** DeleteAccountIn */
+        DeleteAccountIn: {
+            /** Password */
+            password: string;
+        };
         /** DemoLoginRequest */
         DemoLoginRequest: {
             /**
@@ -2002,6 +2283,73 @@ export interface components {
             /** Type */
             type: string;
         };
+        /** ExploreOptionOut */
+        ExploreOptionOut: {
+            /** Airport Code */
+            airport_code: string;
+            /** City */
+            city: string;
+            /**
+             * City Id
+             * Format: uuid
+             */
+            city_id: string;
+            /** Country */
+            country: string | null;
+            /** @description Return fares for the party */
+            flights: components["schemas"]["MoneyOut"];
+            per_person: components["schemas"]["MoneyOut"];
+            /** @description Cheapest well-rated stay for all nights and rooms */
+            stay: components["schemas"]["MoneyOut"];
+            stay_option: components["schemas"]["ExploreStayOut"];
+            total: components["schemas"]["MoneyOut"];
+        };
+        /** ExploreOut */
+        ExploreOut: {
+            /** Adults */
+            adults: number;
+            budget: components["schemas"]["MoneyOut"] | null;
+            /**
+             * Departure Date
+             * Format: date
+             */
+            departure_date: string;
+            /** Nights */
+            nights: number;
+            /** Note */
+            note: string;
+            /**
+             * Options
+             * @description Cheapest first
+             */
+            options: components["schemas"]["ExploreOptionOut"][];
+            /** Origin */
+            origin: string;
+            /**
+             * Over Budget
+             * @description Destinations reachable but above the budget
+             */
+            over_budget: number;
+            /**
+             * Return Date
+             * Format: date
+             */
+            return_date: string;
+        };
+        /** ExploreStayOut */
+        ExploreStayOut: {
+            /** Guest Rating */
+            guest_rating: number | null;
+            /**
+             * Hotel Id
+             * Format: uuid
+             */
+            hotel_id: string;
+            /** Name */
+            name: string;
+            /** Star Rating */
+            star_rating: number | null;
+        };
         /** ExtraLineOut */
         ExtraLineOut: {
             charge: components["schemas"]["MoneyOut"];
@@ -2117,6 +2465,23 @@ export interface components {
             min_price?: components["schemas"]["MoneyOut"] | null;
             /** Value */
             value: string;
+        };
+        /** FareCalendarOut */
+        FareCalendarOut: {
+            /** Adults */
+            adults: number;
+            /** Cabin Class */
+            cabin_class: string;
+            /** Cheapest Day */
+            cheapest_day: string | null;
+            /** Days */
+            days: components["schemas"]["CalendarDayOut"][];
+            /** Destination */
+            destination: string;
+            /** Note */
+            note: string;
+            /** Origin */
+            origin: string;
         };
         /** FareInsightOut */
         FareInsightOut: {
@@ -2967,6 +3332,34 @@ export interface components {
              */
             id: string;
         };
+        /** ModelListOut */
+        ModelListOut: {
+            /** Models */
+            models: components["schemas"]["ModelStatusOut"][];
+            /** Travellers With Preferences */
+            travellers_with_preferences: number;
+        };
+        /** ModelStatusOut */
+        ModelStatusOut: {
+            /** Dataset */
+            dataset: string | null;
+            /** Fallback */
+            fallback: string;
+            /** In Use */
+            in_use: boolean;
+            /** Metrics */
+            metrics: {
+                [key: string]: number;
+            };
+            /** Name */
+            name: string;
+            /** Purpose */
+            purpose: string;
+            /** Trained At */
+            trained_at: string | null;
+            /** Version */
+            version: string | null;
+        };
         /** MoneyOut */
         MoneyOut: {
             /** Amount Minor */
@@ -3121,6 +3514,38 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** PasswordChange */
+        PasswordChange: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
+        /** PasswordForgot */
+        PasswordForgot: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+        };
+        /** PasswordForgotOut */
+        PasswordForgotOut: {
+            /**
+             * Dev Reset Token
+             * @description Email is simulated, so outside staging and production the token is returned
+             */
+            dev_reset_token?: string | null;
+            /** Message */
+            message: string;
+        };
+        /** PasswordReset */
+        PasswordReset: {
+            /** New Password */
+            new_password: string;
+            /** Token */
+            token: string;
         };
         /** PaymentOut */
         PaymentOut: {
@@ -3367,6 +3792,11 @@ export interface components {
              * @description Draft mapping YAML; review before saving
              */
             suggested_mapping: string;
+        };
+        /** ProfileUpdate */
+        ProfileUpdate: {
+            /** Full Name */
+            full_name: string;
         };
         /** QuoteItemOut */
         QuoteItemOut: {
@@ -4112,6 +4542,41 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** TripSuggestionOut */
+        TripSuggestionOut: {
+            /** Checkout Item */
+            checkout_item: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "stay" | "return_flight" | "outbound_flight";
+            /** Link */
+            link: string;
+            price: components["schemas"]["MoneyOut"] | null;
+            /** Reasons */
+            reasons: string[];
+            /** Subtitle */
+            subtitle: string;
+            /** Title */
+            title: string;
+        };
+        /** TripSuggestionsOut */
+        TripSuggestionsOut: {
+            /** Complete */
+            complete: boolean;
+            /** Missing */
+            missing: string[];
+            /** Suggestions */
+            suggestions: components["schemas"]["TripSuggestionOut"][];
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+        };
         /** UserOut */
         UserOut: {
             /**
@@ -4133,6 +4598,11 @@ export interface components {
              * @enum {string}
              */
             role: "traveler" | "admin";
+        };
+        /** UserStatusIn */
+        UserStatusIn: {
+            /** Active */
+            active: boolean;
         };
         /** ValidationError */
         ValidationError: {
@@ -4722,6 +5192,44 @@ export interface operations {
             };
         };
     };
+    model_status_api_v1_admin_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelListOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     booked_flights_api_v1_admin_operations_booked_flights_get: {
         parameters: {
             query?: never;
@@ -5234,6 +5742,128 @@ export interface operations {
             };
         };
     };
+    list_users_api_v1_admin_users_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserPageOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_user_status_api_v1_admin_users__user_id__status_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     assistant_api_v1_ai_assistant_post: {
         parameters: {
             query?: never;
@@ -5494,6 +6124,60 @@ export interface operations {
             };
         };
     };
+    logout_all_api_v1_auth_logout_all_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     me_api_v1_auth_me_get: {
         parameters: {
             query?: never;
@@ -5514,6 +6198,244 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_me_api_v1_auth_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    change_password_api_v1_auth_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    forgot_password_api_v1_auth_password_forgot_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordForgot"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordForgotOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    reset_password_api_v1_auth_password_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordReset"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6693,6 +7615,115 @@ export interface operations {
             };
         };
     };
+    explore_api_v1_explore_get: {
+        parameters: {
+            query: {
+                origin: string;
+                departure_date: string;
+                nights?: number;
+                adults?: number;
+                /** @description Display currency, whole units */
+                budget?: number | null;
+                min_rating?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExploreOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    fare_calendar_api_v1_flights_calendar_get: {
+        parameters: {
+            query: {
+                origin: string;
+                destination: string;
+                start: string;
+                days?: number;
+                adults?: number;
+                cabin_class?: "economy" | "premium_economy" | "business" | "first";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FareCalendarOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     search_flights_api_v1_flights_search_get: {
         parameters: {
             query: {
@@ -7483,6 +8514,95 @@ export interface operations {
             };
             /** @description Too Many Requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    delete_my_account_api_v1_me_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    export_my_data_api_v1_me_export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9400,6 +10520,156 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TripOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Payment Required */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    trip_calendar_api_v1_trips__trip_id__calendar_ics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Payment Required */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    trip_suggestions_api_v1_trips__trip_id__suggestions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripSuggestionsOut"];
                 };
             };
             /** @description Unauthorized */
