@@ -122,6 +122,17 @@ class QuoteOut(BaseModel):
     hold_minutes: int
 
 
+class ExtraOut(BaseModel):
+    id: uuid.UUID
+    kind: str = Field(description="seat, baggage or meal")
+    code: str = Field(description="Seat (12A) or option code (BAG10, VGML)")
+    label: str
+    flight_id: uuid.UUID
+    traveller_id: uuid.UUID
+    traveller_name: str
+    price: MoneyOut
+
+
 class BookingItemOut(BaseModel):
     id: uuid.UUID
     kind: str
@@ -135,9 +146,11 @@ class BookingItemOut(BaseModel):
     policy: str
     details: dict[str, Any]
     replaced_by_item_id: uuid.UUID | None
+    extras: list[ExtraOut] = Field(default_factory=list, description="Active seats, bags, meals")
 
 
 class TravellerOut(BaseModel):
+    id: uuid.UUID
     first_name: str
     last_name: str
     date_of_birth: date | None

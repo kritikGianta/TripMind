@@ -17,6 +17,10 @@ from datetime import date
 
 from app.core.errors import ValidationFailed
 
+# Provider reference on the record kept for a free change or extra, so a retry with the same
+# Idempotency-Key is recognised. Not shown to travellers as a payment.
+NO_CHARGE = "no_charge"
+
 DECLINES = {
     "4000000000000002": "CARD_DECLINED",
     "4000000000009995": "INSUFFICIENT_FUNDS",

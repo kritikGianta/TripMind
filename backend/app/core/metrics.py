@@ -57,6 +57,8 @@ REFUNDS = Counter("refunds_minor_total", "Refunded value in minor units.", ["cur
 
 HOLDS_EXPIRED = Counter("holds_expired_total", "Unpaid holds that expired and were released.")
 
+ANCILLARIES = Counter("ancillaries_total", "Seats, bags and meals sold, by kind.", ["kind"])
+
 BOOKING_CHANGES = Counter(
     "booking_changes_total", "Flight and stay changes by kind and outcome.", ["kind", "outcome"]
 )

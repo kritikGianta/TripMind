@@ -39,12 +39,15 @@ from app.core.request_context import RequestMeta
 from app.modules.audit.service import AuditService
 from app.modules.auth.models import User
 from app.modules.bookings import payments
+from app.modules.bookings.extras import close_extras, paid_for_extras
 from app.modules.bookings.models import (
     Booking,
     BookingEvent,
+    BookingExtra,
     BookingItem,
     BookingStatus,
     BookingTraveller,
+    ExtraStatus,
     ItemStatus,
     Payment,
     Refund,
@@ -64,6 +67,7 @@ from app.modules.bookings.schemas import (
     CancellationQuoteOut,
     CreateBookingRequest,
     EventOut,
+    ExtraOut,
     FlightItemIn,
     HotelItemIn,
     ItemIn,
@@ -704,7 +708,9 @@ class BookingService:
     # ------------------------------------------------------------------ cancellation
 
     def _refund(self, booking: Booking, item: BookingItem, now: datetime) -> tuple[int, str]:
+        # Seats, bags and meals follow their flight's refund rule.
         paid = int(item.snapshot.get("display_minor", 0))
+        paid += paid_for_extras(self._session, [item.id]).get(item.id, 0)
         if booking.status != BookingStatus.CONFIRMED:
             return 0, "Not paid: nothing to refund."
         if now >= _aware(item.starts_at):
@@ -790,6 +796,7 @@ class BookingService:
                 else ItemStatus.RELEASED
             )
         self._inventory.release([i.id for i in items], now)
+        close_extras(self._session, [i.id for i in items])
         remaining = [
             i for i in self._items(booking) if i.status in (ItemStatus.HELD, ItemStatus.CONFIRMED)
         ]
@@ -836,7 +843,7 @@ class BookingService:
 
     # ------------------------------------------------------------------ views
 
-    def _item_out(self, item: BookingItem) -> BookingItemOut:
+    def _item_out(self, item: BookingItem, extras: list[ExtraOut] | None = None) -> BookingItemOut:
         return BookingItemOut(
             id=item.id,
             kind=item.kind,
@@ -850,17 +857,52 @@ class BookingService:
             policy=item.snapshot.get("policy", ""),
             details=item.snapshot.get("details", {}),
             replaced_by_item_id=item.replaced_by_item_id,
+            extras=extras or [],
         )
+
+    def _extras_out(
+        self, booking: Booking, names: dict[uuid.UUID, str]
+    ) -> dict[uuid.UUID, list[ExtraOut]]:
+        rows = self._session.scalars(
+            select(BookingExtra)
+            .where(BookingExtra.booking_id == booking.id, BookingExtra.status == ExtraStatus.ACTIVE)
+            .order_by(BookingExtra.created_at)
+        )
+        grouped: dict[uuid.UUID, list[ExtraOut]] = {}
+        for e in rows:
+            grouped.setdefault(e.booking_item_id, []).append(
+                ExtraOut(
+                    id=e.id,
+                    kind=e.kind,
+                    code=e.code,
+                    label=e.label,
+                    flight_id=e.flight_id,
+                    traveller_id=e.traveller_id,
+                    traveller_name=names.get(e.traveller_id, ""),
+                    price=MoneyOut(amount_minor=e.price_minor, currency=e.currency),
+                )
+            )
+        return grouped
 
     def to_out(self, booking: Booking) -> BookingOut:
         items = self._items(booking)
-        travellers = self._session.scalars(
-            select(BookingTraveller)
-            .where(BookingTraveller.booking_id == booking.id)
-            .order_by(BookingTraveller.position)
+        travellers = list(
+            self._session.scalars(
+                select(BookingTraveller)
+                .where(BookingTraveller.booking_id == booking.id)
+                .order_by(BookingTraveller.position)
+            )
+        )
+        extras = self._extras_out(
+            booking, {t.id: f"{t.first_name} {t.last_name}" for t in travellers}
         )
         paid = self._session.scalars(
-            select(Payment).where(Payment.booking_id == booking.id).order_by(Payment.created_at)
+            select(Payment)
+            .where(
+                Payment.booking_id == booking.id,
+                Payment.provider_reference != payments.NO_CHARGE,
+            )
+            .order_by(Payment.created_at)
         )
         refunds = self._session.scalars(select(Refund).where(Refund.booking_id == booking.id))
         events = self._session.scalars(
@@ -885,10 +927,13 @@ class BookingService:
             promo_code=booking.promo_code,
             fx_note=fx,
             contact_email=booking.contact_email,
-            items=[self._item_out(i) for i in items],
+            items=[self._item_out(i, extras.get(i.id)) for i in items],
             travellers=[
                 TravellerOut(
-                    first_name=t.first_name, last_name=t.last_name, date_of_birth=t.date_of_birth
+                    id=t.id,
+                    first_name=t.first_name,
+                    last_name=t.last_name,
+                    date_of_birth=t.date_of_birth,
                 )
                 for t in travellers
             ],

@@ -10,6 +10,7 @@ from app.modules.auth.models import RefreshToken, User
 from app.modules.bookings.models import (
     Booking,
     BookingEvent,
+    BookingExtra,
     BookingItem,
     BookingTraveller,
     Payment,
@@ -33,6 +34,7 @@ __all__ = [
     "Base",
     "Booking",
     "BookingEvent",
+    "BookingExtra",
     "BookingItem",
     "BookingTraveller",
     "City",

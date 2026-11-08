@@ -431,6 +431,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bookings/{booking_id}/items/{item_id}/extras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Seats, baggage and meals on offer for a booked flight, with current picks */
+        get: operations["extras_catalog_api_v1_bookings__booking_id__items__item_id__extras_get"];
+        put?: never;
+        /** Buy seats, baggage and meals for a booked flight */
+        post: operations["extras_purchase_api_v1_bookings__booking_id__items__item_id__extras_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bookings/{booking_id}/items/{item_id}/extras/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Price seats, baggage and meals before buying */
+        post: operations["extras_quote_api_v1_bookings__booking_id__items__item_id__extras_quote_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bookings/{booking_id}/items/{item_id}/seat-map": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Seat map of one flight in a booked flight item */
+        get: operations["seat_map_api_v1_bookings__booking_id__items__item_id__seat_map_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bookings/{booking_id}/payments": {
         parameters: {
             query?: never;
@@ -1101,6 +1153,11 @@ export interface components {
              */
             ends_at: string;
             /**
+             * Extras
+             * @description Active seats, bags, meals
+             */
+            extras?: components["schemas"]["ExtraOut"][];
+            /**
              * Id
              * Format: uuid
              */
@@ -1276,6 +1333,8 @@ export interface components {
             current_subtitle: string;
             /** Current Title */
             current_title: string;
+            /** @description Seats, bags and meals on the old flight, refunded in full */
+            extras_refund: components["schemas"]["MoneyOut"];
             /**
              * Item Id
              * Format: uuid
@@ -1584,6 +1643,112 @@ export interface components {
             /** Type */
             type: string;
         };
+        /** ExtraLineOut */
+        ExtraLineOut: {
+            charge: components["schemas"]["MoneyOut"];
+            /** Code */
+            code: string;
+            /** @description List price of the pick it replaces */
+            credit: components["schemas"]["MoneyOut"];
+            /**
+             * Flight Id
+             * Format: uuid
+             */
+            flight_id: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            price: components["schemas"]["MoneyOut"];
+            /**
+             * Traveller Id
+             * Format: uuid
+             */
+            traveller_id: string;
+            /** Unchanged */
+            unchanged: boolean;
+        };
+        /** ExtraOut */
+        ExtraOut: {
+            /**
+             * Code
+             * @description Seat (12A) or option code (BAG10, VGML)
+             */
+            code: string;
+            /**
+             * Flight Id
+             * Format: uuid
+             */
+            flight_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @description seat, baggage or meal
+             */
+            kind: string;
+            /** Label */
+            label: string;
+            price: components["schemas"]["MoneyOut"];
+            /**
+             * Traveller Id
+             * Format: uuid
+             */
+            traveller_id: string;
+            /** Traveller Name */
+            traveller_name: string;
+        };
+        /** ExtrasCatalogOut */
+        ExtrasCatalogOut: {
+            /**
+             * Closes At
+             * Format: date-time
+             */
+            closes_at: string;
+            /** Flights */
+            flights: components["schemas"]["FlightExtrasOut"][];
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /** Open */
+            open: boolean;
+            /** Policy */
+            policy: string;
+            /** Reason */
+            reason: string | null;
+            /** Selected */
+            selected: components["schemas"]["ExtraOut"][];
+            /** Travellers */
+            travellers: components["schemas"]["PassengerOut"][];
+        };
+        /** ExtrasPurchase */
+        ExtrasPurchase: {
+            /**
+             * Expected Total Minor
+             * @description From the quote the traveller saw
+             */
+            expected_total_minor: number;
+            /** @description Needed when money is due */
+            payment?: components["schemas"]["PaymentRequest"] | null;
+            /** Selections */
+            selections: components["schemas"]["Selection"][];
+        };
+        /** ExtrasQuoteOut */
+        ExtrasQuoteOut: {
+            /** Lines */
+            lines: components["schemas"]["ExtraLineOut"][];
+            total: components["schemas"]["MoneyOut"];
+        };
+        /** ExtrasRequest */
+        ExtrasRequest: {
+            /** Selections */
+            selections: components["schemas"]["Selection"][];
+        };
         /** FacetOption */
         FacetOption: {
             /** Count */
@@ -1631,6 +1796,31 @@ export interface components {
             file: string;
             /** Rows */
             rows: number;
+        };
+        /** FlightExtrasOut */
+        FlightExtrasOut: {
+            /** Baggage */
+            baggage: components["schemas"]["OptionOut"][];
+            /** Cabin Class */
+            cabin_class: string;
+            /**
+             * Departure At
+             * Format: date-time
+             */
+            departure_at: string;
+            /**
+             * Flight Id
+             * Format: uuid
+             */
+            flight_id: string;
+            /** Flight Number */
+            flight_number: string;
+            /** Meals */
+            meals: components["schemas"]["OptionOut"][];
+            /** Route */
+            route: string;
+            /** Seats Included */
+            seats_included: boolean;
         };
         /** FlightFacets */
         FlightFacets: {
@@ -2336,6 +2526,14 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** OptionOut */
+        OptionOut: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
+            price: components["schemas"]["MoneyOut"];
+        };
         /** OptionStateIn */
         OptionStateIn: {
             /**
@@ -2383,6 +2581,16 @@ export interface components {
             summary: string;
             /** Unknown Places */
             unknown_places: string[];
+        };
+        /** PassengerOut */
+        PassengerOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** PaymentOut */
         PaymentOut: {
@@ -2816,6 +3024,83 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** SeatMapOut */
+        SeatMapOut: {
+            /** Aircraft */
+            aircraft: string | null;
+            /** Cabin Class */
+            cabin_class: string;
+            /**
+             * Flight Id
+             * Format: uuid
+             */
+            flight_id: string;
+            /** Flight Number */
+            flight_number: string;
+            /**
+             * Groups
+             * @description Seat letters per block; aisles sit between blocks
+             */
+            groups: string[];
+            /** Layout */
+            layout: string;
+            /** Note */
+            note: string;
+            /** Rows */
+            rows: components["schemas"]["SeatRowOut"][];
+        };
+        /** SeatOut */
+        SeatOut: {
+            /** Available */
+            available: boolean;
+            /** Code */
+            code: string;
+            /** Letter */
+            letter: string;
+            /**
+             * Position
+             * @enum {string}
+             */
+            position: "window" | "aisle" | "middle";
+            price: components["schemas"]["MoneyOut"];
+            /**
+             * Traveller Id
+             * @description Set when a traveller on this booking has it
+             */
+            traveller_id: string | null;
+            /**
+             * Zone
+             * @description extra_legroom, front, window_or_aisle, middle or included
+             */
+            zone: string;
+        };
+        /** SeatRowOut */
+        SeatRowOut: {
+            /** Row */
+            row: number;
+            /** Seats */
+            seats: components["schemas"]["SeatOut"][];
+        };
+        /** Selection */
+        Selection: {
+            /** Code */
+            code: string;
+            /**
+             * Flight Id
+             * Format: uuid
+             */
+            flight_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "seat" | "baggage" | "meal";
+            /**
+             * Traveller Id
+             * Format: uuid
+             */
+            traveller_id: string;
+        };
         /**
          * SessionOut
          * @description Returned after sign-in, sign-up and refresh. Tokens travel only in httpOnly cookies.
@@ -2925,6 +3210,11 @@ export interface components {
             date_of_birth: string | null;
             /** First Name */
             first_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
             /** Last Name */
             last_name: string;
         };
@@ -4704,6 +4994,327 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChangeQuoteOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Payment Required */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    extras_catalog_api_v1_bookings__booking_id__items__item_id__extras_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtrasCatalogOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Payment Required */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    extras_purchase_api_v1_bookings__booking_id__items__item_id__extras_post: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per checkout attempt; retries with the same key are safe */
+                "Idempotency-Key": string;
+            };
+            path: {
+                booking_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtrasPurchase"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Payment Required */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    extras_quote_api_v1_bookings__booking_id__items__item_id__extras_quote_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtrasRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtrasQuoteOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Payment Required */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    seat_map_api_v1_bookings__booking_id__items__item_id__seat_map_get: {
+        parameters: {
+            query: {
+                flight_id: string;
+            };
+            header?: never;
+            path: {
+                booking_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeatMapOut"];
                 };
             };
             /** @description Unauthorized */

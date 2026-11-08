@@ -456,6 +456,14 @@
             "title": "Ends At",
             "type": "string"
           },
+          "extras": {
+            "description": "Active seats, bags, meals",
+            "items": {
+              "$ref": "#/components/schemas/ExtraOut"
+            },
+            "title": "Extras",
+            "type": "array"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -969,6 +977,10 @@
             "title": "Current Title",
             "type": "string"
           },
+          "extras_refund": {
+            "$ref": "#/components/schemas/MoneyOut",
+            "description": "Seats, bags and meals on the old flight, refunded in full"
+          },
           "item_id": {
             "format": "uuid",
             "title": "Item Id",
@@ -1052,6 +1064,7 @@
           "change_fee",
           "amount_due",
           "refund_due",
+          "extras_refund",
           "policy"
         ],
         "title": "ChangeQuoteOut",
@@ -1829,6 +1842,253 @@
         "title": "EventOut",
         "type": "object"
       },
+      "ExtraLineOut": {
+        "properties": {
+          "charge": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "credit": {
+            "$ref": "#/components/schemas/MoneyOut",
+            "description": "List price of the pick it replaces"
+          },
+          "flight_id": {
+            "format": "uuid",
+            "title": "Flight Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "traveller_id": {
+            "format": "uuid",
+            "title": "Traveller Id",
+            "type": "string"
+          },
+          "unchanged": {
+            "title": "Unchanged",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "flight_id",
+          "traveller_id",
+          "kind",
+          "code",
+          "label",
+          "price",
+          "credit",
+          "charge",
+          "unchanged"
+        ],
+        "title": "ExtraLineOut",
+        "type": "object"
+      },
+      "ExtraOut": {
+        "properties": {
+          "code": {
+            "description": "Seat (12A) or option code (BAG10, VGML)",
+            "title": "Code",
+            "type": "string"
+          },
+          "flight_id": {
+            "format": "uuid",
+            "title": "Flight Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "description": "seat, baggage or meal",
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "traveller_id": {
+            "format": "uuid",
+            "title": "Traveller Id",
+            "type": "string"
+          },
+          "traveller_name": {
+            "title": "Traveller Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "code",
+          "label",
+          "flight_id",
+          "traveller_id",
+          "traveller_name",
+          "price"
+        ],
+        "title": "ExtraOut",
+        "type": "object"
+      },
+      "ExtrasCatalogOut": {
+        "properties": {
+          "closes_at": {
+            "format": "date-time",
+            "title": "Closes At",
+            "type": "string"
+          },
+          "flights": {
+            "items": {
+              "$ref": "#/components/schemas/FlightExtrasOut"
+            },
+            "title": "Flights",
+            "type": "array"
+          },
+          "item_id": {
+            "format": "uuid",
+            "title": "Item Id",
+            "type": "string"
+          },
+          "open": {
+            "title": "Open",
+            "type": "boolean"
+          },
+          "policy": {
+            "title": "Policy",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "selected": {
+            "items": {
+              "$ref": "#/components/schemas/ExtraOut"
+            },
+            "title": "Selected",
+            "type": "array"
+          },
+          "travellers": {
+            "items": {
+              "$ref": "#/components/schemas/PassengerOut"
+            },
+            "title": "Travellers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "item_id",
+          "open",
+          "reason",
+          "closes_at",
+          "travellers",
+          "flights",
+          "selected",
+          "policy"
+        ],
+        "title": "ExtrasCatalogOut",
+        "type": "object"
+      },
+      "ExtrasPurchase": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_total_minor": {
+            "description": "From the quote the traveller saw",
+            "minimum": 0.0,
+            "title": "Expected Total Minor",
+            "type": "integer"
+          },
+          "payment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentRequest"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Needed when money is due"
+          },
+          "selections": {
+            "items": {
+              "$ref": "#/components/schemas/Selection"
+            },
+            "maxItems": 60,
+            "minItems": 1,
+            "title": "Selections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "selections",
+          "expected_total_minor"
+        ],
+        "title": "ExtrasPurchase",
+        "type": "object"
+      },
+      "ExtrasQuoteOut": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ExtraLineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyOut"
+          }
+        },
+        "required": [
+          "lines",
+          "total"
+        ],
+        "title": "ExtrasQuoteOut",
+        "type": "object"
+      },
+      "ExtrasRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "selections": {
+            "items": {
+              "$ref": "#/components/schemas/Selection"
+            },
+            "maxItems": 60,
+            "minItems": 1,
+            "title": "Selections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "selections"
+        ],
+        "title": "ExtrasRequest",
+        "type": "object"
+      },
       "FacetOption": {
         "properties": {
           "count": {
@@ -1963,6 +2223,62 @@
           "columns"
         ],
         "title": "FileProfileOut",
+        "type": "object"
+      },
+      "FlightExtrasOut": {
+        "properties": {
+          "baggage": {
+            "items": {
+              "$ref": "#/components/schemas/OptionOut"
+            },
+            "title": "Baggage",
+            "type": "array"
+          },
+          "cabin_class": {
+            "title": "Cabin Class",
+            "type": "string"
+          },
+          "departure_at": {
+            "format": "date-time",
+            "title": "Departure At",
+            "type": "string"
+          },
+          "flight_id": {
+            "format": "uuid",
+            "title": "Flight Id",
+            "type": "string"
+          },
+          "flight_number": {
+            "title": "Flight Number",
+            "type": "string"
+          },
+          "meals": {
+            "items": {
+              "$ref": "#/components/schemas/OptionOut"
+            },
+            "title": "Meals",
+            "type": "array"
+          },
+          "route": {
+            "title": "Route",
+            "type": "string"
+          },
+          "seats_included": {
+            "title": "Seats Included",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "flight_id",
+          "flight_number",
+          "route",
+          "departure_at",
+          "cabin_class",
+          "seats_included",
+          "baggage",
+          "meals"
+        ],
+        "title": "FlightExtrasOut",
         "type": "object"
       },
       "FlightFacets": {
@@ -3857,6 +4173,28 @@
         "title": "NotificationOut",
         "type": "object"
       },
+      "OptionOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyOut"
+          }
+        },
+        "required": [
+          "code",
+          "label",
+          "price"
+        ],
+        "title": "OptionOut",
+        "type": "object"
+      },
       "OptionStateIn": {
         "additionalProperties": false,
         "properties": {
@@ -4035,6 +4373,25 @@
           "summary"
         ],
         "title": "ParsedSearchOut",
+        "type": "object"
+      },
+      "PassengerOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "PassengerOut",
         "type": "object"
       },
       "PaymentOut": {
@@ -5197,6 +5554,186 @@
         "title": "ScoresOut",
         "type": "object"
       },
+      "SeatMapOut": {
+        "properties": {
+          "aircraft": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aircraft"
+          },
+          "cabin_class": {
+            "title": "Cabin Class",
+            "type": "string"
+          },
+          "flight_id": {
+            "format": "uuid",
+            "title": "Flight Id",
+            "type": "string"
+          },
+          "flight_number": {
+            "title": "Flight Number",
+            "type": "string"
+          },
+          "groups": {
+            "description": "Seat letters per block; aisles sit between blocks",
+            "items": {
+              "type": "string"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "layout": {
+            "title": "Layout",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/SeatRowOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "flight_id",
+          "flight_number",
+          "aircraft",
+          "cabin_class",
+          "layout",
+          "groups",
+          "rows",
+          "note"
+        ],
+        "title": "SeatMapOut",
+        "type": "object"
+      },
+      "SeatOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "letter": {
+            "title": "Letter",
+            "type": "string"
+          },
+          "position": {
+            "enum": [
+              "window",
+              "aisle",
+              "middle"
+            ],
+            "title": "Position",
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "traveller_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when a traveller on this booking has it",
+            "title": "Traveller Id"
+          },
+          "zone": {
+            "description": "extra_legroom, front, window_or_aisle, middle or included",
+            "title": "Zone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "letter",
+          "position",
+          "zone",
+          "price",
+          "available",
+          "traveller_id"
+        ],
+        "title": "SeatOut",
+        "type": "object"
+      },
+      "SeatRowOut": {
+        "properties": {
+          "row": {
+            "title": "Row",
+            "type": "integer"
+          },
+          "seats": {
+            "items": {
+              "$ref": "#/components/schemas/SeatOut"
+            },
+            "title": "Seats",
+            "type": "array"
+          }
+        },
+        "required": [
+          "row",
+          "seats"
+        ],
+        "title": "SeatRowOut",
+        "type": "object"
+      },
+      "Selection": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "maxLength": 16,
+            "minLength": 2,
+            "pattern": "^[A-Z0-9]+$",
+            "title": "Code",
+            "type": "string"
+          },
+          "flight_id": {
+            "format": "uuid",
+            "title": "Flight Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "seat",
+              "baggage",
+              "meal"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "traveller_id": {
+            "format": "uuid",
+            "title": "Traveller Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "flight_id",
+          "traveller_id",
+          "kind",
+          "code"
+        ],
+        "title": "Selection",
+        "type": "object"
+      },
       "SessionOut": {
         "description": "Returned after sign-in, sign-up and refresh. Tokens travel only in httpOnly cookies.",
         "properties": {
@@ -5467,12 +6004,18 @@
             "title": "First Name",
             "type": "string"
           },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
           "last_name": {
             "title": "Last Name",
             "type": "string"
           }
         },
         "required": [
+          "id",
           "first_name",
           "last_name",
           "date_of_birth"
@@ -8010,6 +8553,459 @@
           }
         },
         "summary": "What moving a flight or stay would cost, before committing",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{booking_id}/items/{item_id}/extras": {
+      "get": {
+        "operationId": "extras_catalog_api_v1_bookings__booking_id__items__item_id__extras_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "booking_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Booking Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtrasCatalogOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Seats, baggage and meals on offer for a booked flight, with current picks",
+        "tags": [
+          "bookings"
+        ]
+      },
+      "post": {
+        "operationId": "extras_purchase_api_v1_bookings__booking_id__items__item_id__extras_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "booking_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Booking Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique per checkout attempt; retries with the same key are safe",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Unique per checkout attempt; retries with the same key are safe",
+              "maxLength": 80,
+              "minLength": 8,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtrasPurchase"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Buy seats, baggage and meals for a booked flight",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{booking_id}/items/{item_id}/extras/quote": {
+      "post": {
+        "operationId": "extras_quote_api_v1_bookings__booking_id__items__item_id__extras_quote_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "booking_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Booking Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtrasRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtrasQuoteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Price seats, baggage and meals before buying",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{booking_id}/items/{item_id}/seat-map": {
+      "get": {
+        "operationId": "seat_map_api_v1_bookings__booking_id__items__item_id__seat_map_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "booking_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Booking Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "flight_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Flight Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeatMapOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Seat map of one flight in a booked flight item",
         "tags": [
           "bookings"
         ]

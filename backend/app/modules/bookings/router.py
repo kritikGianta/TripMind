@@ -17,6 +17,14 @@ from app.core.request_context import RequestMeta
 from app.db.session import get_session
 from app.modules.auth.dependencies import get_current_user
 from app.modules.auth.models import User
+from app.modules.bookings.ancillaries import (
+    AncillaryService,
+    ExtrasCatalogOut,
+    ExtrasPurchase,
+    ExtrasQuoteOut,
+    ExtrasRequest,
+    SeatMapOut,
+)
 from app.modules.bookings.changes import (
     BookingChangeService,
     ChangeConfirm,
@@ -200,6 +208,80 @@ def change(
     meta: RequestMeta = Depends(get_request_meta),
 ) -> BookingOut:
     return service.change(user, booking_id, item_id, body, key, meta)
+
+
+def _extras(
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
+) -> AncillaryService:
+    return AncillaryService(session, settings, clock)
+
+
+@router.get(
+    "/bookings/{booking_id}/items/{item_id}/extras",
+    response_model=ExtrasCatalogOut,
+    responses=_ERRORS,
+    summary="Seats, baggage and meals on offer for a booked flight, with current picks",
+)
+def extras_catalog(
+    booking_id: uuid.UUID,
+    item_id: uuid.UUID,
+    user: Traveller,
+    service: AncillaryService = Depends(_extras),
+) -> ExtrasCatalogOut:
+    return service.catalog(user, booking_id, item_id)
+
+
+@router.get(
+    "/bookings/{booking_id}/items/{item_id}/seat-map",
+    response_model=SeatMapOut,
+    responses=_ERRORS,
+    summary="Seat map of one flight in a booked flight item",
+)
+def seat_map(
+    booking_id: uuid.UUID,
+    item_id: uuid.UUID,
+    flight_id: uuid.UUID,
+    user: Traveller,
+    service: AncillaryService = Depends(_extras),
+) -> SeatMapOut:
+    return service.seat_map(user, booking_id, item_id, flight_id)
+
+
+@router.post(
+    "/bookings/{booking_id}/items/{item_id}/extras/quote",
+    response_model=ExtrasQuoteOut,
+    responses=_ERRORS,
+    summary="Price seats, baggage and meals before buying",
+)
+def extras_quote(
+    booking_id: uuid.UUID,
+    item_id: uuid.UUID,
+    body: ExtrasRequest,
+    user: Traveller,
+    service: AncillaryService = Depends(_extras),
+) -> ExtrasQuoteOut:
+    return service.quote_extras(user, booking_id, item_id, body)
+
+
+@router.post(
+    "/bookings/{booking_id}/items/{item_id}/extras",
+    response_model=BookingOut,
+    responses=_ERRORS,
+    summary="Buy seats, baggage and meals for a booked flight",
+    dependencies=[Depends(rate_limit("bookings.extras", limit=30, window_seconds=60))],
+)
+def extras_purchase(
+    booking_id: uuid.UUID,
+    item_id: uuid.UUID,
+    body: ExtrasPurchase,
+    user: Traveller,
+    key: IdempotencyKey,
+    service: AncillaryService = Depends(_extras),
+    meta: RequestMeta = Depends(get_request_meta),
+) -> BookingOut:
+    return service.purchase(user, booking_id, item_id, body, key, meta)
 
 
 @router.get("/trips", response_model=TripListOut, responses=_ERRORS, summary="My Trips")

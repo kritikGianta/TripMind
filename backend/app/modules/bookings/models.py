@@ -205,3 +205,60 @@ class BookingEvent(UUIDPrimaryKeyMixin, Base):
     message: Mapped[str] = mapped_column(String(300), nullable=False)
     details: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ExtraStatus(enum.StrEnum):
+    ACTIVE = "active"
+    REPLACED = "replaced"  # the traveller picked another seat, bag or meal
+    CLOSED = "closed"  # its flight was cancelled, changed or disrupted (see refunds)
+
+
+class BookingExtra(UUIDPrimaryKeyMixin, Base):
+    """A seat, checked bag or meal for one traveller on one flight of a booked flight item."""
+
+    __tablename__ = "booking_extras"
+    __table_args__ = (
+        CheckConstraint("kind IN ('seat', 'baggage', 'meal')", name="kind_valid"),
+        CheckConstraint("status IN ('active', 'replaced', 'closed')", name="status_valid"),
+        # The database, not the application, guarantees one passenger per seat.
+        Index(
+            "uq_booking_extras_seat",
+            "flight_id",
+            "code",
+            unique=True,
+            sqlite_where=text("kind = 'seat' AND status = 'active'"),
+            postgresql_where=text("kind = 'seat' AND status = 'active'"),
+        ),
+        Index(
+            "uq_booking_extras_choice",
+            "booking_item_id",
+            "flight_id",
+            "traveller_id",
+            "kind",
+            unique=True,
+            sqlite_where=text("status = 'active'"),
+            postgresql_where=text("status = 'active'"),
+        ),
+    )
+
+    booking_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("bookings.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    booking_item_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("booking_items.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    flight_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    traveller_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("booking_travellers.id", ondelete="CASCADE"), nullable=False
+    )
+    kind: Mapped[str] = mapped_column(String(8), nullable=False)
+    code: Mapped[str] = mapped_column(String(16), nullable=False)
+    label: Mapped[str] = mapped_column(String(120), nullable=False)
+    price_minor: Mapped[int] = mapped_column(Integer, nullable=False)  # list price
+    # Charged for this pick: the list price, or only the difference when it replaced another.
+    paid_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    status: Mapped[str] = mapped_column(String(10), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP")
+    )

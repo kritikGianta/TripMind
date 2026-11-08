@@ -27,6 +27,7 @@ from app.core.metrics import DISRUPTIONS, RECOVERY_RESOLUTIONS
 from app.core.request_context import RequestMeta
 from app.modules.audit.service import AuditService
 from app.modules.auth.models import User
+from app.modules.bookings.extras import close_extras, paid_for_extras
 from app.modules.bookings.models import (
     Booking,
     BookingEvent,
@@ -609,9 +610,10 @@ class RecoveryService:
         if option.type == "keep":
             message, resolution = f"Kept {item.title} with the new times.", "kept"
         elif option.type == "refund":
-            amount = self._paid(item)
+            amount = self._paid(item) + paid_for_extras(self._session, [item.id]).get(item.id, 0)
             item.status = ItemStatus.CANCELLED
             self._inventory.release([item.id], now)
+            close_extras(self._session, [item.id])
             self._session.add(
                 Refund(
                     booking_id=booking.id,
@@ -648,6 +650,22 @@ class RecoveryService:
             item.status = ItemStatus.REPLACED
             item.replaced_by_item_id = new_item.id
             self._inventory.release([item.id], now)
+            # Seats and extras do not carry over to another flight: refunded in full.
+            extras = paid_for_extras(self._session, [item.id]).get(item.id, 0)
+            if extras:
+                self._session.add(
+                    Refund(
+                        booking_id=booking.id,
+                        booking_item_id=item.id,
+                        amount_minor=extras,
+                        currency=booking.currency,
+                        reason="Seats and extras on the disrupted flight.",
+                    )
+                )
+                LoyaltyService(self._session, self._loyalty_rules).reverse(
+                    booking.user_id, booking.id, extras, booking.reference, now
+                )
+            close_extras(self._session, [item.id])
             message = f"Rebooked: {new_item.title}, {new_item.snapshot.get('subtitle', '')}."
             resolution = "rebooked"
             self._update_trip_dates(booking.trip_id)

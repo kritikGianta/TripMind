@@ -1,0 +1,52 @@
+# Seats, checked baggage and meals, bought after a flight is booked. Prices are in the display
+# currency (whole units), per traveller per flight. Changing a choice charges only the difference
+# and never refunds a cheaper pick. Extras follow their flight: cancelled with it under the same
+# refund rule, and refunded in full when the flight is changed or disrupted.
+
+cutoff_hours_before_departure: 3
+
+seat_maps:
+  # The first layout whose aircraft text matches is used; without a match, seat capacity decides
+  # (>= widebody_min_seats is widebody, <= turboprop_max_seats is turboprop, else narrowbody).
+  # Letters in a group sit together; a space is an aisle.
+  widebody_min_seats: 250
+  turboprop_max_seats: 90
+  layouts:
+    - name: widebody
+      match: ["787", "777", "A350", "A330", "A380", "767"]
+      economy: "ABC DEF GHK"
+      premium: "A DG K"
+    - name: turboprop
+      match: ["ATR", "Q400", "Dash 8"]
+      economy: "AC DF"
+      premium: "AC DF"
+    - name: narrowbody
+      match: []
+      economy: "ABC DEF"
+      premium: "AC DF"
+  # Economy pricing by zone. Premium cabins (premium economy, business, first) include seats.
+  exit_row_fraction: 0.4   # two rows from this point in the cabin are exit rows (cabins of 10+ rows)
+  front_rows: 4
+  prices:
+    extra_legroom: 950
+    front: 500
+    window_or_aisle: 250
+    middle: 0
+
+baggage:
+  domestic:
+    - { code: BAG5, label: "Extra 5 kg checked baggage", price: 1600 }
+    - { code: BAG10, label: "Extra 10 kg checked baggage", price: 3100 }
+    - { code: BAG15, label: "Extra 15 kg checked baggage", price: 4500 }
+  international:
+    - { code: BAG10, label: "Extra 10 kg checked baggage", price: 4200 }
+    - { code: BAG20, label: "Extra 20 kg checked baggage", price: 7800 }
+
+meals:
+  premium_included: true   # meals are part of premium cabin fares; the choice is still recorded
+  options:
+    - { code: VGML, label: "Vegetarian meal", price: 350 }
+    - { code: NVML, label: "Non-vegetarian meal", price: 400 }
+    - { code: JNML, label: "Jain meal", price: 350 }
+    - { code: DBML, label: "Diabetic-friendly meal", price: 400 }
+    - { code: CHML, label: "Child meal", price: 300 }

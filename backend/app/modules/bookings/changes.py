@@ -22,6 +22,7 @@ from app.core.metrics import BOOKING_CHANGES
 from app.core.request_context import RequestMeta
 from app.modules.auth.models import User
 from app.modules.bookings import payments
+from app.modules.bookings.extras import close_extras, paid_for_extras
 from app.modules.bookings.models import (
     Booking,
     BookingItem,
@@ -78,6 +79,9 @@ class ChangeQuoteOut(BaseModel):
     change_fee: MoneyOut
     amount_due: MoneyOut
     refund_due: MoneyOut
+    extras_refund: MoneyOut = Field(
+        description="Seats, bags and meals on the old flight, refunded in full"
+    )
     policy: str
 
 
@@ -89,6 +93,7 @@ class _Plan:
     due: int
     refund: int
     reason: str | None
+    extras_refund: int = 0
 
 
 class BookingChangeService(BookingService):
@@ -132,6 +137,7 @@ class BookingChangeService(BookingService):
                 due=max(difference, 0) + fee,
                 refund=refund,
                 reason=None,
+                extras_refund=paid_for_extras(self._session, [item.id]).get(item.id, 0),
             )
 
         if request.check_in is None or request.check_out is None or item.room_type_id is None:
@@ -182,7 +188,8 @@ class BookingChangeService(BookingService):
         paid = int(plan.item.snapshot.get("display_minor", 0))
         policy = (
             f"Free within {self._rules.flight_free_change_hours} hours of booking, then "
-            f"{self._rules.flight_change_fee:,} {currency} per traveller plus any fare difference."
+            f"{self._rules.flight_change_fee:,} {currency} per traveller plus any fare difference. "
+            "Seats and extras on the old flight are refunded in full; pick them again."
             if plan.item.kind == "flight"
             else "Refundable rooms can change dates until the cancellation deadline."
         )
@@ -200,6 +207,7 @@ class BookingChangeService(BookingService):
             change_fee=money(plan.fee),
             amount_due=money(plan.due),
             refund_due=money(plan.refund),
+            extras_refund=money(plan.extras_refund),
             policy=policy,
         )
 
@@ -305,7 +313,7 @@ class BookingChangeService(BookingService):
                 card_last4=result.last4 if result else "0000",
                 failure_code=result.failure_code if result else None,
                 # A change with nothing to pay still records the key, so a retry is recognised.
-                provider_reference=result.reference if result else "no_charge",
+                provider_reference=result.reference if result else payments.NO_CHARGE,
             )
         )
         if result is not None and not result.succeeded:
@@ -333,6 +341,18 @@ class BookingChangeService(BookingService):
                 )
             )
             self._loyalty.reverse(user.id, booking.id, plan.refund, booking.reference, now)
+        if plan.extras_refund:
+            self._session.add(
+                Refund(
+                    booking_id=booking.id,
+                    booking_item_id=item.id,
+                    amount_minor=plan.extras_refund,
+                    currency=booking.currency,
+                    reason="Seats and extras on the previous flight.",
+                )
+            )
+            self._loyalty.reverse(user.id, booking.id, plan.extras_refund, booking.reference, now)
+        close_extras(self._session, [item.id])
         if plan.due:
             booking.total_minor += plan.due
             self._loyalty.earn(user.id, booking.id, plan.due, booking.reference, now)
