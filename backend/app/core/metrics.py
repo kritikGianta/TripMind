@@ -57,6 +57,10 @@ REFUNDS = Counter("refunds_minor_total", "Refunded value in minor units.", ["cur
 
 HOLDS_EXPIRED = Counter("holds_expired_total", "Unpaid holds that expired and were released.")
 
+BOOKING_CHANGES = Counter(
+    "booking_changes_total", "Flight and stay changes by kind and outcome.", ["kind", "outcome"]
+)
+
 PLANS = Counter("trip_plans_total", "Connected-trip plans generated, by priority.", ["priority"])
 
 DISRUPTIONS = Counter("disruptions_total", "Recorded disruptions by kind.", ["kind"])

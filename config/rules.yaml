@@ -67,6 +67,12 @@ bookings:
   # Hotels: refundable rooms are refunded in full until this many hours before check-in
   # (14:00 local on the check-in day); non-refundable rooms are not refunded.
   hotel_free_cancellation_hours_before_check_in: 24
+  # Changing a flight (another date or time on the same route): free within this many hours of
+  # booking, then this fee per traveller plus any fare difference. A cheaper new fare is refunded
+  # only inside the free window. Stays: refundable rooms can change dates until the cancellation
+  # deadline, paying or refunding the rate difference; non-refundable rooms cannot change.
+  flight_free_change_hours: 24
+  flight_change_fee: 1500
 
 recovery:
   # Delays at least this long give the traveller the right to rebook or take a refund.

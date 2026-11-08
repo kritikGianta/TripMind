@@ -17,6 +17,12 @@ from app.core.request_context import RequestMeta
 from app.db.session import get_session
 from app.modules.auth.dependencies import get_current_user
 from app.modules.auth.models import User
+from app.modules.bookings.changes import (
+    BookingChangeService,
+    ChangeConfirm,
+    ChangeQuoteOut,
+    ChangeRequest,
+)
 from app.modules.bookings.schemas import (
     BookingOut,
     CancellationQuoteOut,
@@ -151,6 +157,49 @@ def cancel(
     meta: RequestMeta = Depends(get_request_meta),
 ) -> BookingOut:
     return service.cancel(user, booking_id, body.item_ids, meta)
+
+
+def _changes(
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
+) -> BookingChangeService:
+    return BookingChangeService(session, settings, clock)
+
+
+@router.post(
+    "/bookings/{booking_id}/items/{item_id}/change-quote",
+    response_model=ChangeQuoteOut,
+    responses=_ERRORS,
+    summary="What moving a flight or stay would cost, before committing",
+)
+def change_quote(
+    booking_id: uuid.UUID,
+    item_id: uuid.UUID,
+    body: ChangeRequest,
+    user: Traveller,
+    service: BookingChangeService = Depends(_changes),
+) -> ChangeQuoteOut:
+    return service.change_quote(user, booking_id, item_id, body)
+
+
+@router.post(
+    "/bookings/{booking_id}/items/{item_id}/change",
+    response_model=BookingOut,
+    responses=_ERRORS,
+    summary="Move a flight to another date or time, or a stay to other dates",
+    dependencies=[Depends(rate_limit("bookings.change", limit=20, window_seconds=60))],
+)
+def change(
+    booking_id: uuid.UUID,
+    item_id: uuid.UUID,
+    body: ChangeConfirm,
+    user: Traveller,
+    key: IdempotencyKey,
+    service: BookingChangeService = Depends(_changes),
+    meta: RequestMeta = Depends(get_request_meta),
+) -> BookingOut:
+    return service.change(user, booking_id, item_id, body, key, meta)
 
 
 @router.get("/trips", response_model=TripListOut, responses=_ERRORS, summary="My Trips")

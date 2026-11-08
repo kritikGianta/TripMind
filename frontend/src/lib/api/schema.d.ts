@@ -397,6 +397,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bookings/{booking_id}/items/{item_id}/change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move a flight to another date or time, or a stay to other dates */
+        post: operations["change_api_v1_bookings__booking_id__items__item_id__change_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bookings/{booking_id}/items/{item_id}/change-quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** What moving a flight or stay would cost, before committing */
+        post: operations["change_quote_api_v1_bookings__booking_id__items__item_id__change_quote_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bookings/{booking_id}/payments": {
         parameters: {
             query?: never;
@@ -1215,6 +1249,59 @@ export interface components {
             /** Lines */
             lines: components["schemas"]["CancellationLineOut"][];
             total_refund: components["schemas"]["MoneyOut"];
+        };
+        /** ChangeConfirm */
+        ChangeConfirm: {
+            /** Check In */
+            check_in?: string | null;
+            /** Check Out */
+            check_out?: string | null;
+            /**
+             * Expected Amount Due Minor
+             * @description From the quote the traveller saw
+             */
+            expected_amount_due_minor: number;
+            /** Flight Offer Id */
+            flight_offer_id?: string | null;
+            /** @description Needed when money is due */
+            payment?: components["schemas"]["PaymentRequest"] | null;
+        };
+        /** ChangeQuoteOut */
+        ChangeQuoteOut: {
+            /** Allowed */
+            allowed: boolean;
+            amount_due: components["schemas"]["MoneyOut"];
+            change_fee: components["schemas"]["MoneyOut"];
+            /** Current Subtitle */
+            current_subtitle: string;
+            /** Current Title */
+            current_title: string;
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            new_price: components["schemas"]["MoneyOut"] | null;
+            /** New Subtitle */
+            new_subtitle: string | null;
+            /** New Title */
+            new_title: string | null;
+            paid: components["schemas"]["MoneyOut"];
+            /** Policy */
+            policy: string;
+            price_difference: components["schemas"]["MoneyOut"] | null;
+            /** Reason */
+            reason: string | null;
+            refund_due: components["schemas"]["MoneyOut"];
+        };
+        /** ChangeRequest */
+        ChangeRequest: {
+            /** Check In */
+            check_in?: string | null;
+            /** Check Out */
+            check_out?: string | null;
+            /** Flight Offer Id */
+            flight_offer_id?: string | null;
         };
         /** ChatMessage */
         ChatMessage: {
@@ -4452,6 +4539,171 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CancellationQuoteOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Payment Required */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    change_api_v1_bookings__booking_id__items__item_id__change_post: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per checkout attempt; retries with the same key are safe */
+                "Idempotency-Key": string;
+            };
+            path: {
+                booking_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeConfirm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Payment Required */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    change_quote_api_v1_bookings__booking_id__items__item_id__change_quote_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeQuoteOut"];
                 };
             };
             /** @description Unauthorized */

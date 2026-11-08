@@ -103,6 +103,10 @@ class BookingRules(BaseModel):
     flight_free_cancellation_hours: int = Field(default=24, ge=0)
     flight_refund_percent_after_window: int = Field(default=0, ge=0, le=100)
     hotel_free_cancellation_hours_before_check_in: int = Field(default=24, ge=0)
+    flight_free_change_hours: int = Field(default=24, ge=0)
+    flight_change_fee: int = Field(
+        default=1500, ge=0, description="Per traveller, display currency"
+    )
 
 
 class PaymentDeclined(DomainError):
@@ -565,7 +569,9 @@ class BookingService:
             self._session.scalars(
                 select(BookingItem)
                 .where(BookingItem.booking_id == booking.id)
-                .order_by(BookingItem.position)
+                .order_by(
+                    BookingItem.position, BookingItem.created_at
+                )  # a change follows its original
             )
         )
 
