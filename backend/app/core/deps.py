@@ -16,7 +16,8 @@ from app.core.clock import Clock, SystemClock
 from app.core.config import Settings, get_settings
 from app.core.errors import NotFound, RateLimited
 from app.core.features import FeatureFlags, load_feature_flags
-from app.core.rate_limit import InMemoryRateLimiter, RateLimiter
+from app.core.kv import FailOpenStore, InMemoryStore, KeyValueStore, RedisStore
+from app.core.rate_limit import InMemoryRateLimiter, RateLimiter, StoreRateLimiter
 from app.core.request_context import RequestMeta
 
 
@@ -43,7 +44,21 @@ def get_feature_flags() -> FeatureFlags:
 
 
 @lru_cache
-def _rate_limiter() -> InMemoryRateLimiter:
+def _kv_store() -> KeyValueStore:
+    settings = get_settings()
+    if settings.redis_url:
+        return FailOpenStore(RedisStore(settings.redis_url))
+    return InMemoryStore()
+
+
+def get_kv_store() -> KeyValueStore:
+    return _kv_store()
+
+
+@lru_cache
+def _rate_limiter() -> RateLimiter:
+    if get_settings().redis_url:
+        return StoreRateLimiter(_kv_store())
     return InMemoryRateLimiter()
 
 

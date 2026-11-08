@@ -27,6 +27,7 @@ dependencies = [
     "httpx>=0.28.1",
     "scikit-learn>=1.9.1",
     "lightgbm>=4.7.0",
+    "redis>=5.2",
 ]
 
 [dependency-groups]
@@ -38,6 +39,7 @@ dev = [
     "types-pyyaml>=6.0",
     "import-linter>=2.1",
     "pandas-stubs>=3.1.0.261029",
+    "fakeredis>=2.40.0",
 ]
 
 [tool.uv]
@@ -85,7 +87,8 @@ root_package = "app"
 name = "Layered architecture"
 type = "layers"
 layers = [
-    "app.main : app.cli : app.models",
+    "app.main : app.cli : app.models : app.worker",
+    "app.worker_jobs",
     "app.modules.admin | app.modules.ai",
     "app.modules.recovery | app.modules.groups",
     "app.modules.bookings | app.modules.planner",

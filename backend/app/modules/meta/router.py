@@ -20,8 +20,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app import __version__
-from app.core.deps import get_feature_flags
+from app.core.config import Settings
+from app.core.deps import get_feature_flags, get_kv_store, get_settings_dep
 from app.core.features import FeatureFlags
+from app.core.kv import KeyValueStore
 from app.db.session import get_session
 
 router = APIRouter(tags=["meta"])
@@ -66,7 +68,11 @@ def health() -> HealthOut:
     responses={503: {"model": ReadinessOut}},
     summary="Readiness: database reachable and schema migrated",
 )
-def ready(session: Session = Depends(get_session)) -> JSONResponse:
+def ready(
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+    store: KeyValueStore = Depends(get_kv_store),
+) -> JSONResponse:
     checks: list[ReadinessCheck] = []
     try:
         session.execute(text("SELECT 1"))
@@ -84,6 +90,17 @@ def ready(session: Session = Depends(get_session)) -> JSONResponse:
         checks.append(ReadinessCheck(name="database", ok=False, detail=type(exc).__name__))
 
     ok = all(c.ok for c in checks)
+    if settings.redis_url:
+        # Reported, but not required: without Redis the API keeps serving (no shared cache or
+        # shared rate limits), so an outage must not take every replica out of rotation.
+        reachable = store.ping()
+        checks.append(
+            ReadinessCheck(
+                name="redis",
+                ok=reachable,
+                detail=None if reachable else "degraded: shared state off",
+            )
+        )
     body = ReadinessOut(status="ready" if ok else "not_ready", checks=checks)
     return JSONResponse(status_code=200 if ok else 503, content=body.model_dump())
 

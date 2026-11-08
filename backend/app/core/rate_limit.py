@@ -12,6 +12,8 @@ from collections import deque
 from collections.abc import Callable
 from typing import Protocol
 
+from app.core.kv import KeyValueStore
+
 
 class RateLimiter(Protocol):
     def hit(self, key: str, *, limit: int, window_seconds: int) -> tuple[bool, int]:
@@ -43,3 +45,13 @@ class InMemoryRateLimiter:
     def reset(self) -> None:
         with self._lock:
             self._events.clear()
+
+
+class StoreRateLimiter:
+    """Sliding window kept in the shared store, so every API replica enforces one limit."""
+
+    def __init__(self, store: KeyValueStore) -> None:
+        self._store = store
+
+    def hit(self, key: str, *, limit: int, window_seconds: int) -> tuple[bool, int]:
+        return self._store.window_hit(key, limit=limit, window_seconds=window_seconds)

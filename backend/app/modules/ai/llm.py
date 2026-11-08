@@ -16,9 +16,7 @@ import hashlib
 import json
 import os
 import re
-import threading
 import time
-from collections import OrderedDict
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -29,6 +27,7 @@ import structlog
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from app.core.kv import InMemoryStore, KeyValueStore
 from app.core.metrics import AI_REQUESTS
 
 log = structlog.get_logger(__name__)
@@ -109,16 +108,9 @@ def extract_json(text: str) -> Any:
     raise ValueError("unterminated JSON object")
 
 
-class _State:
-    """Process-wide cooldowns and cache, shared by all requests."""
-
-    def __init__(self) -> None:
-        self.lock = threading.Lock()
-        self.cooldown_until: dict[str, float] = {}
-        self.cache: OrderedDict[str, tuple[float, LLMResult]] = OrderedDict()
-
-
-_STATE = _State()
+# Default store for a single process; the API passes the shared (Redis) store when configured,
+# so every replica sees the same cache and the same provider cooldowns.
+_LOCAL_STORE = InMemoryStore()
 
 
 class LLMClient:
@@ -127,8 +119,10 @@ class LLMClient:
         config: AIConfig,
         keys: dict[str, str | None] | None = None,
         transport: httpx.BaseTransport | None = None,
+        store: KeyValueStore | None = None,
     ) -> None:
         self._config = config
+        self._store: KeyValueStore = store or _LOCAL_STORE
         self._keys = (
             keys
             if keys is not None
@@ -139,13 +133,15 @@ class LLMClient:
     def available(self) -> list[str]:
         return [n for n in self._config.order if n in self._config.providers and self._keys.get(n)]
 
+    def _cooling(self, name: str) -> bool:
+        return self._store.get(f"ai:cooldown:{name}") is not None
+
     def status(self) -> dict[str, str]:
-        now = time.monotonic()
         result = {}
         for name in self._config.order:
             if not self._keys.get(name):
                 result[name] = "no_key"
-            elif _STATE.cooldown_until.get(name, 0) > now:
+            elif self._cooling(name):
                 result[name] = "cooling_down"
             else:
                 result[name] = "ready"
@@ -158,24 +154,22 @@ class LLMClient:
         key = hashlib.sha256(
             json.dumps([feature, system, messages, json_mode]).encode()
         ).hexdigest()
-        now = time.monotonic()
-        with _STATE.lock:
-            hit = _STATE.cache.get(key)
-            if hit and hit[0] > now:
-                AI_REQUESTS.labels(
-                    provider=hit[1].provider, feature=feature, outcome="cached"
-                ).inc()
-                return LLMResult(hit[1].text, hit[1].provider, cached=True)
+        cached = self._store.get(f"ai:cache:{key}")
+        if cached is not None:
+            hit = json.loads(cached)
+            AI_REQUESTS.labels(provider=hit["provider"], feature=feature, outcome="cached").inc()
+            return LLMResult(hit["text"], hit["provider"], cached=True)
 
         for name in self.available():
-            if _STATE.cooldown_until.get(name, 0) > time.monotonic():
+            if self._cooling(name):
                 continue
             result = self._call(name, feature, system, messages, json_mode)
             if result is not None:
-                with _STATE.lock:
-                    _STATE.cache[key] = (time.monotonic() + self._config.cache_ttl_seconds, result)
-                    while len(_STATE.cache) > 500:
-                        _STATE.cache.popitem(last=False)
+                self._store.set(
+                    f"ai:cache:{key}",
+                    json.dumps({"text": result.text, "provider": result.provider}),
+                    self._config.cache_ttl_seconds,
+                )
                 return result
         return None
 
@@ -251,11 +245,8 @@ class LLMClient:
 
     def _cool_down(self, name: str, feature: str, outcome: str) -> None:
         AI_REQUESTS.labels(provider=name, feature=feature, outcome=outcome).inc()
-        with _STATE.lock:
-            _STATE.cooldown_until[name] = time.monotonic() + self._config.cooldown_seconds
+        self._store.set(f"ai:cooldown:{name}", outcome, self._config.cooldown_seconds)
 
 
 def reset_state_for_tests() -> None:
-    with _STATE.lock:
-        _STATE.cooldown_until.clear()
-        _STATE.cache.clear()
+    _LOCAL_STORE.clear()

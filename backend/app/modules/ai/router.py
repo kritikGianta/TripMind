@@ -11,8 +11,15 @@ from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
 from app.core.config import Settings
-from app.core.deps import get_clock, get_settings_dep, rate_limit, require_feature
+from app.core.deps import (
+    get_clock,
+    get_kv_store,
+    get_settings_dep,
+    rate_limit,
+    require_feature,
+)
 from app.core.errors import DomainError, ErrorEnvelope
+from app.core.kv import KeyValueStore
 from app.db.session import get_session
 from app.modules.ai.assistant import Assistant, AssistantOut, AssistantRequest
 from app.modules.ai.knowledge import knowledge_base
@@ -31,7 +38,9 @@ _ERRORS: dict[int | str, dict[str, Any]] = {
 }
 
 
-def get_llm(settings: Settings = Depends(get_settings_dep)) -> LLMClient:
+def get_llm(
+    settings: Settings = Depends(get_settings_dep), store: KeyValueStore = Depends(get_kv_store)
+) -> LLMClient:
     """Composition point: tests override this with a fake or a mocked transport."""
     keys = {
         "groq": settings.groq_api_key,
@@ -41,6 +50,7 @@ def get_llm(settings: Settings = Depends(get_settings_dep)) -> LLMClient:
     return LLMClient(
         load_ai_config(settings.config_dir, settings.llm_provider_order),
         keys={name: key.get_secret_value() if key else None for name, key in keys.items()},
+        store=store,
     )
 
 

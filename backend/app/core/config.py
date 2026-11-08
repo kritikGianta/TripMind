@@ -55,7 +55,10 @@ class Settings(BaseSettings):
     demo_traveler_email: str = "demo@tripmind.dev"
     demo_admin_email: str = "admin@tripmind.dev"
 
-    # In-process background jobs (hold expiry). Tests switch them off.
+    # Shared state for several API replicas and the worker. Unset = in-process (one replica).
+    redis_url: str | None = None
+    worker_metrics_port: int = 9100
+    # In-process background jobs (hold expiry). Off when the separate worker runs them.
     background_jobs: bool = True
 
     # Tracing is off unless an OTLP endpoint is configured (Compose `obs` profile sets it).
