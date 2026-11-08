@@ -103,6 +103,14 @@ preferences:
   # Negatives are sampled from the traveller's cities plus this many other cities.
   extra_cities: 20
 
+retention:
+  # Days kept after which the worker deletes the data (daily). Bookings and payments are kept.
+  refresh_token_days: 30
+  notification_days: 180
+  search_history_days: 180
+  interaction_days: 365
+  audit_days: 730
+
 recovery:
   # Delays at least this long give the traveller the right to rebook or take a refund.
   significant_delay_minutes: 180
