@@ -111,8 +111,22 @@ def export_openapi(path: Path) -> int:
 # ------------------------------------------------------------------------------ datasets
 
 
-def data_generate(out: Path, *, seed: int, start: date | None, days: int, dirty: float) -> int:
-    options = GeneratorOptions(seed=seed, start=start or date.today(), days=days, dirty_rate=dirty)
+def data_generate(
+    out: Path,
+    *,
+    seed: int,
+    start: date | None,
+    days: int,
+    dirty: float,
+    flight_format: str = "dated",
+) -> int:
+    options = GeneratorOptions(
+        seed=seed,
+        start=start or date.today(),
+        days=days,
+        dirty_rate=dirty,
+        flight_format=flight_format,
+    )
     result = generate(out, options)
     counts = ", ".join(f"{k} {v}" for k, v in result.counts.items())
     print(f"Wrote {result.path} ({counts}; corrupted rows: {sum(result.corrupted.values())})")
@@ -225,6 +239,12 @@ def _parser() -> argparse.ArgumentParser:
         default=0.004,
         help="Share of rows corrupted on purpose (0 for a clean file)",
     )
+    gen.add_argument(
+        "--flight-format",
+        choices=["dated", "schedules"],
+        default="dated",
+        help="Dated flights, or repeating airline schedules",
+    )
     prof = data_sub.add_parser("profile", help="Profile a dataset and draft a mapping")
     prof.add_argument("path", type=Path)
     prof.add_argument("--dataset", default="finale")
@@ -247,7 +267,12 @@ def main(argv: list[str] | None = None) -> int:
         return create_admin(args.email, args.name)
     if args.data_command == "generate":
         return data_generate(
-            args.out, seed=args.seed, start=args.start, days=args.days, dirty=args.dirty
+            args.out,
+            seed=args.seed,
+            start=args.start,
+            days=args.days,
+            dirty=args.dirty,
+            flight_format=args.flight_format,
         )
     if args.data_command == "profile":
         return data_profile(args.path, args.dataset, args.write)

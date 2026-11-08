@@ -35,6 +35,24 @@ from app.datagen.reference import (
 )
 
 AIRPORT_COLUMNS = ("iata", "airport_name", "city", "country", "lat", "lon", "tz")
+SCHEDULE_COLUMNS = (
+    "airline",
+    "airline_code",
+    "flight_no",
+    "from",
+    "to",
+    "dep",
+    "arr",
+    "duration",
+    "days",
+    "valid_from",
+    "valid_to",
+    "cabin",
+    "fare",
+    "currency",
+    "aircraft",
+    "seats",
+)
 FLIGHT_COLUMNS = (
     "airline",
     "airline_code",
@@ -182,6 +200,8 @@ class GeneratorOptions:
     days: int = 45
     dirty_rate: float = 0.004
     hotels_scale: float = 1.0
+    # "schedules" writes repeating schedule rows (flight_schedules.csv) instead of dated flights.
+    flight_format: str = "dated"
 
 
 @dataclass(frozen=True)
@@ -304,6 +324,47 @@ class _Generator:
         urgency = 1 + 0.6 * math.exp(-days_out / 7)
         noise = self.rng.lognormvariate(0, 0.08)
         return schedule.base_fare_inr * time_factor * weekday_factor * urgency * noise
+
+    def schedule_rows(self) -> list[dict[str, Any]]:
+        """The same flights as airline schedules: one row per flight number and cabin."""
+        rows = []
+        end = self.o.start + timedelta(days=self.o.days - 1)
+        for schedule in self._schedules():
+            currency = next(c.currency for c in CITIES if schedule.origin.code in c.airports)
+            rate = SYNTHETIC_INR_TO_LOCAL[currency]
+            departure = datetime.combine(self.o.start, datetime.min.time()) + timedelta(
+                minutes=schedule.departure_minute
+            )
+            arrival = (
+                departure.replace(tzinfo=ZoneInfo(schedule.origin.timezone))
+                + timedelta(minutes=schedule.duration)
+            ).astimezone(ZoneInfo(schedule.destination.timezone))
+            cabins = [("Economy", schedule.base_fare_inr, schedule.seats)]
+            if schedule.business_seats:
+                cabins.append(("Business", schedule.base_fare_inr * 3.3, schedule.business_seats))
+            for cabin, amount, seats in cabins:
+                local = amount * rate
+                rows.append(
+                    {
+                        "airline": schedule.airline,
+                        "airline_code": schedule.code,
+                        "flight_no": f"{schedule.code} {schedule.number}",
+                        "from": schedule.origin.code,
+                        "to": schedule.destination.code,
+                        "dep": departure.strftime("%H:%M"),
+                        "arr": arrival.strftime("%H:%M"),
+                        "duration": f"{schedule.duration // 60}h {schedule.duration % 60}m",
+                        "days": "".join(str(d + 1) for d in sorted(schedule.weekdays)),
+                        "valid_from": self.o.start.isoformat(),
+                        "valid_to": end.isoformat(),
+                        "cabin": cabin,
+                        "fare": f"{round(local):.2f}" if currency != "INR" else f"{round(local)}",
+                        "currency": currency,
+                        "aircraft": schedule.aircraft,
+                        "seats": seats,
+                    }
+                )
+        return rows
 
     def flights(self) -> list[dict[str, Any]]:
         rows = []
@@ -560,18 +621,22 @@ def generate(output: Path, options: GeneratorOptions | None = None) -> Generated
         }
         for a in AIRPORTS
     ]
-    flights = gen.flights()
+    schedules = options.flight_format == "schedules"
+    flights = gen.schedule_rows() if schedules else gen.flights()
     hotels, rooms = gen.hotels()
     corrupted = {
         "airports": gen.corrupt("airports", airports),
-        "flights": gen.corrupt("flights", flights),
+        "flights": 0 if schedules else gen.corrupt("flights", flights),
         "hotels": gen.corrupt("hotels", hotels),
         "rooms": gen.corrupt("rooms", rooms),
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("airports.csv", _csv(airports, AIRPORT_COLUMNS))
-        archive.writestr("flights.csv", _csv(flights, FLIGHT_COLUMNS))
+        if schedules:
+            archive.writestr("flight_schedules.csv", _csv(flights, SCHEDULE_COLUMNS))
+        else:
+            archive.writestr("flights.csv", _csv(flights, FLIGHT_COLUMNS))
         archive.writestr("hotels.csv", _csv(hotels, HOTEL_COLUMNS))
         archive.writestr("rooms.csv", _csv(rooms, ROOM_COLUMNS))
         archive.writestr(

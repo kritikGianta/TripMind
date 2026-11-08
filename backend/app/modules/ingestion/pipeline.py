@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Any
 
 import pandas as pd
@@ -31,6 +32,7 @@ from app.modules.ingestion.resolve import (
     resolve_room_types,
 )
 from app.modules.ingestion.rules import IngestionRules, Vocabulary
+from app.modules.ingestion.schedules import expand_schedules
 from app.modules.ingestion.sources import DatasetSource, Table
 from app.modules.ingestion.targets import EntityName
 
@@ -89,6 +91,7 @@ def prepare(
     vocabulary: Vocabulary,
     *,
     catalog_airports: Callable[[], list[AirportRef]],
+    today: date | None = None,
 ) -> PreparedDataset:
     log = RejectLog()
     frames = extract(source, mapping, log)
@@ -105,6 +108,12 @@ def prepare(
     if "flights" in frames:
         refs = (
             airport_refs(prepared.airports) if prepared.airports is not None else catalog_airports()
+        )
+        expand_schedules(
+            frames["flights"],
+            log,
+            today=today or date.today(),
+            horizon_days=rules.schedule_horizon_days,
         )
         prepared.flights = resolve_flights(
             frames["flights"], AirportIndex(refs, vocabulary), rules, vocabulary, log, origin

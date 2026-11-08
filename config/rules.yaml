@@ -26,6 +26,8 @@ ingestion:
   max_upload_mb: 100
   max_uncompressed_mb: 1024
   max_archive_members: 200
+  # Repeating flight schedules are turned into dated flights up to this many days ahead.
+  schedule_horizon_days: 90
 
 pricing:
   # Prices are shown in the supplier's currency; totals are also converted to this currency.

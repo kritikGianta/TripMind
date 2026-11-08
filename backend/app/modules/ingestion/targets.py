@@ -89,7 +89,10 @@ AIRPORTS = TargetEntity(
 FLIGHTS = TargetEntity(
     name="flights",
     natural_key=("flight_number", "departure_local", "cabin_class"),
-    any_of=(("airline_code", "airline_name"), ("departure_local", "departure_date")),
+    any_of=(
+        ("airline_code", "airline_name"),
+        ("departure_local", "departure_date", "valid_from"),
+    ),
     fields=(
         F("source_key", "str", False, ("flight_id", "id", "itinerary_id"), max_length=160),
         F(
@@ -163,6 +166,21 @@ FLIGHTS = TargetEntity(
             ("arrival", "arrival_time", "arr_time", "arrival_datetime", "sta"),
         ),
         F("arrival_clock", "time", False, ("arr_clock", "arrival_hhmm")),
+        # Schedule rows: a repeating flight, expanded into dated flights at import.
+        F(
+            "operating_days",
+            "str",
+            False,
+            ("days", "operating_days", "days_of_operation", "frequency", "dow"),
+            max_length=40,
+        ),
+        F("valid_from", "date", False, ("valid_from", "effective_from", "start_date", "from_date")),
+        F(
+            "valid_to",
+            "date",
+            False,
+            ("valid_to", "effective_to", "end_date", "to_date", "discontinue"),
+        ),
         F(
             "duration_minutes",
             "duration",

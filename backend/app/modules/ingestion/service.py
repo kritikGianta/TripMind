@@ -93,7 +93,12 @@ class ImportService:
         started = time.perf_counter()
         try:
             prepared = prepare(
-                source, mapping, rules, vocabulary, catalog_airports=self._catalog_airports
+                source,
+                mapping,
+                rules,
+                vocabulary,
+                catalog_airports=self._catalog_airports,
+                today=self._clock.now().date(),
             )
             self._finish(run, prepared, rules, dry_run, actor)
         except Exception as exc:

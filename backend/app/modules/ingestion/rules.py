@@ -45,6 +45,8 @@ class IngestionRules(BaseModel):
     max_upload_mb: int = Field(default=100, ge=1)
     max_uncompressed_mb: int = Field(default=1024, ge=1)
     max_archive_members: int = Field(default=200, ge=1)
+    # Flight schedules are expanded at most this many days ahead of the import date.
+    schedule_horizon_days: int = Field(default=90, ge=1, le=400)
 
     @field_validator("default_timezone")
     @classmethod

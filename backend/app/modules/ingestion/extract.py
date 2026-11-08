@@ -6,7 +6,7 @@ Entity-specific rules (references, times, keys) run afterwards in `resolve.py`.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pandas as pd
 
@@ -25,6 +25,8 @@ class EntityFrame:
     data: pd.DataFrame  # typed target fields for rows still accepted
     rows_read: int
     encoding: str | None = None
+    # Rows generated from another row (flight schedules) -> the source row number in the file.
+    row_map: dict[int, int] = field(default_factory=dict)
 
     def drop(
         self,
@@ -40,11 +42,13 @@ class EntityFrame:
         rows = rows.intersection(self.data.index)
         if rows.empty:
             return
+        # Report each problem once against the line in the file, even if the row was expanded.
+        source_rows = pd.Index(sorted({self.row_map.get(int(r), int(r)) for r in rows}))
         log.reject(
             entity=self.entity,
             table=self.table,
             raw=self.raw,
-            rows=rows,
+            rows=source_rows,
             code=code,
             field=field,
             message=message,
