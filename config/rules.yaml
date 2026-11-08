@@ -55,6 +55,8 @@ search:
   max_connection_minutes: 360
   max_results: 200
   max_hotel_nights: 30
+  # Recent searches kept per signed-in traveller (they can clear them at any time).
+  history_keep: 30
 
 bookings:
   # How long seats and rooms are held while the traveller pays.
@@ -73,6 +75,14 @@ bookings:
   # deadline, paying or refunding the rate difference; non-refundable rooms cannot change.
   flight_free_change_hours: 24
   flight_change_fee: 1500
+
+watchlist:
+  max_saved_hotels: 200
+  max_active_alerts: 20
+  # Without a target price, an alert fires once the price is this much below the price when set.
+  alert_min_drop_percent: 5
+  # How often the worker re-prices active alerts.
+  alert_check_minutes: 30
 
 recovery:
   # Delays at least this long give the traveller the right to rebook or take a refund.

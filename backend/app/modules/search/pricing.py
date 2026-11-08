@@ -34,6 +34,7 @@ class SearchRules(BaseModel):
     max_connection_minutes: int = Field(default=360, ge=60)
     max_results: int = Field(default=200, ge=10)
     max_hotel_nights: int = Field(default=30, ge=1)
+    history_keep: int = Field(default=30, ge=1, le=200)
 
 
 @lru_cache(maxsize=8)

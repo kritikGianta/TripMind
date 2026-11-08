@@ -36,6 +36,7 @@ from app.modules.profiles.module import router as profiles_router
 from app.modules.recovery.router import admin_router as operations_router
 from app.modules.recovery.router import router as recovery_router
 from app.modules.search.router import router as search_router
+from app.modules.watchlist.router import router as watchlist_router
 
 log = structlog.get_logger(__name__)
 
@@ -97,6 +98,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(admin_console_router, prefix=settings.api_prefix)
     app.include_router(ai_router, prefix=settings.api_prefix)
     app.include_router(groups_router, prefix=settings.api_prefix)
+    app.include_router(watchlist_router, prefix=settings.api_prefix)
     app.include_router(imports_admin_router, prefix=settings.api_prefix)
 
     # Served on the API's own port only; the web proxy forwards /api/* and never /metrics.

@@ -22,11 +22,14 @@ from app.modules.groups.models import GroupMember, GroupVote, TripGroup
 from app.modules.ingestion.models import ImportReject, ImportRun
 from app.modules.inventory.models import FlightInventory, InventoryClaim, RoomNightInventory
 from app.modules.loyalty.module import LoyaltyEntry
+from app.modules.ml.interactions import HotelInteraction
 from app.modules.notifications.models import Notification
 from app.modules.operations.models import Disruption
 from app.modules.planner.models import TripPlan
 from app.modules.profiles.module import TravellerProfile
 from app.modules.recovery.models import RecoveryCase
+from app.modules.search.history import SearchHistory
+from app.modules.watchlist.models import PriceAlert, SavedHotel
 
 __all__ = [
     "Airport",
@@ -45,17 +48,21 @@ __all__ = [
     "GroupVote",
     "Hotel",
     "HotelAmenity",
+    "HotelInteraction",
     "ImportReject",
     "ImportRun",
     "InventoryClaim",
     "LoyaltyEntry",
     "Notification",
     "Payment",
+    "PriceAlert",
     "RecoveryCase",
     "RefreshToken",
     "Refund",
     "RoomNightInventory",
     "RoomType",
+    "SavedHotel",
+    "SearchHistory",
     "TravellerProfile",
     "Trip",
     "TripGroup",

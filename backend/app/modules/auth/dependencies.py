@@ -48,3 +48,19 @@ def require_role(*roles: UserRole) -> Callable[..., User]:
         return user
 
     return _check
+
+
+def get_optional_user(
+    request: Request,
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
+) -> User | None:
+    """The signed-in user on public endpoints, or None. Never raises: an expired or invalid
+    token simply means the request is treated as anonymous."""
+    if not request.cookies.get(ACCESS_COOKIE):
+        return None
+    try:
+        return get_current_user(request, session, settings, clock)
+    except Unauthorized:
+        return None

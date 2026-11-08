@@ -28,3 +28,5 @@ features:
   ml_fare_insight: true
   # Share a plan with friends: members vote, consensus is computed, the owner decides.
   group_planning: true
+  # Saved stays and price alerts (checked by the worker).
+  watchlist: true

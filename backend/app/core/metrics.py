@@ -59,6 +59,8 @@ HOLDS_EXPIRED = Counter("holds_expired_total", "Unpaid holds that expired and we
 
 ANCILLARIES = Counter("ancillaries_total", "Seats, bags and meals sold, by kind.", ["kind"])
 
+PRICE_ALERTS = Counter("price_alerts_total", "Price alerts by event.", ["event"])
+
 BOOKING_CHANGES = Counter(
     "booking_changes_total", "Flight and stay changes by kind and outcome.", ["kind", "outcome"]
 )

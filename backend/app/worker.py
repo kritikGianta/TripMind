@@ -24,7 +24,7 @@ from app.core.config import Settings, get_settings
 from app.core.deps import get_kv_store
 from app.core.kv import KeyValueStore
 from app.core.logging import configure_logging
-from app.worker_jobs import JOBS
+from app.worker_jobs import jobs
 
 log = structlog.get_logger(__name__)
 
@@ -92,7 +92,9 @@ def main() -> None:
     configure_logging(settings)
     start_http_server(settings.worker_metrics_port)
     worker = Worker(
-        settings, get_kv_store(), [Job(name, interval, run) for name, interval, run in JOBS]
+        settings,
+        get_kv_store(),
+        [Job(name, interval, run) for name, interval, run in jobs(settings)],
     )
 
     def _stop(signum: int, frame: FrameType | None) -> None:

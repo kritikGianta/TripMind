@@ -2657,6 +2657,60 @@
         "title": "FlightSearchOut",
         "type": "object"
       },
+      "FlightWatch": {
+        "additionalProperties": false,
+        "properties": {
+          "adults": {
+            "default": 1,
+            "maximum": 9.0,
+            "minimum": 1.0,
+            "title": "Adults",
+            "type": "integer"
+          },
+          "cabin_class": {
+            "default": "economy",
+            "enum": [
+              "economy",
+              "premium_economy",
+              "business",
+              "first"
+            ],
+            "title": "Cabin Class",
+            "type": "string"
+          },
+          "departure_date": {
+            "format": "date",
+            "title": "Departure Date",
+            "type": "string"
+          },
+          "destination": {
+            "maxLength": 64,
+            "minLength": 2,
+            "title": "Destination",
+            "type": "string"
+          },
+          "kind": {
+            "const": "flight",
+            "default": "flight",
+            "title": "Kind",
+            "type": "string"
+          },
+          "origin": {
+            "description": "Airport code or city ID",
+            "maxLength": 64,
+            "minLength": 2,
+            "title": "Origin",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "departure_date"
+        ],
+        "title": "FlightWatch",
+        "type": "object"
+      },
       "GroupListOut": {
         "properties": {
           "items": {
@@ -3384,6 +3438,53 @@
           "notices"
         ],
         "title": "HotelSearchOut",
+        "type": "object"
+      },
+      "HotelWatch": {
+        "additionalProperties": false,
+        "properties": {
+          "check_in": {
+            "format": "date",
+            "title": "Check In",
+            "type": "string"
+          },
+          "check_out": {
+            "format": "date",
+            "title": "Check Out",
+            "type": "string"
+          },
+          "guests": {
+            "default": 2,
+            "maximum": 16.0,
+            "minimum": 1.0,
+            "title": "Guests",
+            "type": "integer"
+          },
+          "hotel_id": {
+            "format": "uuid",
+            "title": "Hotel Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "hotel",
+            "default": "hotel",
+            "title": "Kind",
+            "type": "string"
+          },
+          "rooms": {
+            "default": 1,
+            "maximum": 8.0,
+            "minimum": 1.0,
+            "title": "Rooms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "hotel_id",
+          "check_in",
+          "check_out"
+        ],
+        "title": "HotelWatch",
         "type": "object"
       },
       "ImportRunDetailOut": {
@@ -4717,6 +4818,170 @@
         "title": "PlanSummaryOut",
         "type": "object"
       },
+      "PriceAlertIn": {
+        "additionalProperties": false,
+        "properties": {
+          "target_price": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Display currency, whole units; omit to hear of any drop",
+            "title": "Target Price"
+          },
+          "watch": {
+            "discriminator": {
+              "mapping": {
+                "flight": "#/components/schemas/FlightWatch",
+                "hotel": "#/components/schemas/HotelWatch"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FlightWatch"
+              },
+              {
+                "$ref": "#/components/schemas/HotelWatch"
+              }
+            ],
+            "title": "Watch"
+          }
+        },
+        "required": [
+          "watch"
+        ],
+        "title": "PriceAlertIn",
+        "type": "object"
+      },
+      "PriceAlertListOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PriceAlertOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PriceAlertListOut",
+        "type": "object"
+      },
+      "PriceAlertOut": {
+        "properties": {
+          "baseline": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "last_checked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Checked At"
+          },
+          "link": {
+            "title": "Link",
+            "type": "string"
+          },
+          "lowest": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "triggered_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Triggered At"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "status",
+          "params",
+          "link",
+          "target",
+          "baseline",
+          "current",
+          "lowest",
+          "rule",
+          "last_checked_at",
+          "triggered_at",
+          "created_at"
+        ],
+        "title": "PriceAlertOut",
+        "type": "object"
+      },
       "PriceLedger": {
         "properties": {
           "complete": {
@@ -5521,6 +5786,94 @@
         "title": "RoomOfferOut",
         "type": "object"
       },
+      "SavedHotelListOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SavedHotelOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "SavedHotelListOut",
+        "type": "object"
+      },
+      "SavedHotelOut": {
+        "properties": {
+          "available": {
+            "description": "False when the stay is no longer in the current data",
+            "title": "Available",
+            "type": "boolean"
+          },
+          "city_name": {
+            "title": "City Name",
+            "type": "string"
+          },
+          "guest_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest Rating"
+          },
+          "hotel_id": {
+            "format": "uuid",
+            "title": "Hotel Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "review_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Count"
+          },
+          "saved_at": {
+            "format": "date-time",
+            "title": "Saved At",
+            "type": "string"
+          },
+          "star_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Star Rating"
+          }
+        },
+        "required": [
+          "hotel_id",
+          "name",
+          "city_name",
+          "star_rating",
+          "guest_rating",
+          "review_count",
+          "available",
+          "saved_at"
+        ],
+        "title": "SavedHotelOut",
+        "type": "object"
+      },
       "ScoresOut": {
         "properties": {
           "convenience": {
@@ -5552,6 +5905,63 @@
           "total"
         ],
         "title": "ScoresOut",
+        "type": "object"
+      },
+      "SearchHistoryListOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SearchHistoryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "SearchHistoryListOut",
+        "type": "object"
+      },
+      "SearchHistoryOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "result_count": {
+            "title": "Result Count",
+            "type": "integer"
+          },
+          "searched_at": {
+            "format": "date-time",
+            "title": "Searched At",
+            "type": "string"
+          },
+          "vertical": {
+            "title": "Vertical",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "vertical",
+          "params",
+          "label",
+          "result_count",
+          "searched_at"
+        ],
+        "title": "SearchHistoryOut",
         "type": "object"
       },
       "SeatMapOut": {
@@ -10456,6 +10866,516 @@
         "summary": "My loyalty points and tier",
         "tags": [
           "account"
+        ]
+      }
+    },
+    "/api/v1/me/price-alerts": {
+      "get": {
+        "operationId": "price_alerts_api_v1_me_price_alerts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceAlertListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "My price alerts",
+        "tags": [
+          "watchlist"
+        ]
+      },
+      "post": {
+        "operationId": "create_price_alert_api_v1_me_price_alerts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceAlertIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceAlertOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Watch a flight search or a stay for a price drop",
+        "tags": [
+          "watchlist"
+        ]
+      }
+    },
+    "/api/v1/me/price-alerts/{alert_id}": {
+      "delete": {
+        "operationId": "cancel_price_alert_api_v1_me_price_alerts__alert_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "alert_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Alert Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Stop a price alert",
+        "tags": [
+          "watchlist"
+        ]
+      }
+    },
+    "/api/v1/me/saved-hotels": {
+      "get": {
+        "operationId": "saved_hotels_api_v1_me_saved_hotels_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedHotelListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "My saved stays",
+        "tags": [
+          "watchlist"
+        ]
+      }
+    },
+    "/api/v1/me/saved-hotels/{hotel_id}": {
+      "delete": {
+        "operationId": "unsave_hotel_api_v1_me_saved_hotels__hotel_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "hotel_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Hotel Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedHotelListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Remove a saved stay",
+        "tags": [
+          "watchlist"
+        ]
+      },
+      "put": {
+        "operationId": "save_hotel_api_v1_me_saved_hotels__hotel_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "hotel_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Hotel Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedHotelListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Save a stay (saving it again changes nothing)",
+        "tags": [
+          "watchlist"
+        ]
+      }
+    },
+    "/api/v1/me/searches": {
+      "delete": {
+        "operationId": "clear_searches_api_v1_me_searches_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Clear my search history",
+        "tags": [
+          "search"
+        ]
+      },
+      "get": {
+        "operationId": "my_searches_api_v1_me_searches_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchHistoryListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "My recent searches, newest first",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/v1/me/searches/{search_id}": {
+      "delete": {
+        "operationId": "forget_search_api_v1_me_searches__search_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "search_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Search Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove one search from my history",
+        "tags": [
+          "search"
         ]
       }
     },

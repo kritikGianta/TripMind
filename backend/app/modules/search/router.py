@@ -7,6 +7,7 @@ from datetime import date, timedelta
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
@@ -18,14 +19,23 @@ from app.core.deps import (
     rate_limit,
     require_feature,
 )
-from app.core.errors import ErrorEnvelope, ValidationFailed
+from app.core.errors import ErrorEnvelope, NotFound, ValidationFailed
 from app.core.features import FeatureFlags
 from app.core.metrics import SEARCH_LATENCY, SEARCHES
 from app.db.session import get_session
+from app.modules.auth.dependencies import get_current_user, get_optional_user
+from app.modules.auth.models import User
 from app.modules.catalog.vocabulary import load_vocabulary
 from app.modules.ml.features import FARE_ESTIMATOR_FEATURES, HOTEL_RANKER_FEATURES
+from app.modules.ml.interactions import record_interaction
 from app.modules.ml.registry import load_model
 from app.modules.search.flights import FlightQuery, FlightSearchService
+from app.modules.search.history import (
+    SearchHistoryListOut,
+    forget_searches,
+    recent_searches,
+    remember_search,
+)
 from app.modules.search.hotels import HotelQuery, HotelSearchService, Stay
 from app.modules.search.locations import LocationService
 from app.modules.search.pricing import Converter, load_pricing_rules, load_search_rules
@@ -44,6 +54,8 @@ router = APIRouter(
     tags=["search"],
     dependencies=[Depends(rate_limit("search", limit=120, window_seconds=60))],
 )
+
+Viewer = Annotated[User | None, Depends(get_optional_user)]
 
 _ERRORS: dict[int | str, dict[str, Any]] = {
     404: {"model": ErrorEnvelope},
@@ -137,6 +149,10 @@ def search_flights(
     max_price: Annotated[int | None, Query(ge=0, description="Display currency")] = None,
     sort: FlightSort = "best",
     service: FlightSearchService = Depends(_flights),
+    viewer: Viewer = None,
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
 ) -> FlightSearchOut:
     with SEARCH_LATENCY.labels(vertical="flights").time():
         result = service.search(
@@ -155,6 +171,32 @@ def search_flights(
             )
         )
     SEARCHES.labels(vertical="flights", result="found" if result.outbound.total else "empty").inc()
+    if viewer is not None:
+        out = result.outbound
+        route = (
+            f"{out.origin.city_name} to {out.destination.city_name}"
+            if out.origin and out.destination
+            else f"{origin} to {destination}"
+        )
+        remember_search(
+            session,
+            user_id=viewer.id,
+            vertical="flights",
+            params={
+                "origin": origin,
+                "destination": destination,
+                "departure_date": departure_date,
+                "return_date": return_date,
+                "adults": adults,
+                "cabin_class": cabin_class,
+            },
+            label=f"{route} · {departure_date:%d %b}"
+            + (f" to {return_date:%d %b}" if return_date else "")
+            + f" · {adults} adult{'s' if adults > 1 else ''}",
+            result_count=out.total,
+            at=clock.now(),
+            keep=load_search_rules(settings.config_dir).history_keep,
+        )
     return result
 
 
@@ -179,6 +221,10 @@ def search_hotels(
     breakfast: bool = False,
     sort: HotelSort = "recommended",
     service: HotelSearchService = Depends(_hotels),
+    viewer: Viewer = None,
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
 ) -> HotelSearchOut:
     if any(s < 0 or s > 5 for s in stars or ()):
         raise ValidationFailed("Stars must be between 0 and 5.")
@@ -197,6 +243,24 @@ def search_hotels(
             )
         )
     SEARCHES.labels(vertical="hotels", result="found" if result.total else "empty").inc()
+    if viewer is not None:
+        remember_search(
+            session,
+            user_id=viewer.id,
+            vertical="hotels",
+            params={
+                "city": city,
+                "check_in": check_in,
+                "check_out": check_out,
+                "guests": guests,
+                "rooms": rooms,
+            },
+            label=f"Stays in {result.city.name} · {check_in:%d %b} to {check_out:%d %b} · "
+            f"{guests} guest{'s' if guests > 1 else ''}",
+            result_count=result.total,
+            at=clock.now(),
+            keep=load_search_rules(settings.config_dir).history_keep,
+        )
     return result
 
 
@@ -214,10 +278,59 @@ def hotel_detail(
     guests: Annotated[int, Query(ge=1, le=16)] = 2,
     rooms: Annotated[int, Query(ge=1, le=8)] = 1,
     service: HotelSearchService = Depends(_hotels),
+    viewer: Viewer = None,
+    session: Session = Depends(get_session),
+    clock: Clock = Depends(get_clock),
 ) -> HotelDetailOut:
     stay = (
         Stay(check_in=check_in, check_out=check_out, guests=guests, rooms=rooms)
         if check_in and check_out
         else None
     )
-    return service.detail(hotel_id, stay)
+    detail = service.detail(hotel_id, stay)
+    if viewer is not None:  # a signal for the preference model; never blocks the page
+        try:
+            record_interaction(session, viewer.id, hotel_id, "view", clock.now())
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+    return detail
+
+
+@router.get(
+    "/me/searches",
+    response_model=SearchHistoryListOut,
+    responses={401: {"model": ErrorEnvelope}},
+    summary="My recent searches, newest first",
+)
+def my_searches(
+    user: User = Depends(get_current_user), session: Session = Depends(get_session)
+) -> SearchHistoryListOut:
+    return recent_searches(session, user.id)
+
+
+@router.delete(
+    "/me/searches",
+    status_code=204,
+    responses={401: {"model": ErrorEnvelope}},
+    summary="Clear my search history",
+)
+def clear_searches(
+    user: User = Depends(get_current_user), session: Session = Depends(get_session)
+) -> None:
+    forget_searches(session, user.id, None)
+
+
+@router.delete(
+    "/me/searches/{search_id}",
+    status_code=204,
+    responses={401: {"model": ErrorEnvelope}, 404: {"model": ErrorEnvelope}},
+    summary="Remove one search from my history",
+)
+def forget_search(
+    search_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> None:
+    if not forget_searches(session, user.id, search_id):
+        raise NotFound("That search is not in your history.", code="SEARCH_NOT_FOUND")

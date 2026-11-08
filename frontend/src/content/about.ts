@@ -199,6 +199,7 @@ export const capabilities: Capability[] = [
   { name: "Booking engine", detail: "Holds, idempotency, payment simulator, travellers, refunds, My Trips", status: "live" },
   { name: "Booking changes", detail: "Move a flight to another time or a stay to other dates without cancelling: quoted fee and fare difference, payment or refund, seats and nights moved atomically (API done; screen comes with the UI pass)", status: "planned" },
   { name: "Seats, bags and meals", detail: "Seat map from the aircraft type, priced zones, extra baggage and meals per traveller per flight; refunded with their flight (API done; screen comes with the UI pass)", status: "planned" },
+  { name: "Saved stays, price alerts, recent searches", detail: "Save stays, watch a flight search or a stay for a drop (the worker re-prices and notifies once), pick up recent searches or clear them (API done; screens come with the UI pass)", status: "planned" },
   { name: "Add-on booking", detail: "Add a stay to a flight trip (or the reverse) with dates prefilled", status: "live" },
   { name: "Connected-trip planner", detail: "Ranked flight + stay bundles, score breakdown, Journey Confidence Report, booked in one checkout", status: "live" },
   { name: "Disruption recovery", detail: "Cancellations, delays and room outages: options offered, traveller approves, only the affected item is replaced", status: "live" },
