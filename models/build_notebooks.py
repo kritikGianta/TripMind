@@ -72,13 +72,23 @@ write(HERE / "hotel_ranker" / "hotel_ranker.ipynb", [
     limited to what TripMind's own catalog can provide at serving time.
     """),
     code("""
-    import glob
+    import glob, zipfile
     import numpy as np, pandas as pd, lightgbm
-    path = glob.glob("/kaggle/input/**/train.csv", recursive=True)[0]
     cols = ["srch_id", "prop_starrating", "prop_review_score", "price_usd", "srch_length_of_stay",
             "srch_adults_count", "srch_room_count", "srch_booking_window", "click_bool",
             "booking_bool", "random_bool"]
-    df = pd.read_csv(path, usecols=cols)
+    # Kaggle may unpack the competition files or leave them inside data.zip; handle both.
+    csvs = glob.glob("/kaggle/input/**/train.csv", recursive=True)
+    if csvs:
+        path = csvs[0]
+        df = pd.read_csv(path, usecols=cols)
+    else:
+        path = glob.glob("/kaggle/input/**/data.zip", recursive=True)[0]
+        with zipfile.ZipFile(path) as archive:
+            print(archive.namelist())
+            member = next(n for n in archive.namelist() if n.lower().endswith("train.csv"))
+            with archive.open(member) as f:
+                df = pd.read_csv(f, usecols=cols)
     print(path, df.shape)
     """),
     md("""
