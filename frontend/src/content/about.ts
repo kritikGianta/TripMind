@@ -223,6 +223,7 @@ export const capabilities: Capability[] = [
   { name: "Request classifier", detail: "Files support requests by category; 86% right on 56 hand-written messages against 73% for keyword rules, which take over when the model is unsure", status: "live" },
   { name: "Hotel ranker", detail: "LightGBM LambdaRank on Expedia click and booking data; NDCG@5 0.259 against 0.237 for the rule-based order", status: "live" },
   { name: "Fare estimator", detail: "LightGBM on 300,000 Indian domestic fares; 15.5% average error against 36.5% for a median baseline; domestic routes only", status: "live" },
+  { name: "Home page", detail: "Cinematic scroll story with smooth scrolling, pinned scenes and a journey map; live search up front and live demo prices; works on phones and with reduced motion", status: "live" },
   { name: "Monitoring dashboards", detail: "Prometheus metrics and alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger", status: "live" },
 ];
 

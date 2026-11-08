@@ -1,0 +1,91 @@
+"use client";
+
+import { Play } from "lucide-react";
+import { Suspense } from "react";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { homeCopy } from "@/content/home";
+import { siteConfig } from "@/config/site";
+import { AiSearch } from "@/features/ai/ai-search";
+import { SearchPanel } from "@/features/search/components/search-panel";
+
+import { Media, Scribble, useHome } from "./media";
+import { useScrollProgress } from "./motion";
+
+export function Hero() {
+  const { setFilmOpen } = useHome();
+  const ref = useScrollProgress<HTMLElement>("pin", (p, el) => {
+    el.toggleAttribute("data-past", p > 0.3);
+  });
+  return (
+    <section ref={ref} className="tm-hero" aria-label="Welcome">
+      <div className="tm-hero__stage">
+        <Media slot="hero-film" priority className="tm-hero__media" />
+        <div className="tm-hero__scrim" />
+        <h1 className="tm-hero__word tm-display">{homeCopy.hero.wordmark}</h1>
+        <div className="tm-hero__mid">
+          <p className="tm-italic tm-hero__tagline">{siteConfig.tagline}</p>
+          <div className="tm-hero__dock">
+            <AiSearch />
+          </div>
+          <button type="button" className="tm-chip tm-chip--wide" data-cursor="Play" onClick={() => setFilmOpen(true)}>
+            {homeCopy.hero.film} <Play className="size-3 fill-current" aria-hidden />
+          </button>
+        </div>
+        <div className="tm-fog" aria-hidden />
+      </div>
+    </section>
+  );
+}
+
+export function SearchSection() {
+  const ref = useScrollProgress<HTMLElement>("pass");
+  return (
+    <section ref={ref} id="search" className="tm-lines tm-search">
+      <div className="tm-eyebrow">
+        <Scribble />
+        <p className="tm-italic">{homeCopy.search.label}</p>
+      </div>
+      <h2 className="tm-serif-h tm-serif-h--lg text-center">{homeCopy.search.heading}</h2>
+      <p className="mx-auto mt-4 max-w-md text-center text-sm text-[var(--ink-soft)]">{homeCopy.search.note}</p>
+      <div className="tm-search__panel">
+        <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+          <SearchPanel />
+        </Suspense>
+      </div>
+    </section>
+  );
+}
+
+export function Statement() {
+  const ref = useScrollProgress<HTMLElement>("pass");
+  const words = homeCopy.statement.text.split(" ");
+  return (
+    <section ref={ref} className="tm-lines tm-statement">
+      <div className="tm-eyebrow tm-eyebrow--left">
+        <Scribble />
+        <p className="tm-italic">{homeCopy.statement.label}</p>
+      </div>
+      <p className="tm-statement__text">
+        {words.map((word, index) => (
+          <span key={`${word}-${index}`} className="tm-word" style={{ "--i": index / words.length } as React.CSSProperties}>
+            {word}{" "}
+          </span>
+        ))}
+      </p>
+    </section>
+  );
+}
+
+export function WorksWithoutAi() {
+  const ref = useScrollProgress<HTMLElement>("pass");
+  return (
+    <section ref={ref} className="tm-lines tm-promise">
+      <div className="tm-promise__copy">
+        <h2 className="tm-label">{homeCopy.promise.label}</h2>
+        <p>{homeCopy.promise.text}</p>
+      </div>
+      <Media slot="ridge-landscape" sizes="100vw" className="tm-promise__ridge" />
+    </section>
+  );
+}

@@ -32,6 +32,13 @@ on the next request. `GET /api/v1/admin/models` shows which are in use, with the
 a model's files, or switching its flag off in `config/features.yaml`, falls back to rules. The
 traveller flows never depend on a model being present.
 
+## Home page photos and videos
+
+Save a file as `frontend/public/home/<slot>.<ext>` and it replaces that slot's placeholder. Images:
+jpg, jpeg, png, webp, avif. Video: mp4, webm; an image with the same name becomes its poster. Slots
+and what each one should show are listed in `frontend/src/content/home.ts`. `npm run dev` picks files
+up on refresh; a Docker or production build needs rebuilding (`docker compose build web`).
+
 ## Background worker
 
 One `worker` container runs `app/worker_jobs.py`; each job holds a Redis lock, so extra workers

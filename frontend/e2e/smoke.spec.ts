@@ -25,6 +25,53 @@ test("home, flight search and stay search render without errors", async ({ page 
   expect(errors).toEqual([]);
 });
 
+test("home: scroll story, drawers, live prices, and other pages keep their own header", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Where to next?" })).toBeAttached();
+  await expect(page.getByRole("link", { name: /Goa.*₹/ })).toBeAttached({ timeout: 30_000 });
+
+  await page.getByRole("button", { name: "Watch the film" }).first().click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(page.getByRole("dialog").getByRole("link", { name: "My Trips" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toBeHidden();
+
+  // Real wheel scrolling must move the page, and the drawer tab appears past the hero.
+  await page.mouse.move(700, 600);
+  await page.mouse.wheel(0, 2600);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1500);
+  await page.getByRole("button", { name: "How it works" }).first().click();
+  await expect(page.getByRole("dialog").getByText("3. Hold and pay")).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  // Leaving by a link, without a page load, must bring the shared header back.
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await page.mouse.wheel(0, -400);
+  await expect(page.locator(".tm-nav")).not.toHaveAttribute("data-hidden");
+  await page.locator(".tm-nav").getByRole("link", { name: "Flights" }).click();
+  await expect(page).toHaveURL(/\/flights/);
+  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "My Trips" })).toBeVisible();
+  await expect(page.locator(".tm-home")).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
+test("home works on a phone with reduced motion, with no sideways scroll", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const page = await context.newPage();
+  const errors = watchErrors(page);
+  await page.goto(process.env.BASE_URL ?? "http://localhost:3000");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.locator(".tm-nav").getByRole("link", { name: "Flights" })).toBeHidden();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  expect(errors).toEqual([]);
+  await context.close();
+});
+
 test("assistant answers and cites its source", async ({ page }) => {
   const errors = watchErrors(page);
   await signIn(page);
