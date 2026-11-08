@@ -125,7 +125,10 @@ def test_assistant_with_provider_uses_trips_without_personal_data(
     ).json()
     assert answer["source"] == "ai:mock"
     assert len(answer["citations"]) == 1  # out-of-range source numbers are dropped
-    assert answer["actions"] == [{"label": "My Trips", "href": "/trips"}]  # external link removed
+    assert answer["actions"] == [  # external link removed; support offered for a cancellation
+        {"label": "My Trips", "href": "/trips"},
+        {"label": "Contact support", "href": "/support/new?topic=cancellation_refund"},
+    ]
     sent = json.dumps(seen[0])
     assert "demo@tripmind.dev" not in sent and "Demo Traveller" not in sent
     assert "Cancelling a flight" in sent  # the grounding article was supplied
@@ -140,3 +143,21 @@ def test_ai_features_can_be_switched_off(client: TestClient) -> None:
     )
     response = client.post(f"{API}/ai/parse-search", json={"text": "Goa next week"})
     assert response.status_code == 404 and response.json()["error"]["code"] == "FEATURE_DISABLED"
+
+
+def test_assistant_offers_support_for_cancellations(client: TestClient, catalog: None) -> None:
+    question = {"messages": [{"role": "user", "content": "I want to cancel and get a refund"}]}
+    anonymous = client.post(f"{API}/ai/assistant", json=question).json()
+    assert anonymous["topic"] == "cancellation_refund"
+    assert all(a["label"] != "Contact support" for a in anonymous["actions"])  # needs sign-in
+    seed()
+    client.post(f"{API}/auth/demo-login", json={"role": "traveler"})
+    signed_in = client.post(f"{API}/ai/assistant", json=question).json()
+    assert {"label": "Contact support", "href": "/support/new?topic=cancellation_refund"} in (
+        signed_in["actions"]
+    )
+    other = client.post(
+        f"{API}/ai/assistant",
+        json={"messages": [{"role": "user", "content": "How long are seats held while I pay?"}]},
+    ).json()
+    assert all(a["label"] != "Contact support" for a in other["actions"])

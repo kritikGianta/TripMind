@@ -20,6 +20,7 @@ from app.modules.ai.knowledge import Chunk, KnowledgeBase
 from app.modules.ai.llm import LLMClient, extract_json
 from app.modules.auth.models import User
 from app.modules.bookings.models import Booking, BookingItem, Trip
+from app.modules.ml.request_classifier import RequestClassifier
 from app.modules.recovery.models import RecoveryCase
 
 _INTERNAL_LINK = re.compile(r"^/[a-z0-9/_\-?=&.%]*$", re.I)
@@ -49,6 +50,9 @@ class AssistantOut(BaseModel):
     citations: list[Citation]
     actions: list[Action]
     source: str = Field(description="'ai:<provider>' or 'rules'")
+    topic: str | None = Field(
+        default=None, description="Support category of the question (request classifier)"
+    )
 
 
 class _Reply(BaseModel):
@@ -65,7 +69,9 @@ change anything; tell the traveller which page to use instead. Keep answers shor
 Reply with one JSON object: {"answer": string, "sources": [article numbers you used],
 "actions": [{"label": short button text, "href": one of the site paths listed}]}."""
 
-PAGES = ("/flights", "/stays", "/plan", "/trips", "/account")
+PAGES = ("/flights", "/stays", "/plan", "/trips", "/account", "/support")
+# Topics where a person may need to act: offer to open a support request, pre-filed.
+SUPPORT_TOPICS = frozenset({"human_agent", "cancellation_refund", "change_booking"})
 
 
 def trip_summary(session: Session, user: User | None) -> str:
@@ -100,12 +106,34 @@ def trip_summary(session: Session, user: User | None) -> str:
 
 
 class Assistant:
-    def __init__(self, session: Session, llm: LLMClient, knowledge: KnowledgeBase) -> None:
+    def __init__(
+        self,
+        session: Session,
+        llm: LLMClient,
+        knowledge: KnowledgeBase,
+        classifier: RequestClassifier | None = None,
+    ) -> None:
         self._session = session
         self._llm = llm
         self._knowledge = knowledge
+        self._classifier = classifier
 
     def answer(self, request: AssistantRequest, user: User | None) -> AssistantOut:
+        out = self._answer(request, user)
+        if self._classifier is None:
+            return out
+        topic = self._classifier.classify(request.messages[-1].content).category
+        out.topic = topic
+        href = f"/support/new?topic={topic}"
+        if (
+            user is not None
+            and topic in SUPPORT_TOPICS
+            and all(a.href != href for a in out.actions)
+        ):
+            out.actions = [*out.actions[:2], Action(label="Contact support", href=href)]
+        return out
+
+    def _answer(self, request: AssistantRequest, user: User | None) -> AssistantOut:
         question = request.messages[-1].content
         recent = " ".join(m.content for m in request.messages[-3:] if m.role == "user")
         hits = [chunk for chunk, _ in self._knowledge.search(recent, k=4)]

@@ -210,4 +210,4 @@ def test_cancel_alert(signed_in: TestClient) -> None:  # noqa: F811
 
 def test_worker_runs_the_alert_job(settings: Settings) -> None:
     names = {name: interval for name, interval, _ in jobs(settings)}
-    assert names == {"expire_holds": 30, "check_price_alerts": 30 * 60}
+    assert names == {"expire_holds": 30, "check_price_alerts": 30 * 60, "train_preferences": 3600}

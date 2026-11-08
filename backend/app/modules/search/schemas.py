@@ -169,6 +169,9 @@ class HotelResultOut(BaseModel):
     bookable: bool
     free_cancellation: bool
     breakfast_available: bool
+    personal_reasons: list[str] = Field(
+        default_factory=list, description="Why this stay suits the signed-in traveller"
+    )
 
 
 class HotelFacets(BaseModel):
@@ -190,7 +193,10 @@ class HotelSearchOut(BaseModel):
     facets: HotelFacets
     display_currency: str
     notices: list[str]
-    ranked_by: str = Field(default="rules", description="'model:<version>' or 'rules'")
+    ranked_by: str = Field(
+        default="rules", description="'model:<version>' or 'rules', plus '+preferences'"
+    )
+    personalized: bool = Field(default=False, description="Adjusted to the traveller's taste")
 
 
 class HotelDetailOut(BaseModel):

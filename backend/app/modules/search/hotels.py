@@ -20,9 +20,11 @@ from sqlalchemy.orm import Session
 from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import City, Hotel, HotelAmenity, RoomType
 from app.modules.ml.features import HotelRow, hotel_ranker_rows
+from app.modules.ml.preferences import UserPreference, probability, reasons
 from app.modules.ml.registry import LoadedModel
 from app.modules.ml.similar import HotelProfile, similar_hotels
 from app.modules.operations.queries import unavailable_rooms
+from app.modules.search.geo import distance_km as _distance_km
 from app.modules.search.locations import LocationService
 from app.modules.search.pricing import Converter, LedgerLine, MoneyOut, SearchRules
 from app.modules.search.schemas import (
@@ -91,23 +93,6 @@ class HotelQuery:
     sort: HotelSort = "recommended"
 
 
-def _distance_km(hotel: Hotel, city: City) -> float | None:
-    if (
-        hotel.latitude is None
-        or hotel.longitude is None
-        or city.latitude is None
-        or city.longitude is None
-    ):
-        return None
-    lat1, lon1 = math.radians(hotel.latitude), math.radians(hotel.longitude)
-    lat2, lon2 = math.radians(city.latitude), math.radians(city.longitude)
-    h = (
-        math.sin((lat2 - lat1) / 2) ** 2
-        + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
-    )
-    return round(6371.0 * 2 * math.asin(math.sqrt(h)), 1)
-
-
 class HotelSearchService:
     def __init__(
         self,
@@ -116,12 +101,16 @@ class HotelSearchService:
         rules: SearchRules,
         today: date,
         ranker: LoadedModel | None = None,
+        preference: UserPreference | None = None,
+        preference_blend: float = 0.3,
     ) -> None:
         self._session = session
         self._converter = converter
         self._rules = rules
         self._today = today
         self._ranker = ranker
+        self._preference = preference
+        self._blend = preference_blend
         self._out_of_service: dict[tuple[date, date], set[uuid.UUID]] = {}
 
     def validate(self, stay: Stay) -> None:
@@ -253,6 +242,10 @@ class HotelSearchService:
             ranked_by = f"model:{self._ranker.card.version}"
         else:
             results.sort(key=self._sort_key(query.sort, results))
+        personalized = False
+        if query.sort == "recommended" and self._preference is not None and len(results) > 1:
+            results = self._personalize(results, city.id)
+            ranked_by, personalized = f"{ranked_by}+preferences", True
         notices = []
         if any(not r.bookable for r in results):
             notices.append("Some stays have no rate in the supplied data and are browse only.")
@@ -270,7 +263,32 @@ class HotelSearchService:
             display_currency=self._converter.display_currency,
             notices=notices,
             ranked_by=ranked_by,
+            personalized=personalized,
         )
+
+    def _personalize(
+        self, results: list[HotelResultOut], city_id: uuid.UUID
+    ) -> list[HotelResultOut]:
+        """Blend the traveller's preference into the order; unpriced stays stay last."""
+        from app.modules.search.preferences import hotel_features
+
+        preference = self._preference
+        if preference is None:
+            return results
+        features = hotel_features(self._session, self._converter, {city_id})
+        priced = [r for r in results if self._nightly_display(r.cheapest_room) is not None]
+        unpriced = [r for r in results if r not in priced]
+        n = len(priced)
+        scored = []
+        for position, result in enumerate(priced):
+            vector = features.get(result.id)
+            base = 1 - position / (n - 1) if n > 1 else 1.0
+            liking = probability(preference, vector) if vector else 0.5
+            if vector:
+                result.personal_reasons = reasons(preference, vector)
+            scored.append(((1 - self._blend) * base + self._blend * liking, -position, result))
+        scored.sort(key=lambda s: (s[0], s[1]), reverse=True)
+        return [r for _, _, r in scored] + unpriced
 
     def _model_order(self, results: list[HotelResultOut], stay: Stay) -> list[HotelResultOut]:
         """Order by the trained ranker; unpriced stays always go last."""

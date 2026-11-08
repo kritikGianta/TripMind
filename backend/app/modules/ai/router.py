@@ -13,12 +13,14 @@ from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.deps import (
     get_clock,
+    get_feature_flags,
     get_kv_store,
     get_settings_dep,
     rate_limit,
     require_feature,
 )
 from app.core.errors import DomainError, ErrorEnvelope
+from app.core.features import FeatureFlags
 from app.core.kv import KeyValueStore
 from app.db.session import get_session
 from app.modules.ai.assistant import Assistant, AssistantOut, AssistantRequest
@@ -29,6 +31,7 @@ from app.modules.auth.dependencies import get_current_user
 from app.modules.auth.models import User
 from app.modules.catalog.repository import CatalogRepository
 from app.modules.catalog.vocabulary import load_vocabulary
+from app.modules.ml.request_classifier import RequestClassifier
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 _ERRORS: dict[int | str, dict[str, Any]] = {
@@ -128,5 +131,9 @@ def assistant(
     settings: Settings = Depends(get_settings_dep),
     llm: LLMClient = Depends(get_llm),
     user: User | None = Depends(optional_user),
+    flags: FeatureFlags = Depends(get_feature_flags),
 ) -> AssistantOut:
-    return Assistant(session, llm, knowledge_base(settings.config_dir)).answer(body, user)
+    classifier = RequestClassifier(settings.models_dir) if flags.enabled("support") else None
+    return Assistant(session, llm, knowledge_base(settings.config_dir), classifier).answer(
+        body, user
+    )

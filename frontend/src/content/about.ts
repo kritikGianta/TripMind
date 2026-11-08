@@ -214,6 +214,7 @@ export const capabilities: Capability[] = [
   { name: "Group planning", detail: "Share a plan by link; members vote Love, OK or No and set budgets; transparent consensus; organiser decides and books", status: "live" },
   { name: "Price anomaly detector", detail: "Isolation Forest flags suspicious fares in every import; 100% precision and recall on injected errors", status: "live" },
   { name: "Similar stays", detail: "TF-IDF similarity over amenities, stars, rating and price band, shown on every hotel page", status: "live" },
+  { name: "Personalised recommendations", detail: "Per-traveller model learned from stays opened, saved and booked; blended 30% into Recommended with plain reasons; viewable and resettable; offline check on simulated travellers (MRR 0.38 to 0.41 at the served blend)", status: "live" },
   { name: "Review sentiment and request classifier", detail: "TF-IDF + logistic regression exported as JSON (no pickle); notebooks on public data (TripAdvisor reviews, Bitext travel intents) must beat the rules they replace; rules run until trained", status: "planned" },
   { name: "Hotel ranker and fare estimator", detail: "LightGBM models trained on public Kaggle data; notebooks ready, used once trained, with rule fallbacks", status: "planned" },
   { name: "Monitoring dashboards", detail: "Prometheus metrics and alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger", status: "live" },

@@ -808,6 +808,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What TripMind has learned about the stays I like */
+        get: operations["my_preferences_api_v1_me_preferences_get"];
+        put?: never;
+        post?: never;
+        /** Reset personalisation: forget my stay activity and what was learned */
+        delete: operations["reset_preferences_api_v1_me_preferences_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/price-alerts": {
         parameters: {
             query?: never;
@@ -2543,6 +2561,11 @@ export interface components {
             longitude: number | null;
             /** Name */
             name: string;
+            /**
+             * Personal Reasons
+             * @description Why this stay suits the signed-in traveller
+             */
+            personal_reasons?: string[];
             /** Review Count */
             review_count: number | null;
             /** Star Rating */
@@ -2586,8 +2609,14 @@ export interface components {
             /** Notices */
             notices: string[];
             /**
+             * Personalized
+             * @description Adjusted to the traveller's taste
+             * @default false
+             */
+            personalized: boolean;
+            /**
              * Ranked By
-             * @description 'model:<version>' or 'rules'
+             * @description 'model:<version>' or 'rules', plus '+preferences'
              * @default rules
              */
             ranked_by: string;
@@ -2802,6 +2831,17 @@ export interface components {
             airport: components["schemas"]["AirportBrief"];
             /** Minutes */
             minutes: number;
+        };
+        /** LearnedPreferenceOut */
+        LearnedPreferenceOut: {
+            /** Direction */
+            direction: string;
+            /** Feature */
+            feature: string;
+            /** Label */
+            label: string;
+            /** Weight */
+            weight: number;
         };
         /** LedgerLine */
         LedgerLine: {
@@ -3223,6 +3263,24 @@ export interface components {
             saved: number;
             /** Title */
             title: string;
+        };
+        /** PreferencesOut */
+        PreferencesOut: {
+            /** Activity Count */
+            activity_count: number;
+            /** How It Works */
+            how_it_works: string;
+            /** Learned */
+            learned: components["schemas"]["LearnedPreferenceOut"][];
+            /**
+             * Personalized
+             * @description True once enough activity has been learned from
+             */
+            personalized: boolean;
+            /** Stays Learned From */
+            stays_learned_from: number;
+            /** Trained At */
+            trained_at: string | null;
         };
         /** PriceAlertIn */
         PriceAlertIn: {
@@ -7451,6 +7509,62 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LoyaltyOut"];
                 };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    my_preferences_api_v1_me_preferences_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    reset_preferences_api_v1_me_preferences_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Unauthorized */
             401: {

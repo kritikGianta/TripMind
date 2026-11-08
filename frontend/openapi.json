@@ -3407,6 +3407,14 @@
             "title": "Name",
             "type": "string"
           },
+          "personal_reasons": {
+            "description": "Why this stay suits the signed-in traveller",
+            "items": {
+              "type": "string"
+            },
+            "title": "Personal Reasons",
+            "type": "array"
+          },
           "review_count": {
             "anyOf": [
               {
@@ -3523,9 +3531,15 @@
             "title": "Notices",
             "type": "array"
           },
+          "personalized": {
+            "default": false,
+            "description": "Adjusted to the traveller's taste",
+            "title": "Personalized",
+            "type": "boolean"
+          },
           "ranked_by": {
             "default": "rules",
-            "description": "'model:<version>' or 'rules'",
+            "description": "'model:<version>' or 'rules', plus '+preferences'",
             "title": "Ranked By",
             "type": "string"
           },
@@ -4011,6 +4025,34 @@
           "minutes"
         ],
         "title": "LayoverOut",
+        "type": "object"
+      },
+      "LearnedPreferenceOut": {
+        "properties": {
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "feature",
+          "label",
+          "weight",
+          "direction"
+        ],
+        "title": "LearnedPreferenceOut",
         "type": "object"
       },
       "LedgerLine": {
@@ -5119,6 +5161,56 @@
           "generated_at"
         ],
         "title": "PlanSummaryOut",
+        "type": "object"
+      },
+      "PreferencesOut": {
+        "properties": {
+          "activity_count": {
+            "title": "Activity Count",
+            "type": "integer"
+          },
+          "how_it_works": {
+            "title": "How It Works",
+            "type": "string"
+          },
+          "learned": {
+            "items": {
+              "$ref": "#/components/schemas/LearnedPreferenceOut"
+            },
+            "title": "Learned",
+            "type": "array"
+          },
+          "personalized": {
+            "description": "True once enough activity has been learned from",
+            "title": "Personalized",
+            "type": "boolean"
+          },
+          "stays_learned_from": {
+            "title": "Stays Learned From",
+            "type": "integer"
+          },
+          "trained_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trained At"
+          }
+        },
+        "required": [
+          "personalized",
+          "trained_at",
+          "stays_learned_from",
+          "activity_count",
+          "learned",
+          "how_it_works"
+        ],
+        "title": "PreferencesOut",
         "type": "object"
       },
       "PriceAlertIn": {
@@ -12330,6 +12422,59 @@
         "summary": "My loyalty points and tier",
         "tags": [
           "account"
+        ]
+      }
+    },
+    "/api/v1/me/preferences": {
+      "delete": {
+        "operationId": "reset_preferences_api_v1_me_preferences_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Reset personalisation: forget my stay activity and what was learned",
+        "tags": [
+          "search"
+        ]
+      },
+      "get": {
+        "operationId": "my_preferences_api_v1_me_preferences_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "What TripMind has learned about the stays I like",
+        "tags": [
+          "search"
         ]
       }
     },

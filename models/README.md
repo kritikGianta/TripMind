@@ -10,6 +10,7 @@ with a README, a notebook and an `artifacts/` folder.
 | [price_anomaly](price_anomaly/) | Flags suspicious fares in the import report (Isolation Forest) | Fitted per import; evaluated locally | Live |
 | [similar_hotels](similar_hotels/) | "Similar stays" on the hotel page (TF-IDF + cosine similarity) | Computed on demand; evaluated locally | Live |
 | [review_sentiment](review_sentiment/) | Review sentiment and per-aspect highlights on a stay (TF-IDF + logistic regression, JSON) | Kaggle (TripAdvisor reviews) | Notebook ready; word-list rules until trained |
+| [preference_model](preference_model/) | Blends a signed-in traveller's taste into "Recommended" and says why (per-user logistic regression) | Per user by the worker; evaluated locally on simulated travellers | Live |
 | [request_classifier](request_classifier/) | Routes support tickets by category (TF-IDF + logistic regression, JSON) | Local or Kaggle (Bitext travel intents) | Notebook ready; keyword rules until trained |
 
 ## Contract every model follows

@@ -553,3 +553,128 @@ write(HERE / "request_classifier" / "request_classifier.ipynb", [
     print(card)
     """)),
 ])
+
+
+# ── Preference model (local evaluation) ──────────────────────────────────────────────────────────
+write(HERE / "preference_model" / "preference_model.ipynb", [
+    md("""
+    # Preference model: offline evaluation
+
+    `backend/app/modules/ml/preferences.py` fits one small logistic regression per signed-in
+    traveller from the stays they open, save and book, and blends it (30%) into the Recommended
+    order. Models are trained in production by the worker (`train_preferences`), so there is no
+    artifact to hand back.
+
+    TripMind has no real traveller activity yet, so this notebook checks the method on **simulated
+    travellers**: each has a hidden taste (a few features they care about), browses stays in one
+    city, saves some and books the one they like most. The model learns from the views and saves
+    only; we then ask where the booked stay lands in the Recommended order, with and without the
+    preference, counting only stays they had not opened (the ones a recommendation must surface).
+    Features are centred on each city's average and negatives come from the whole catalog, as in
+    serving. This shows the method can recover a taste from little activity. The simulated
+    travellers care only about their hidden taste, which flatters personalisation, so it is not a
+    claim about real-world lift; the blend sweep below informs `preferences.blend` in config.
+
+    Run from `backend/`:
+    `uv run --with nbconvert --with ipykernel jupyter nbconvert --to notebook --execute --inplace ../models/preference_model/preference_model.ipynb`
+    """),
+    code("""
+    import json, math, tempfile, datetime, uuid
+    from datetime import date
+    from pathlib import Path
+    import numpy as np
+    from app.core.config import get_settings
+    from app.datagen.generator import GeneratorOptions, generate
+    from app.modules.ingestion.mapping import load_mapping
+    from app.modules.ingestion.pipeline import prepare
+    from app.modules.ingestion.rules import load_rules, load_vocabulary
+    from app.modules.ingestion.sources import open_source
+    from app.modules.ml.preferences import FEATURES, feature_vector, fit, probability
+
+    tmp = Path(tempfile.mkdtemp()) / "demo.zip"
+    generate(tmp, GeneratorOptions(seed=7, start=date(2026, 11, 13), days=3, dirty_rate=0))
+    s = get_settings()
+    p = prepare(open_source(tmp, max_members=10, max_uncompressed_mb=900), load_mapping(s.config_dir, "synthetic-v1"),
+                load_rules(s.config_dir), load_vocabulary(s.config_dir), catalog_airports=lambda: [])
+    hotels, rooms, cities = p.hotels, p.room_types, p.cities.set_index("source_key")
+    cheapest = rooms.groupby("hotel_id").nightly_rate_minor.min()
+    print(len(hotels), "hotels in", hotels.city_key.nunique(), "cities")
+    """),
+    md("Stay features exactly as served (`feature_vector`): stars, rating, value within the city, distance from the centre, amenities."),
+    code("""
+    def km(lat1, lon1, lat2, lon2):
+        if any(v is None or (isinstance(v, float) and math.isnan(v)) for v in (lat1, lon1, lat2, lon2)):
+            return None
+        a = math.radians(lat1), math.radians(lon1), math.radians(lat2), math.radians(lon2)
+        h = math.sin((a[2] - a[0]) / 2) ** 2 + math.cos(a[0]) * math.cos(a[2]) * math.sin((a[3] - a[1]) / 2) ** 2
+        return 6371 * 2 * math.asin(math.sqrt(h))
+
+    by_city, vectors, rule_score = {}, {}, {}
+    for city_key, group in hotels.groupby("city_key"):
+        prices = sorted((cheapest.get(h), h) for h in group.id if cheapest.get(h) is not None)
+        value = {h: 1.0 if len(prices) == 1 else 1 - i / (len(prices) - 1) for i, (_, h) in enumerate(prices)}
+        c = cities.loc[city_key]
+        for h in group.itertuples():
+            hid = uuid.UUID(str(h.id))
+            vectors[hid] = feature_vector(stars=h.star_rating, rating=h.guest_rating, value=value.get(h.id),
+                                          distance_km=km(h.latitude, h.longitude, c.latitude, c.longitude),
+                                          amenities=set(h.amenity_codes))
+            # TripMind's rule-based Recommended score: rating 50%, value 30%, stars 20%.
+            v = vectors[hid]
+            rule_score[hid] = 0.5 * v["rating"] + 0.3 * v["value"] + 0.2 * v["stars"]
+        by_city[city_key] = [uuid.UUID(str(i)) for i in group.id]
+    for ids in by_city.values():  # centre on the city's average, exactly as served
+        means = {f: sum(vectors[h][f] for h in ids) / len(ids) for f in FEATURES}
+        for h in ids:
+            vectors[h] = {f: vectors[h][f] - means[f] for f in FEATURES}
+    cities_used = [k for k, ids in by_city.items() if len(ids) >= 8]
+    print(len(cities_used), "cities with 8+ stays")
+    """),
+    code("""
+    rng = np.random.default_rng(7)
+    VIEWS, SAVES, BLENDS = 6, 2, (0.0, 0.3, 0.5, 0.7, 1.0)
+    def rank_of(target, ids, score):
+        return sorted(ids, key=lambda h: -score[h]).index(target) + 1
+
+    ranks = {b: [] for b in BLENDS}
+    for n in range(400):
+        user = uuid.UUID(int=n + 1)
+        ids = by_city[cities_used[rng.integers(len(cities_used))]]
+        taste = np.zeros(len(FEATURES))
+        strong = rng.choice(len(FEATURES), size=3, replace=False)
+        taste[strong] = rng.normal(0, 2.5, size=3)
+        utility = {h: float(taste @ np.array([vectors[h][f] for f in FEATURES])) + rng.gumbel(0, 0.5) for h in ids}
+        liked = sorted(ids, key=lambda h: -utility[h])
+        booked, seen = liked[0], liked[1 : 1 + VIEWS]
+        positives = {h: 1.0 for h in seen}
+        for h in seen[:SAVES]:
+            positives[h] += 3.0
+        fitted = fit(positives, vectors, user_id=user, negatives_per_positive=4, min_positive_hotels=3)
+        unseen = [h for h in ids if h not in positives]
+        base_order = sorted(ids, key=lambda h: -rule_score[h])
+        base = {h: 1 - i / (len(ids) - 1) for i, h in enumerate(base_order)}
+        liking = {h: probability(fitted, vectors[h]) for h in ids}
+        for b in BLENDS:
+            score = {h: (1 - b) * base[h] + b * liking[h] for h in ids}
+            ranks[b].append(rank_of(booked, unseen, score))
+
+    def summary(r):
+        r = np.array(r)
+        return {"mrr": float(np.mean(1 / r)), "hit_at_3": float(np.mean(r <= 3)), "median_rank": float(np.median(r))}
+    report = {f"blend_{b}": summary(r) for b, r in ranks.items()}
+    print(json.dumps(report, indent=2))
+    assert report["blend_0.3"]["mrr"] > report["blend_0.0"]["mrr"], "the served blend does not help"
+    assert report["blend_1.0"]["mrr"] > report["blend_0.0"]["mrr"], "the preference alone does not help"
+    """),
+    code("""
+    metrics = {f"{k}_{m}": v for k, d in report.items() for m, v in d.items()}
+    card = {"name": "preference_model", "version": datetime.date.today().strftime("%Y.%m.%d"),
+            "trained_at": datetime.datetime.now(datetime.timezone.utc).isoformat(), "framework": "scikit-learn",
+            "framework_version": __import__("sklearn").__version__,
+            "dataset": "Simulated travellers over the TripMind synthetic catalog",
+            "features": list(FEATURES), "metrics": metrics,
+            "notes": "Per-user models are trained by the worker; this card records the offline evaluation. blend_0.0 is the rule-based order; served blend is 0.3."}
+    Path("artifacts").mkdir(exist_ok=True); Path("artifacts/model_card.json").write_text(json.dumps(card, indent=2))
+    print(json.dumps(metrics, indent=2))
+    """),
+])

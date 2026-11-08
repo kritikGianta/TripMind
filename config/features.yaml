@@ -34,3 +34,5 @@ features:
   reviews: true
   # Support requests filed by the request classifier, with an admin queue.
   support: true
+  # Learn which stays a signed-in traveller likes and blend it into the Recommended order.
+  personalization: true
