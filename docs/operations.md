@@ -39,11 +39,24 @@ jpg, jpeg, png, webp, avif. Video: mp4, webm; an image with the same name become
 and what each one should show are listed in `frontend/src/content/home.ts`. `npm run dev` picks files
 up on refresh; a Docker or production build needs rebuilding (`docker compose build web`).
 
-The original files as supplied stay in `Images&Videos/` (git-ignored). `hero-film.mp4` is a 1080p copy of
-`main-homepage-video.mp4`, 7.7 MB instead of 29.8 MB, with its last 1.5 s crossfaded into its start so the
-loop has no visible jump; `hero-film.jpg` is its first frame. `route-opening.png` is a stand-in, a copy of
+The original files as supplied stay in `Images&Videos/` (git-ignored). `hero-film.mp4` is a 1080p ffmpeg
+encode of `main-homepage-video.mp4`, 5.4 MB instead of 29.8 MB, with its last 2 s crossfaded into its start so
+the loop has no visible jump; `hero-film.jpg` is its first frame. Re-encoding a video? Do not record a canvas
+with MediaRecorder: that froze the picture while the timer kept running. The e2e suite now compares pixels. `route-opening.png` is a stand-in, a copy of
 `dest-backdrop.png`: replace it with a bright photo saved under the same name, and update that slot's `alt`
 in `home.ts`. `route-origin` and `route-destination` are optional and the map looks finished without them.
+
+## Frontend work without Docker
+
+Docker is not needed day to day for UI work. Quit Docker Desktop, then in two terminals:
+
+    powershell -ExecutionPolicy Bypass -File scripts\local-api.ps1
+    cd frontend; npm run dev
+
+The API then uses `backend/local-dev.db`, a git-ignored copy of a loaded demo database, and the repo's `.env`.
+There is no worker, Redis or monitoring, so background jobs do not run. Test the Docker stack
+(`docker compose up -d --build web`) whenever a section is finished and before any demo: it is the real
+PostgreSQL setup, and the only place to catch problems that SQLite hides.
 
 ## If Docker Desktop stops answering
 

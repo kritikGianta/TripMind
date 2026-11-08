@@ -74,6 +74,33 @@ test("home works on a phone with reduced motion, with no sideways scroll", async
   const videoTime = () => heroVideo.evaluate((video: HTMLVideoElement) => video.currentTime);
   const started = await videoTime();
   await expect.poll(videoTime).not.toBe(started);
+
+  // Time passing proves little: a frozen file still reports it. So compare real pixels at points
+  // across the loop. Sampling only the first seconds once passed a file that froze after them.
+  const slowestChange = await heroVideo.evaluate(async (video: HTMLVideoElement) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 160;
+    canvas.height = 84;
+    const context = canvas.getContext("2d", { willReadFrequently: true })!;
+    const frameAt = async (fraction: number) => {
+      await new Promise((resolve) => {
+        video.addEventListener("seeked", resolve, { once: true });
+        video.currentTime = video.duration * fraction;
+      });
+      context.drawImage(video, 0, 0, 160, 84);
+      return context.getImageData(0, 0, 160, 84).data;
+    };
+    const changes: number[] = [];
+    let previous = await frameAt(0.3);
+    for (const fraction of [0.45, 0.6, 0.75]) {
+      const current = await frameAt(fraction);
+      changes.push(current.reduce((sum, value, index) => sum + Math.abs(value - previous[index]), 0) / current.length);
+      previous = current;
+    }
+    return Math.min(...changes);
+  });
+  expect(slowestChange).toBeGreaterThan(1);
+
   await page.getByRole("button", { name: "Pause background video" }).click();
   await expect.poll(() => heroVideo.evaluate((video: HTMLVideoElement) => video.paused)).toBe(true);
   await page.getByRole("button", { name: "Play background video" }).click();
