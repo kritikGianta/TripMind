@@ -17,6 +17,7 @@ from datetime import timedelta
 from typing import Any
 
 import structlog
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -25,7 +26,7 @@ from app.core.config import Settings
 from app.core.errors import Conflict, DomainError
 from app.core.request_context import RequestMeta
 from app.modules.audit.service import AuditService
-from app.modules.catalog.models import Airport, City, Flight, Hotel, RoomType
+from app.modules.catalog.models import Airport, City, Flight, Hotel, HotelReview, RoomType
 from app.modules.catalog.repository import CatalogRepository
 from app.modules.ingestion import metrics
 from app.modules.ingestion.mapping import DatasetMapping, load_mapping
@@ -37,6 +38,7 @@ from app.modules.ingestion.publish import (
     CITY_COLUMNS,
     FLIGHT_COLUMNS,
     HOTEL_COLUMNS,
+    REVIEW_COLUMNS,
     ROOM_COLUMNS,
     CatalogPublisher,
     TableCounts,
@@ -98,6 +100,7 @@ class ImportService:
                 rules,
                 vocabulary,
                 catalog_airports=self._catalog_airports,
+                catalog_hotels=self._catalog_hotels,
                 today=self._clock.now().date(),
             )
             self._finish(run, prepared, rules, dry_run, actor)
@@ -258,6 +261,10 @@ class ImportService:
             result["room_types"], _ = publisher.sync(
                 RoomType, records(prepared.room_types, ROOM_COLUMNS, import_run_id=run_id)
             )
+        if prepared.reviews is not None:
+            result["reviews"], _ = publisher.sync(
+                HotelReview, records(prepared.reviews, REVIEW_COLUMNS, import_run_id=run_id)
+            )
         for entity, retired in publisher.cascade_retirements().items():
             result.setdefault(entity, TableCounts()).retired += retired
         return {entity: counts.as_dict() for entity, counts in result.items()}
@@ -289,6 +296,12 @@ class ImportService:
         log.warning(
             "import_failed", run_id=str(run_id), error=run.error, error_type=type(exc).__name__
         )
+
+    def _catalog_hotels(self) -> dict[str, str]:
+        rows = self._session.execute(
+            select(Hotel.source_key, Hotel.id).where(Hotel.is_active.is_(True))
+        )
+        return {key: str(hotel_id) for key, hotel_id in rows}
 
     def _catalog_airports(self) -> list[AirportRef]:
         return [

@@ -90,7 +90,7 @@ layers = [
     "app.main : app.cli : app.models : app.worker",
     "app.worker_jobs",
     "app.modules.admin | app.modules.ai",
-    "app.modules.recovery | app.modules.groups",
+    "app.modules.recovery | app.modules.groups | app.modules.reviews | app.modules.support",
     "app.modules.bookings | app.modules.planner",
     "app.modules.loyalty | app.modules.watchlist",
     "app.modules.ingestion | app.datagen | app.modules.search | app.modules.inventory | app.modules.notifications | app.modules.profiles",

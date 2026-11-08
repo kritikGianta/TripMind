@@ -344,3 +344,212 @@ write(HERE / "similar_hotels" / "similar_hotels.ipynb", [
     Path("artifacts").mkdir(exist_ok=True); Path("artifacts/model_card.json").write_text(json.dumps(card, indent=2))
     """),
 ])
+
+
+# ── Shared pieces for the text models: copied from the backend so training and serving agree ────
+BACKEND_ML = HERE.parent / "backend" / "app" / "modules" / "ml"
+
+
+def _source_of(path: Path, names: tuple[str, ...]) -> str:
+    """The exact source of the top-level assignments, classes and functions `names` in a file."""
+    import ast
+
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    parts = []
+    for node in ast.parse(text).body:
+        if isinstance(node, ast.Assign):
+            found = [t.id for t in node.targets if isinstance(t, ast.Name)]
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            found = [node.target.id]
+        elif isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            found = [node.name]
+        else:
+            found = []
+        if any(name in names for name in found):
+            start = min([node.lineno] + [d.lineno for d in getattr(node, "decorator_list", [])])
+            parts.append("\n".join(lines[start - 1 : node.end_lineno]))
+    return "\n\n".join(parts)
+
+
+EXPORT_HELPER = (BACKEND_ML / "text_export.py").read_text(encoding="utf-8").split('"""', 2)[2]
+SENTIMENT_RULES = (
+    "import re\nfrom dataclasses import dataclass\nfrom typing import Literal\n\n"
+    + _source_of(
+        BACKEND_ML / "sentiment.py",
+        ("Label", "POSITIVE", "NEGATIVE", "NEGATORS", "_WORDS", "Sentiment", "_rules"),
+    )
+)
+REQUEST_RULES = "import re\n\n" + _source_of(
+    BACKEND_ML / "request_classifier.py", ("INTENT_CATEGORIES", "RULES")
+)
+
+# ── Review sentiment (Kaggle) ────────────────────────────────────────────────────────────────────
+write(HERE / "review_sentiment" / "review_sentiment.ipynb", [
+    md("""
+    # TripMind review sentiment (TF-IDF + logistic regression)
+
+    Scores hotel reviews as positive, neutral or negative so TripMind can summarise what guests
+    say about a stay (overall and per aspect: location, staff, cleanliness, ...).
+
+    **Data:** *Trip Advisor Hotel Reviews* (about 20,000 TripAdvisor reviews with a 1-5 rating),
+    Kaggle dataset `andrewmvd/trip-advisor-hotel-reviews`. Check the licence on the dataset page
+    before use; a Hugging Face mirror of the same data lists **CC BY-NC 4.0** (non-commercial).
+    Labels: 1-2 stars negative, 3 neutral, 4-5 positive.
+
+    **Run on Kaggle:** new notebook, *Add data*, search "Trip Advisor Hotel Reviews", *Run all*.
+    CPU is enough.
+
+    **Hand back:** download `model.json` and `model_card.json` from `/kaggle/working` into
+    `models/review_sentiment/artifacts/`. The model is plain JSON (no pickle). The notebook stops
+    with an error unless the model beats the word-list rules TripMind uses today.
+    """),
+    code("""
+    import glob
+    import numpy as np, pandas as pd
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import accuracy_score, classification_report, f1_score
+    from sklearn.model_selection import train_test_split
+
+    frames = [pd.read_csv(f) for f in glob.glob("/kaggle/input/**/*.csv", recursive=True)]
+    df = next(f for f in frames if {"review", "rating"} <= {c.lower() for c in f.columns})
+    df.columns = [c.lower() for c in df.columns]
+    df = df[["review", "rating"]].dropna()
+    df = df[df.rating.between(1, 5)]
+    df["label"] = np.select([df.rating <= 2, df.rating == 3], ["negative", "neutral"], "positive")
+    print(len(df), df.label.value_counts().to_dict())
+    """),
+    code("""
+    train, test = train_test_split(df, test_size=0.2, random_state=7, stratify=df.label)
+    vectorizer = TfidfVectorizer(ngram_range=(1, 2), min_df=3, max_features=30_000, sublinear_tf=True)
+    model = LogisticRegression(C=4.0, max_iter=2000, class_weight="balanced")
+    model.fit(vectorizer.fit_transform(train.review), train.label)
+    predicted = model.predict(vectorizer.transform(test.review))
+    print(classification_report(test.label, predicted, digits=3))
+    """),
+    md("**Baseline:** the word-list rules TripMind serves without a model (copied from `backend/app/modules/ml/sentiment.py`)."),
+    code(SENTIMENT_RULES + dedent("""
+
+
+    baseline = [_rules(text).label for text in test.review]
+    metrics = {
+        "macro_f1": f1_score(test.label, predicted, average="macro"),
+        "accuracy": accuracy_score(test.label, predicted),
+        "baseline_macro_f1": f1_score(test.label, baseline, average="macro"),
+        "baseline_accuracy": accuracy_score(test.label, baseline),
+        "test_rows": float(len(test)),
+    }
+    print(metrics)
+    assert metrics["macro_f1"] > metrics["baseline_macro_f1"], "model does not beat the rules"
+    """)),
+    code(EXPORT_HELPER + dedent("""
+
+    card = export_tfidf_logreg(
+        vectorizer, model, "/kaggle/working", name="review_sentiment",
+        dataset="Trip Advisor Hotel Reviews (Kaggle andrewmvd/trip-advisor-hotel-reviews)",
+        metrics=metrics, notes="1-2 stars negative, 3 neutral, 4-5 positive; 80/20 stratified split, seed 7.",
+    )
+    print(card)
+    """)),
+])
+
+# ── Request classifier (local or Kaggle) ─────────────────────────────────────────────────────────
+write(HERE / "request_classifier" / "request_classifier.ipynb", [
+    md("""
+    # TripMind request classifier (TF-IDF + logistic regression)
+
+    Sorts a traveller's support message into a category (cancellation or refund, change a booking,
+    baggage and seats, ...) to route support tickets and help the assistant.
+
+    **Data:** Bitext *travel* customer-support dataset on Hugging Face
+    (`bitext/Bitext-travel-llm-chatbot-training-dataset`, about 31,700 rows, 33 intents,
+    licence CDLA-Sharing-1.0). Bitext generated it with their language tools, so its phrasing is
+    cleaner than real messages and the score on its own test split is optimistic. The notebook
+    also reports accuracy on hand-written messages in TripMind's own style.
+
+    **Run:** anywhere with internet (the CSV downloads from Hugging Face): Kaggle with internet
+    on, or locally from `backend/`:
+    `uv run --with nbconvert --with ipykernel jupyter nbconvert --to notebook --execute --inplace ../models/request_classifier/request_classifier.ipynb`
+
+    **Hand back:** `model.json` and `model_card.json` in `models/request_classifier/artifacts/`
+    (written there directly when run locally).
+    """),
+    code("""
+    import os
+    import pandas as pd
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import accuracy_score, classification_report, f1_score
+    from sklearn.model_selection import train_test_split
+
+    URL = ("https://huggingface.co/datasets/bitext/Bitext-travel-llm-chatbot-training-dataset/"
+           "resolve/main/bitext-travel-llm-chatbot-training-dataset.csv")
+    df = pd.read_csv(URL, usecols=["instruction", "intent", "category"])
+    print(df.shape, df.intent.nunique(), "intents")
+    """),
+    md("Intents are grouped into TripMind categories with the mapping the API uses (`backend/app/modules/ml/request_classifier.py`)."),
+    code(REQUEST_RULES + dedent("""
+
+
+    unmapped = set(df.intent) - set(INTENT_CATEGORIES)
+    assert not unmapped, f"intents without a category: {unmapped}"
+    df["label"] = df.intent.map(INTENT_CATEGORIES)
+    print(df.label.value_counts().to_dict())
+    """)),
+    code("""
+    train, test = train_test_split(df, test_size=0.2, random_state=7, stratify=df.label)
+    vectorizer = TfidfVectorizer(ngram_range=(1, 2), min_df=2, max_features=20_000, sublinear_tf=True)
+    model = LogisticRegression(C=8.0, max_iter=3000, class_weight="balanced")
+    model.fit(vectorizer.fit_transform(train.instruction), train.label)
+    predicted = model.predict(vectorizer.transform(test.instruction))
+    print(classification_report(test.label, predicted, digits=3))
+    """),
+    md("**Baseline:** TripMind's keyword rules. **Reality check:** hand-written messages the model never saw."),
+    code("""
+    def rules(text):
+        return next((c for c, p in RULES if p.search(text)), "other")
+
+    HANDWRITTEN = [
+        ("my flight got cancelled can i get the money back", "cancellation_refund"),
+        ("please refund the hotel, we are not going anymore", "cancellation_refund"),
+        ("can you push my flight to next friday", "change_booking"),
+        ("I need to fly a day later than booked", "change_booking"),
+        ("how much luggage is included in my ticket", "baggage_seats"),
+        ("I would like a window seat for my daughter", "baggage_seats"),
+        ("where can I download my boarding pass", "check_in_boarding"),
+        ("when does online check in open", "check_in_boarding"),
+        ("is my flight to goa on time today", "flight_status"),
+        ("what time do we land in mumbai", "flight_status"),
+        ("does my booking include travel insurance", "insurance"),
+        ("I want to buy cover for my trip", "insurance"),
+        ("show me cheap flights to bangalore next week", "new_booking"),
+        ("book me a flight and a hotel in jaipur", "new_booking"),
+        ("can you check the details of my reservation", "existing_booking"),
+        ("what is in my itinerary for december", "existing_booking"),
+        ("let me talk to a human", "human_agent"),
+        ("I want to speak with customer service", "human_agent"),
+    ]
+    hand_text, hand_label = zip(*HANDWRITTEN)
+    metrics = {
+        "macro_f1": f1_score(test.label, predicted, average="macro"),
+        "accuracy": accuracy_score(test.label, predicted),
+        "baseline_accuracy": accuracy_score(test.label, [rules(t) for t in test.instruction]),
+        "handwritten_accuracy": accuracy_score(hand_label, model.predict(vectorizer.transform(hand_text))),
+        "handwritten_baseline_accuracy": accuracy_score(hand_label, [rules(t) for t in hand_text]),
+        "test_rows": float(len(test)),
+    }
+    print(metrics)
+    assert metrics["accuracy"] > metrics["baseline_accuracy"], "model does not beat the rules"
+    """),
+    code(EXPORT_HELPER + dedent("""
+
+    out = "/kaggle/working" if os.path.isdir("/kaggle/working") else "artifacts"
+    card = export_tfidf_logreg(
+        vectorizer, model, out, name="request_classifier",
+        dataset="Bitext travel customer-support dataset (bitext/Bitext-travel-llm-chatbot-training-dataset, CDLA-Sharing-1.0)",
+        metrics=metrics, notes="33 Bitext intents grouped into TripMind categories; 80/20 stratified split, seed 7. Synthetic source data.",
+    )
+    print(card)
+    """)),
+])

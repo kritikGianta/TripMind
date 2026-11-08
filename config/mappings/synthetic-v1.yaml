@@ -70,3 +70,15 @@ entities:
       total_rooms: rooms_count
       refundable: refundable
       board: meal_plan
+
+  reviews:
+    file: reviews.csv
+    optional: true   # older exports have no reviews
+    fields:
+      source_key: review_id
+      hotel_key: hotel_id
+      rating: {column: rating, scale: 2}   # source uses 1-5; TripMind stores 0-10
+      title: title
+      text: review
+      traveller_type: traveller_type
+      reviewed_on: {column: review_date, format: "%Y-%m-%d"}

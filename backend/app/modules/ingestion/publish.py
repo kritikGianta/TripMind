@@ -22,7 +22,17 @@ import pandas as pd
 from sqlalchemy import delete, insert, or_, select, update
 from sqlalchemy.orm import Session
 
-from app.modules.catalog.models import Airport, City, Flight, Hotel, HotelAmenity, RoomType
+from app.modules.catalog.models import (
+    Airport,
+    City,
+    Flight,
+    Hotel,
+    HotelAmenity,
+    HotelReview,
+    RoomType,
+)
+
+CatalogModel = type[City | Airport | Flight | Hotel | RoomType | HotelReview]
 
 _CHUNK = 2000
 
@@ -82,6 +92,8 @@ ROOM_COLUMNS = (
     "currency",
     "total_rooms",
 )
+
+REVIEW_COLUMNS = ("hotel_id", "rating", "title", "text", "traveller_type", "reviewed_on")
 
 
 @dataclass
@@ -173,7 +185,7 @@ class CatalogPublisher:
 
     def sync(
         self,
-        model: type[City | Airport | Flight | Hotel | RoomType],
+        model: CatalogModel,
         rows: list[dict[str, Any]],
         *,
         retire_missing: bool = True,
@@ -210,9 +222,7 @@ class CatalogPublisher:
         written = {r["id"] for r in to_insert} | {r["id"] for r in to_update}
         return counts, written
 
-    def _retire(
-        self, model: type[City | Airport | Flight | Hotel | RoomType], ids: list[uuid.UUID]
-    ) -> int:
+    def _retire(self, model: CatalogModel, ids: list[uuid.UUID]) -> int:
         for start in range(0, len(ids), _CHUNK):
             self._session.execute(
                 update(model)
@@ -253,7 +263,13 @@ class CatalogPublisher:
             .where(RoomType.is_active.is_(True), RoomType.hotel_id.in_(inactive_hotels))
             .values(is_active=False, retired_at=self._now)
         )
+        reviews = self._session.execute(
+            update(HotelReview)
+            .where(HotelReview.is_active.is_(True), HotelReview.hotel_id.in_(inactive_hotels))
+            .values(is_active=False, retired_at=self._now)
+        )
         return {
             "flights": int(flights.rowcount or 0),  # type: ignore[attr-defined]
             "room_types": int(rooms.rowcount or 0),  # type: ignore[attr-defined]
+            "reviews": int(reviews.rowcount or 0),  # type: ignore[attr-defined]
         }

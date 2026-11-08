@@ -33,6 +33,7 @@ from app.datagen.reference import (
     AirportRef,
     CityRef,
 )
+from app.datagen.reviews import REVIEW_COLUMNS, reviews_for
 
 AIRPORT_COLUMNS = ("iata", "airport_name", "city", "country", "lat", "lon", "tz")
 SCHEDULE_COLUMNS = (
@@ -601,7 +602,8 @@ fares, hotels, rooms and prices are SYNTHETIC and do not describe real services 
 About {dirty:.1%} of rows are deliberately corrupted to exercise validation and quarantine.
 
 Files: airports.csv, flights.csv (one row per flight, date and cabin; local times),
-hotels.csv (rating on a 0-5 scale), rooms.csv (room types per hotel).
+hotels.csv (rating on a 0-5 scale), rooms.csv (room types per hotel), reviews.csv (synthetic
+guest reviews, rating on a 1-5 scale).
 Import with the mapping config/mappings/synthetic-v1.yaml.
 """
 
@@ -624,6 +626,7 @@ def generate(output: Path, options: GeneratorOptions | None = None) -> Generated
     schedules = options.flight_format == "schedules"
     flights = gen.schedule_rows() if schedules else gen.flights()
     hotels, rooms = gen.hotels()
+    reviews = reviews_for(hotels, seed=options.seed, start=options.start)
     corrupted = {
         "airports": gen.corrupt("airports", airports),
         "flights": 0 if schedules else gen.corrupt("flights", flights),
@@ -639,6 +642,7 @@ def generate(output: Path, options: GeneratorOptions | None = None) -> Generated
             archive.writestr("flights.csv", _csv(flights, FLIGHT_COLUMNS))
         archive.writestr("hotels.csv", _csv(hotels, HOTEL_COLUMNS))
         archive.writestr("rooms.csv", _csv(rooms, ROOM_COLUMNS))
+        archive.writestr("reviews.csv", _csv(reviews, REVIEW_COLUMNS))
         archive.writestr(
             "README.md",
             README.format(
@@ -652,6 +656,7 @@ def generate(output: Path, options: GeneratorOptions | None = None) -> Generated
             "flights": len(flights),
             "hotels": len(hotels),
             "rooms": len(rooms),
+            "reviews": len(reviews),
         },
         corrupted=corrupted,
     )

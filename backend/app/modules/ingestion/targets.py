@@ -12,8 +12,8 @@ from typing import Literal
 FieldKind = Literal[
     "str", "code", "int", "float", "money", "datetime", "date", "time", "duration", "bool", "list"
 ]
-EntityName = Literal["airports", "flights", "hotels", "room_types"]
-ENTITY_ORDER: tuple[EntityName, ...] = ("airports", "flights", "hotels", "room_types")
+EntityName = Literal["airports", "flights", "hotels", "room_types", "reviews"]
+ENTITY_ORDER: tuple[EntityName, ...] = ("airports", "flights", "hotels", "room_types", "reviews")
 
 
 @dataclass(frozen=True)
@@ -297,9 +297,42 @@ ROOM_TYPES = TargetEntity(
     ),
 )
 
+REVIEWS = TargetEntity(
+    name="reviews",
+    natural_key=("hotel_key", "text"),
+    fields=(
+        F("source_key", "str", False, ("review_id", "id"), max_length=160),
+        F(
+            "hotel_key",
+            "str",
+            True,
+            ("hotel_id", "hotel_key", "property_id", "hotel_code"),
+            max_length=160,
+        ),
+        F("rating", "float", False, ("rating", "score", "review_score", "stars"), 0, 10),
+        F("title", "str", False, ("title", "headline", "summary"), max_length=200),
+        F(
+            "text",
+            "str",
+            True,
+            ("text", "review", "review_text", "comment", "body"),
+            max_length=4000,
+        ),
+        F(
+            "traveller_type",
+            "str",
+            False,
+            ("traveller_type", "traveler_type", "trip_type", "guest_type"),
+            max_length=32,
+        ),
+        F("reviewed_on", "date", False, ("date", "review_date", "reviewed_on", "stay_date")),
+    ),
+)
+
 TARGETS: dict[EntityName, TargetEntity] = {
     "airports": AIRPORTS,
     "flights": FLIGHTS,
     "hotels": HOTELS,
     "room_types": ROOM_TYPES,
+    "reviews": REVIEWS,
 }

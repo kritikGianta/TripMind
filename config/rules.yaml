@@ -84,6 +84,15 @@ watchlist:
   # How often the worker re-prices active alerts.
   alert_check_minutes: 30
 
+reviews:
+  # Travellers can review a booked stay from check-out until this many days later.
+  review_window_days: 365
+
+support:
+  # A request about a booking that starts within this many hours is urgent.
+  urgent_within_hours: 72
+  max_open_tickets: 10
+
 recovery:
   # Delays at least this long give the traveller the right to rebook or take a refund.
   significant_delay_minutes: 180

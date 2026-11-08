@@ -55,6 +55,9 @@ class EntityMapping(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     file: str
+    optional: bool = Field(
+        default=False, description="Skip this entity when its file is not in the dataset"
+    )
     format: Literal["auto", "csv", "tsv", "json", "jsonl", "xlsx"] = "auto"
     sheet: str | None = None
     json_path: str | None = Field(

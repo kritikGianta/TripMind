@@ -353,7 +353,13 @@ def test_admin_import_flow_and_public_summary(client: TestClient, demo_zip: Path
     listing = client.get(f"{API}/admin/imports").json()
     assert listing["total"] == 1 and listing["items"][0]["id"] == report["id"]
     detail = client.get(f"{API}/admin/imports/{report['id']}").json()
-    assert {f["entity"] for f in detail["files"]} == {"airports", "flights", "hotels", "room_types"}
+    assert {f["entity"] for f in detail["files"]} == {
+        "airports",
+        "flights",
+        "hotels",
+        "room_types",
+        "reviews",
+    }
     rejects = client.get(
         f"{API}/admin/imports/{report['id']}/rejects",
         params={"entity": "flights", "code": "UNKNOWN_REFERENCE"},

@@ -176,8 +176,10 @@ def extract_entity(
 def extract(
     source: DatasetSource, mapping: DatasetMapping, log: RejectLog
 ) -> dict[EntityName, EntityFrame]:
-    return {
-        entity: extract_entity(source, entity, mapping.entities[entity], log)
-        for entity in ENTITY_ORDER
-        if entity in mapping.entities
-    }
+    frames: dict[EntityName, EntityFrame] = {}
+    for entity in ENTITY_ORDER:
+        spec = mapping.entities.get(entity)
+        if spec is None or (spec.optional and find_member(source, spec.file) is None):
+            continue
+        frames[entity] = extract_entity(source, entity, spec, log)
+    return frames

@@ -9,11 +9,13 @@ with a README, a notebook and an `artifacts/` folder.
 | [fare_estimator](fare_estimator/) | Labels a fare below typical, typical or above typical (LightGBM regression) | Kaggle (Indian domestic fares) | Notebook ready; artifact awaited |
 | [price_anomaly](price_anomaly/) | Flags suspicious fares in the import report (Isolation Forest) | Fitted per import; evaluated locally | Live |
 | [similar_hotels](similar_hotels/) | "Similar stays" on the hotel page (TF-IDF + cosine similarity) | Computed on demand; evaluated locally | Live |
+| [review_sentiment](review_sentiment/) | Review sentiment and per-aspect highlights on a stay (TF-IDF + logistic regression, JSON) | Kaggle (TripAdvisor reviews) | Notebook ready; word-list rules until trained |
+| [request_classifier](request_classifier/) | Routes support tickets by category (TF-IDF + logistic regression, JSON) | Local or Kaggle (Bitext travel intents) | Notebook ready; keyword rules until trained |
 
 ## Contract every model follows
 
-1. **Artifact + model card.** `artifacts/model.txt` (LightGBM text format, never a pickle, so
-   loading cannot run code) and `artifacts/model_card.json` (dataset, features, metrics, library
+1. **Artifact + model card.** `artifacts/model.txt` (LightGBM text format) or `artifacts/model.json`
+   (text models: TF-IDF vocabulary and logistic-regression weights), never a pickle, so loading cannot run code, and `artifacts/model_card.json` (dataset, features, metrics, library
    versions, date).
 2. **Same features at training and serving.** Feature names come from
    `backend/app/modules/ml/features.py`; the API refuses a model whose card lists different

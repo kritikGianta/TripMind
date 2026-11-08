@@ -29,6 +29,7 @@ from app.modules.ingestion.resolve import (
     resolve_airports,
     resolve_flights,
     resolve_hotels,
+    resolve_reviews,
     resolve_room_types,
 )
 from app.modules.ingestion.rules import IngestionRules, Vocabulary
@@ -48,6 +49,7 @@ class PreparedDataset:
     flights: pd.DataFrame | None = None
     hotels: pd.DataFrame | None = None
     room_types: pd.DataFrame | None = None
+    reviews: pd.DataFrame | None = None
     rejected_rows: dict[str, int] = field(default_factory=dict)
 
     def entity_counts(self) -> dict[str, dict[str, int]]:
@@ -91,6 +93,7 @@ def prepare(
     vocabulary: Vocabulary,
     *,
     catalog_airports: Callable[[], list[AirportRef]],
+    catalog_hotels: Callable[[], dict[str, str]] = dict,
     today: date | None = None,
 ) -> PreparedDataset:
     log = RejectLog()
@@ -134,4 +137,11 @@ def prepare(
             if frame is not None:
                 frame["city_id"] = frame["city_key"].map(city_ids)
                 frame["city_name"] = frame["city_key"].map(names)
+    if "reviews" in frames:
+        known = catalog_hotels()
+        if prepared.hotels is not None:
+            known |= dict(
+                zip(prepared.hotels["source_key"], prepared.hotels["id"].map(str), strict=True)
+            )
+        prepared.reviews = resolve_reviews(frames["reviews"], known, log, origin)
     return prepared

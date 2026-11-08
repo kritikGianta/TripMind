@@ -15,11 +15,12 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -202,3 +203,23 @@ class RoomType(CatalogRowMixin, Base):
     nightly_rate_minor: Mapped[int | None] = mapped_column(Integer)
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
     total_rooms: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class HotelReview(CatalogRowMixin, Base):
+    """A guest review supplied with the dataset (traveller reviews written in TripMind live in
+    the reviews module, so a new import never retires them)."""
+
+    __tablename__ = "hotel_reviews"
+    __table_args__ = (
+        CheckConstraint(_ORIGIN_CHECK, name="origin_valid"),
+        CheckConstraint("rating IS NULL OR (rating >= 0 AND rating <= 10)", name="rating_range"),
+    )
+
+    hotel_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("hotels.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    rating: Mapped[float | None] = mapped_column(Float)  # normalised to a 0-10 scale
+    title: Mapped[str | None] = mapped_column(String(200))
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    traveller_type: Mapped[str | None] = mapped_column(String(32))
+    reviewed_on: Mapped[date | None] = mapped_column(Date)

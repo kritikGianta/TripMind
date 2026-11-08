@@ -30,3 +30,7 @@ features:
   group_planning: true
   # Saved stays and price alerts (checked by the worker).
   watchlist: true
+  # Hotel reviews with sentiment and aspect summaries; travellers review completed stays.
+  reviews: true
+  # Support requests filed by the request classifier, with an admin queue.
+  support: true

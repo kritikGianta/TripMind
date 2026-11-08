@@ -17,7 +17,15 @@ from app.modules.bookings.models import (
     Refund,
     Trip,
 )
-from app.modules.catalog.models import Airport, City, Flight, Hotel, HotelAmenity, RoomType
+from app.modules.catalog.models import (
+    Airport,
+    City,
+    Flight,
+    Hotel,
+    HotelAmenity,
+    HotelReview,
+    RoomType,
+)
 from app.modules.groups.models import GroupMember, GroupVote, TripGroup
 from app.modules.ingestion.models import ImportReject, ImportRun
 from app.modules.inventory.models import FlightInventory, InventoryClaim, RoomNightInventory
@@ -28,7 +36,9 @@ from app.modules.operations.models import Disruption
 from app.modules.planner.models import TripPlan
 from app.modules.profiles.module import TravellerProfile
 from app.modules.recovery.models import RecoveryCase
+from app.modules.reviews.models import StayReview
 from app.modules.search.history import SearchHistory
+from app.modules.support.models import SupportTicket, TicketMessage
 from app.modules.watchlist.models import PriceAlert, SavedHotel
 
 __all__ = [
@@ -49,6 +59,7 @@ __all__ = [
     "Hotel",
     "HotelAmenity",
     "HotelInteraction",
+    "HotelReview",
     "ImportReject",
     "ImportRun",
     "InventoryClaim",
@@ -63,6 +74,9 @@ __all__ = [
     "RoomType",
     "SavedHotel",
     "SearchHistory",
+    "StayReview",
+    "SupportTicket",
+    "TicketMessage",
     "TravellerProfile",
     "Trip",
     "TripGroup",

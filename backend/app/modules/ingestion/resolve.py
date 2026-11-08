@@ -11,6 +11,7 @@ Each fallback used instead of rejecting a row is counted in the import report.
 
 from __future__ import annotations
 
+import hashlib
 import math
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -650,3 +651,50 @@ def resolve_room_types(
     log.adjust("RATE_MISSING_BROWSE_ONLY", int(result["nightly_rate_minor"].isna().sum()))
     result["id"] = result["source_key"].map(lambda k: catalog_id("room_type", k))
     return result
+
+
+def resolve_reviews(
+    frame: EntityFrame,
+    hotel_ids: dict[str, str],
+    log: RejectLog,
+    origin: str,
+) -> pd.DataFrame:
+    """Guest reviews attached to hotels in this import or already in the catalog.
+
+    `hotel_ids` maps a hotel source key to its catalog ID. A review without its own ID is keyed
+    by hotel and a hash of its text, so re-importing the same file changes nothing.
+    """
+    data = frame.data
+    data["hotel_key"] = data["hotel_key"].astype(str)
+    frame.drop(
+        ~data["hotel_key"].isin(hotel_ids),
+        log,
+        RejectCode.UNKNOWN_REFERENCE,
+        "hotel_key",
+        "review refers to a hotel that is not in this import or the catalog",
+    )
+    data = frame.data
+    text = data["text"].astype(str).str.strip()
+    frame.drop(text.str.len() < 3, log, RejectCode.INVALID_VALUE, "text", "review text is empty")
+    data = frame.data
+    natural = (
+        data["hotel_key"]
+        + "|"
+        + data["text"].map(
+            lambda t: hashlib.sha256(normalize_text(str(t)).encode()).hexdigest()[:20]
+        )
+    )
+    data["source_key"] = (
+        data["source_key"].astype("object").where(data["source_key"].notna(), natural)
+    )
+    frame.data = data
+    _dedupe(frame, "source_key", log)
+    data = frame.data
+    data["rating"] = pd.to_numeric(data["rating"], errors="coerce").round(1)
+    data["hotel_id"] = data["hotel_key"].map(hotel_ids)
+    data["traveller_type"] = data["traveller_type"].map(
+        lambda v: None if v is None or pd.isna(v) else slugify(str(v))[:32]
+    )
+    data["origin"] = origin
+    data["id"] = data["source_key"].map(lambda k: catalog_id("review", k))
+    return data

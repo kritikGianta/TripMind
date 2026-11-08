@@ -61,6 +61,12 @@ ANCILLARIES = Counter("ancillaries_total", "Seats, bags and meals sold, by kind.
 
 PRICE_ALERTS = Counter("price_alerts_total", "Price alerts by event.", ["event"])
 
+SUPPORT_TICKETS = Counter(
+    "support_tickets_total",
+    "Support tickets by category and who filed them.",
+    ["category", "source"],
+)
+
 BOOKING_CHANGES = Counter(
     "booking_changes_total", "Flight and stay changes by kind and outcome.", ["kind", "outcome"]
 )
