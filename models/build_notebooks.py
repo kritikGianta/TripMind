@@ -140,12 +140,12 @@ write(HERE / "hotel_ranker" / "hotel_ranker.ipynb", [
     print(metrics)
     assert metrics["ndcg5_model"] > metrics["ndcg5_rules_baseline"], "model does not beat the baseline: do not ship"
     """),
-    code(CARD_HELPER + '''
+    code(CARD_HELPER + dedent('''
     model.save_model("/kaggle/working/model.txt", num_iteration=model.best_iteration)
     write_card("hotel_ranker", FEATURES,
                "Expedia Personalize Hotel Search (Kaggle), randomly ordered result lists only",
                metrics, "LambdaRank; labels: booking 5, click 1. Prices may mix per-night and per-stay values.")
-    '''),
+    ''')),
 ])
 
 # ── Fare estimator (Kaggle) ──────────────────────────────────────────────────────────────────────
@@ -214,11 +214,11 @@ write(HERE / "fare_estimator" / "fare_estimator.ipynb", [
     print(metrics)
     assert metrics["mape_model"] < metrics["mape_median_baseline"], "model does not beat the baseline: do not ship"
     """),
-    code(CARD_HELPER + '''
+    code(CARD_HELPER + dedent('''
     model.save_model("/kaggle/working/model.txt", num_iteration=model.best_iteration)
     write_card("fare_estimator", FEATURES, "Flight Price Prediction (Kaggle), Indian domestic fares between six metros",
                metrics, "Predicts log(fare in INR) per adult. Airline identity is deliberately not a feature.")
-    '''),
+    ''')),
 ])
 
 # ── Price anomaly detector (local evaluation) ────────────────────────────────────────────────────
