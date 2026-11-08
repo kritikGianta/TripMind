@@ -68,6 +68,17 @@ test("home works on a phone with reduced motion, with no sideways scroll", async
   await expect(page.locator(".tm-nav").getByRole("link", { name: "Flights" })).toBeHidden();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
+
+  // The hero film keeps looping even with reduced motion on, and its pause button holds it still.
+  const heroVideo = page.locator(".tm-hero video");
+  const videoTime = () => heroVideo.evaluate((video: HTMLVideoElement) => video.currentTime);
+  const started = await videoTime();
+  await expect.poll(videoTime).not.toBe(started);
+  await page.getByRole("button", { name: "Pause background video" }).click();
+  await expect.poll(() => heroVideo.evaluate((video: HTMLVideoElement) => video.paused)).toBe(true);
+  await page.getByRole("button", { name: "Play background video" }).click();
+  await expect.poll(() => heroVideo.evaluate((video: HTMLVideoElement) => video.paused)).toBe(false);
+
   expect(errors).toEqual([]);
   await context.close();
 });

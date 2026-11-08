@@ -1,7 +1,7 @@
 "use client";
 
-import { Play } from "lucide-react";
-import { Suspense } from "react";
+import { Pause, Play } from "lucide-react";
+import { Suspense, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { homeCopy } from "@/content/home";
@@ -13,14 +13,15 @@ import { Media, Scribble, useHome } from "./media";
 import { useScrollProgress } from "./motion";
 
 export function Hero() {
-  const { setFilmOpen } = useHome();
+  const { setFilmOpen, media } = useHome();
+  const [videoPaused, setVideoPaused] = useState(false);
   const ref = useScrollProgress<HTMLElement>("pin", (p, el) => {
     el.toggleAttribute("data-past", p > 0.3);
   });
   return (
     <section ref={ref} className="tm-hero" aria-label="Welcome">
       <div className="tm-hero__stage">
-        <Media slot="hero-film" priority className="tm-hero__media" />
+        <Media slot="hero-film" priority paused={videoPaused} className="tm-hero__media" />
         <div className="tm-hero__scrim" />
         <h1 className="tm-hero__word tm-display">{homeCopy.hero.wordmark}</h1>
         <div className="tm-hero__mid">
@@ -28,9 +29,21 @@ export function Hero() {
           <div className="tm-hero__dock">
             <AiSearch />
           </div>
-          <button type="button" className="tm-chip tm-chip--wide" data-cursor="Play" onClick={() => setFilmOpen(true)}>
-            {homeCopy.hero.film} <Play className="size-3 fill-current" aria-hidden />
-          </button>
+          <div className="tm-hero__actions">
+            {media["hero-film"] ? (
+              <button
+                type="button"
+                className="tm-chip tm-chip--wide tm-chip--icon"
+                aria-label={videoPaused ? "Play background video" : "Pause background video"}
+                onClick={() => setVideoPaused(!videoPaused)}
+              >
+                {videoPaused ? <Play className="size-3 fill-current" aria-hidden /> : <Pause className="size-3 fill-current" aria-hidden />}
+              </button>
+            ) : null}
+            <button type="button" className="tm-chip tm-chip--wide" data-cursor="Play" onClick={() => setFilmOpen(true)}>
+              {homeCopy.hero.film} <Play className="size-3 fill-current" aria-hidden />
+            </button>
+          </div>
         </div>
         <div className="tm-fog" aria-hidden />
       </div>

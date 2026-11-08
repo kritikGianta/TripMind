@@ -34,11 +34,28 @@ export function HomeProvider({ media, fonts, children }: { media: MediaFiles; fo
   );
 }
 
-function LoopingVideo({ file }: { file: MediaFile }) {
+/**
+ * A silent background loop. It plays even when the system asks for reduced motion, by the product
+ * owner's decision: Windows reports that for anyone with animation effects off, which would freeze
+ * the hero. The page offers a pause button instead, and the video only runs while on screen.
+ */
+function LoopingVideo({ file, paused }: { file: MediaFile; paused?: boolean }) {
   const video = useRef<HTMLVideoElement>(null);
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) video.current?.pause();
-  }, []);
+    const element = video.current;
+    if (!element) return;
+    element.muted = true;
+    if (paused) {
+      element.pause();
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) void element.play().catch(() => {});
+      else element.pause();
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [paused]);
   return <video ref={video} className="tm-fill" src={file.src} poster={file.poster} autoPlay muted loop playsInline preload="metadata" aria-hidden />;
 }
 
@@ -51,6 +68,7 @@ export function Media({
   sizes = "100vw",
   priority,
   film,
+  paused,
   className,
 }: {
   slot: MediaSlot;
@@ -58,6 +76,8 @@ export function Media({
   priority?: boolean;
   /** Playable with sound and controls, instead of a silent loop. */
   film?: boolean;
+  /** Holds a background loop still. */
+  paused?: boolean;
   className?: string;
 }) {
   const info = homeMedia[slot];
@@ -79,7 +99,7 @@ export function Media({
         {film ? (
           <video className="tm-fill" src={file.src} poster={file.poster} controls playsInline preload="metadata" />
         ) : (
-          <LoopingVideo file={file} />
+          <LoopingVideo file={file} paused={paused} />
         )}
       </div>
     );

@@ -326,7 +326,8 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
 .tm-hero[data-past] .tm-hero__mid { visibility: hidden; }
 .tm-hero__tagline { font-size: clamp(1.35rem, 1.9vw, 1.8rem); line-height: 1.12; max-width: 17rem; text-shadow: 0 1px 14px rgb(9 11 16 / 0.35); }
 .tm-hero__dock { padding: 0.75rem; background: rgb(255 255 255 / 0.94); border-radius: 0.2rem; color: var(--ink); }
-.tm-hero__mid > .tm-chip { justify-self: end; }
+.tm-hero__actions { display: flex; gap: 0.35rem; justify-self: end; }
+.tm-chip--icon { width: 2.75rem; padding: 0; justify-content: center; }
 .tm-fog {
   position: absolute;
   z-index: 3;
@@ -346,7 +347,7 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
 @media (max-width: 899px) {
   .tm-hero__mid { top: 5.5rem; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
   .tm-hero__tagline { max-width: none; text-align: center; }
-  .tm-hero__mid > .tm-chip { justify-self: center; }
+  .tm-hero__actions { justify-self: center; }
 }
 /* Keep the wordmark clear of the fixed Ask TripMind button. */
 @media (max-width: 767px) { .tm-hero__word { bottom: 4.25rem; } }
