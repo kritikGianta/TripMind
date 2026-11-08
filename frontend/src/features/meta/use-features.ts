@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/lib/api/use-query";
 
 import { apiFetch, type Schemas } from "@/lib/api/client";
 

@@ -348,6 +348,8 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
   .tm-hero__tagline { max-width: none; text-align: center; }
   .tm-hero__mid > .tm-chip { justify-self: center; }
 }
+/* Keep the wordmark clear of the fixed Ask TripMind button. */
+@media (max-width: 767px) { .tm-hero__word { bottom: 4.25rem; } }
 
 /* 2. Search */
 .tm-search { position: relative; padding: clamp(3rem, 7vw, 6rem) var(--gutter) clamp(4rem, 8vw, 7rem); }
@@ -523,7 +525,8 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
 .tm-dest__card { position: relative; flex: none; width: var(--card); height: min(70svh, 34rem); overflow: hidden; box-shadow: 0 30px 70px -30px rgb(9 11 16 / 0.55); }
 .tm-dest__card-media { transition: transform 1.1s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .tm-dest__card:hover .tm-dest__card-media { transform: scale(1.05); }
-.tm-dest__card-shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgb(9 11 16 / 0.42), transparent 42%, transparent 58%, rgb(9 11 16 / 0.5)); }
+.tm-dest__card-shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgb(9 11 16 / 0.62), transparent 40%, transparent 62%, rgb(9 11 16 / 0.72)); }
+.tm-dest__card-top, .tm-dest__card-foot { text-shadow: 0 1px 10px rgb(9 11 16 / 0.55); }
 .tm-dest__card-top { position: absolute; inset: 1.5rem 1.5rem auto; text-align: center; }
 .tm-dest__card-top p { margin-top: 0.5rem; font-size: 0.86rem; font-weight: 500; line-height: 1.35; }
 .tm-dest__card-foot { position: absolute; inset: auto 1rem 1.25rem; display: grid; justify-items: center; gap: 0.45rem; text-align: center; }
@@ -533,7 +536,9 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
 
 /* 8. Proof */
 .tm-proof { position: relative; height: 130svh; overflow: hidden; color: #fff; }
-.tm-proof__media { transform: scale(calc(1.2 - var(--p, 0) * 0.2)); }
+/* The lone traveller stands left of centre in the photo: zoom around them, and crop towards them. */
+.tm-proof__media { transform: scale(calc(1.2 - var(--p, 0) * 0.2)); transform-origin: 13% 85%; }
+.tm-proof__media img { object-position: 5% 50%; }
 .tm-proof__body {
   position: absolute;
   inset: 0;
@@ -684,7 +689,9 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
 
 /* 11. Final call */
 .tm-cta { position: relative; height: 100svh; overflow: hidden; color: #fff; }
-.tm-cta__media { transform: scale(calc(1.14 - var(--p, 0) * 0.14)); }
+/* Same for the two walkers in this photo. */
+.tm-cta__media { transform: scale(calc(1.14 - var(--p, 0) * 0.14)); transform-origin: 13% 70%; }
+@media (max-width: 767px) { .tm-cta__media img { object-position: 3% 50%; } }
 .tm-cta__body {
   position: absolute;
   inset: 0;
@@ -729,7 +736,8 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
 .tm-footer__tiles > *:hover { background: #fff; }
 .tm-footer__film { position: relative; grid-column: span 2; overflow: hidden; color: #fff; }
 .tm-footer__film span { position: relative; }
-.tm-footer__film .tm-placeholder > span { display: none; }
+.tm-footer__film .tm-placeholder > span,
+.tm-map__land.tm-placeholder > span { display: none; }
 .tm-footer__word { text-align: center; font-size: min(23.4vw, 36svh); line-height: 0.86; }
 .tm-footer__legal {
   display: grid;

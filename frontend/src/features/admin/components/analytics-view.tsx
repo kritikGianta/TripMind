@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/lib/api/use-query";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";

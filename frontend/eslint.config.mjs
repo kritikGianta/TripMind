@@ -5,6 +5,19 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/api/use-query.ts"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        paths: [{
+          name: "@tanstack/react-query",
+          importNames: ["useQuery"],
+          message: "Import useQuery from @/lib/api/use-query: the raw hook causes hydration errors.",
+        }],
+      }],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

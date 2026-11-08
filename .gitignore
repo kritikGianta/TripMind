@@ -41,3 +41,6 @@ Thumbs.db
 # Raw training data stays out of git (large, and dataset licences restrict redistribution).
 models/**/*.csv
 models/**/*.zip
+
+# Original media as supplied; the page uses the copies in frontend/public/home
+Images&Videos/

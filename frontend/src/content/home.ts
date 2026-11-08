@@ -31,7 +31,7 @@ export const homeMedia = {
     section: "Hero, full screen behind the TRIPMIND wordmark",
     brief: "10-20 s silent loop. One clear subject in the upper two thirds: aircraft wing over clouds or a traveller on a ridge. Blue or dusk tones so white text reads.",
     size: "1920x1080 or larger, under 15 MB",
-    alt: "A traveller's view from high above the clouds",
+    alt: "Snow-capped peaks catching the last light, with clouds drifting past",
     tone: sky("#7b93ad", "#3f5d7c", "#14263d"),
   },
   "brand-film": {
@@ -55,7 +55,7 @@ export const homeMedia = {
     section: "'Ways to travel' strip: Book a flight",
     brief: "Portrait, subject centred because the strip crops the sides: aircraft on the tarmac at golden hour or a window seat view.",
     size: "1200x1500",
-    alt: "An aircraft at golden hour",
+    alt: "An aircraft wing above the clouds at sunset, seen from a window seat",
     tone: sky("#9bb7d4", "#5f86ad", "#2f4a68"),
   },
   "way-stays": {
@@ -119,7 +119,7 @@ export const homeMedia = {
     section: "Destination card: Jaipur",
     brief: "Hawa Mahal or Amber Fort, warm pink sandstone. Landscape.",
     size: "1400x1050",
-    alt: "A palace in Jaipur",
+    alt: "The Hawa Mahal in Jaipur at sunset",
     tone: sky("#f0b8a2", "#cf7760", "#71352c"),
   },
   "dest-kochi": {
@@ -159,7 +159,7 @@ export const homeMedia = {
     section: "Giant DEL — GOI route code; the photo fades into white as you scroll",
     brief: "High-key, bright photo: clouds from a plane window, or the Arabian Sea from the air. Light colours so the fade to white looks natural.",
     size: "2400x1500",
-    alt: "Clouds seen from a plane window",
+    alt: "The sea meeting the shore, seen from the air",
     tone: sky("#d5e3f2", "#a9c4e0", "#7fa3cb"),
   },
   "route-origin": {

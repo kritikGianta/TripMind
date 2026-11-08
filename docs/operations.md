@@ -39,6 +39,18 @@ jpg, jpeg, png, webp, avif. Video: mp4, webm; an image with the same name become
 and what each one should show are listed in `frontend/src/content/home.ts`. `npm run dev` picks files
 up on refresh; a Docker or production build needs rebuilding (`docker compose build web`).
 
+The original files as supplied stay in `Images&Videos/` (git-ignored). `hero-film.mp4` is a 1080p copy of
+`main-homepage-video.mp4`, 7.7 MB instead of 29.8 MB, with its last 1.5 s crossfaded into its start so the
+loop has no visible jump; `hero-film.jpg` is its first frame. `route-opening.png` is a stand-in, a copy of
+`dest-backdrop.png`: replace it with a bright photo saved under the same name, and update that slot's `alt`
+in `home.ts`. `route-origin` and `route-destination` are optional and the map looks finished without them.
+
+## If Docker Desktop stops answering
+
+If `127.0.0.1:3000` gives an empty reply while `docker ps` shows healthy containers, the engine has
+restarted and its port forwarding is stale. `docker compose up -d --force-recreate --no-deps web api`
+restores it without a rebuild.
+
 ## Background worker
 
 One `worker` container runs `app/worker_jobs.py`; each job holds a Redis lock, so extra workers
