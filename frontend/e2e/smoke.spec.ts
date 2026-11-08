@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import * as about from "../src/content/about";
+
 /** Fail the test on any uncaught browser error, the kind that shows "This page couldn't load". */
 function watchErrors(page: Page) {
   const errors: string[] = [];
@@ -108,6 +110,106 @@ test("home works on a phone with reduced motion, with no sideways scroll", async
 
   expect(errors).toEqual([]);
   await context.close();
+});
+
+test("about keeps every word of the deck", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/about");
+  const shown = ((await page.locator(".ab").textContent()) ?? "").replace(/\s+/g, " ");
+  const { artwork, artworkNote, references, ...rest } = about;
+  const strings: string[] = [artworkNote];
+  // Every string in the content file, apart from identifiers and image paths.
+  const collect = (value: unknown, key = ""): void => {
+    if (typeof value === "string") {
+      if (!["id", "referenceId", "status", "src", "page", "attribution"].includes(key)) strings.push(value);
+    } else if (Array.isArray(value)) value.forEach((item) => collect(item, key));
+    else if (value && typeof value === "object") Object.entries(value).forEach(([name, item]) => collect(item, name));
+  };
+  collect(rest);
+  references.forEach((reference) => strings.push(reference.citation, reference.url, reference.checkedOn));
+  Object.values(artwork).forEach((art) => strings.push(art.title, art.artist));
+  strings.push(about.openingQuote.attribution);
+  const missing = strings.filter((text) => !shown.includes(text.replace(/\s+/g, " ")));
+  expect(missing).toEqual([]);
+  expect(strings.length).toBeGreaterThan(200);
+  expect(errors).toEqual([]);
+});
+
+test("about runs like a presentation: keys, slide list, filter, and the shared header returns", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
+  const page = await context.newPage();
+  const errors = watchErrors(page);
+  await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about`);
+  await expect(page.locator(".ab")).toHaveAttribute("data-ready", "true");
+  await expect(page.getByRole("navigation", { name: "Main" })).toBeHidden();
+
+  // The first key press lands on the case studies; further presses move them sideways.
+  const track = page.locator(".ab-h__track");
+  const moved = () => track.evaluate((element) => new DOMMatrix(getComputedStyle(element).transform).m41);
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/#case-studies/);
+  await expect(page.locator(".ab-dock__count")).toHaveText("02 / 16");
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(moved).toBeLessThan(-200);
+
+  // Rows fade in only when reached, and must end up visible.
+  await page.getByRole("button", { name: "All slides" }).click();
+  const slides = page.getByRole("navigation", { name: "Slides" }).getByRole("link");
+  await expect(slides).toHaveCount(16);
+  await slides.filter({ hasText: "Objectives" }).click();
+  await expect(page).toHaveURL(/#objectives/);
+  await expect(page.locator("#objectives .ab-row").first()).toHaveCSS("opacity", "1");
+
+  // A pinned scene has to reach its final state from scrolling alone.
+  await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about#closing`);
+  await expect(page.locator(".ab-dock__count")).toHaveText("15 / 16");
+  await page.mouse.move(700, 500);
+  await page.mouse.wheel(0, 1800);
+  await expect.poll(() => page.locator(".ab-close__line").evaluate((element) => Number(getComputedStyle(element).opacity))).toBe(1);
+
+  await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about#implementation`);
+  const rows = page.locator(".ab-caps .ab-cap");
+  const all = await rows.count();
+  await page.getByRole("button", { name: /^Planned/ }).click();
+  await expect.poll(() => rows.count()).toBeLessThan(all);
+
+  await page.locator(".ab-foot").getByRole("link", { name: "Flights" }).click();
+  await expect(page).toHaveURL(/\/flights/);
+  await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+  expect(errors).toEqual([]);
+  await context.close();
+});
+
+test("about is plain with less motion, can be turned on, and has no sideways scroll on a phone", async ({ browser }) => {
+  const base = process.env.BASE_URL ?? "http://localhost:3000";
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: "reduce" });
+  const page = await context.newPage();
+  const errors = watchErrors(page);
+  await page.goto(`${base}/about`);
+  const root = page.locator(".ab");
+  await expect(root).toHaveAttribute("data-motion", "reduced");
+  await expect(root).toHaveAttribute("data-layout", "flow");
+  await expect(page.locator(".ab-h__track")).toHaveCSS("transform", "none");
+  await expect(page.locator(".ab-loader")).toBeHidden();
+
+  // The presenter's choice wins over the system setting, and is remembered.
+  await page.getByRole("button", { name: /Motion off/ }).click();
+  await expect(root).toHaveAttribute("data-motion", "full");
+  await expect(root).toHaveAttribute("data-layout", "stage");
+  await page.reload();
+  await expect(root).toHaveAttribute("data-motion", "full");
+  expect(errors).toEqual([]);
+  await context.close();
+
+  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "no-preference", hasTouch: true, isMobile: true });
+  const small = await phone.newPage();
+  const phoneErrors = watchErrors(small);
+  await small.goto(`${base}/about`);
+  await expect(small.locator(".ab")).toHaveAttribute("data-layout", "flow");
+  const overflow = await small.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  expect(phoneErrors).toEqual([]);
+  await phone.close();
 });
 
 test("assistant answers and cites its source", async ({ page }) => {

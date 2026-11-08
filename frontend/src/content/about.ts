@@ -28,6 +28,53 @@ export type Capability = { name: string; detail: string; status: Status };
 
 export type Reference = { id: string; citation: string; url: string; checkedOn: string };
 
+// ── Scene headings, in presentation order ─────────────────────────────────────────────────────
+
+export const scenes = [
+  { id: "thought", title: "Opening thought" },
+  { id: "case-studies", title: "Case studies", heading: "What the research says about how people book travel" },
+  { id: "problem", title: "Problem statement", heading: "Planning a trip is still a puzzle the traveller assembles by hand" },
+  { id: "title", title: "Project" },
+  { id: "objectives", title: "Objectives", heading: "What TripMind must do" },
+  {
+    id: "solution",
+    title: "The solution",
+    heading: "Three ways to book, one platform underneath",
+    lead: "Each mode works on its own. All three share the same search, pricing, booking engine and My Trips.",
+  },
+  { id: "difference", title: "How it differs", heading: "Compared with a typical booking flow" },
+  { id: "implementation", title: "Implementation and workflow", heading: "How it is built, and what is running today" },
+  { id: "data", title: "Data handling", heading: "Any supplied dataset, imported honestly" },
+  { id: "ai", title: "AI boundaries", heading: "AI suggests. The traveller decides." },
+  { id: "edge-cases", title: "Edge cases being solved", heading: "What happens when things go wrong" },
+  { id: "proof", title: "Live demo and proof", heading: "Measured, not claimed" },
+  { id: "business", title: "Business model", heading: "Who pays, and for what" },
+  { id: "limits", title: "Limits and what is next", heading: "What this prototype is, and is not" },
+  { id: "closing", title: "The thought, explained" },
+  {
+    id: "references",
+    title: "References",
+    heading: "Sources",
+    lead: "Each figure in this deck was checked against its source on the date shown.",
+  },
+] as const;
+
+// ── Paintings used in the presentation (public domain, as stated on Wikimedia Commons) ─────────
+
+export const artwork = {
+  wanderer: { src: "/about/wanderer.webp", title: "Wanderer above the Sea of Fog", artist: "Caspar David Friedrich", year: "1818", page: "https://commons.wikimedia.org/wiki/File:Caspar_David_Friedrich_-_Wanderer_above_the_Sea_of_Fog.jpeg" },
+  temeraire: { src: "/about/temeraire.webp", title: "The Fighting Temeraire", artist: "J. M. W. Turner", year: "1839", page: "https://commons.wikimedia.org/wiki/File:The_Fighting_Temeraire,_JMW_Turner,_National_Gallery.jpg" },
+  railway: { src: "/about/railway.webp", title: "Rain, Steam and Speed", artist: "J. M. W. Turner", year: "1844", page: "https://commons.wikimedia.org/wiki/File:Turner_-_Rain,_Steam_and_Speed_-_National_Gallery_file.jpg" },
+  sierra: { src: "/about/sierra.webp", title: "Among the Sierra Nevada, California", artist: "Albert Bierstadt", year: "1868", page: "https://commons.wikimedia.org/wiki/File:Albert_Bierstadt_-_Among_the_Sierra_Nevada,_California_-_Google_Art_Project.jpg" },
+  voyage: { src: "/about/voyage.webp", title: "The Voyage of Life: Youth", artist: "Thomas Cole", year: "1842", page: "https://commons.wikimedia.org/wiki/File:Thomas_Cole_-_The_Voyage_of_Life_Youth,_1842_(National_Gallery_of_Art).jpg" },
+  wave: { src: "/about/wave.webp", title: "The Ninth Wave", artist: "Ivan Aivazovsky", year: "1850", page: "https://commons.wikimedia.org/wiki/File:Hovhannes_Aivazovsky_-_The_Ninth_Wave_-_Google_Art_Project.jpg" },
+  map: { src: "/about/map.webp", title: "Typus Orbis Terrarum", artist: "Abraham Ortelius", year: "1570", page: "https://commons.wikimedia.org/wiki/File:OrteliusWorldMap1570.jpg" },
+} as const;
+
+export const artworkNote = "The copper clouds are Bierstadt's sky, cropped and regraded for this page.";
+
+export type ArtName = keyof typeof artwork;
+
 // ── 1 · Opening thought (deliberately unexplained until the last slide) ───────────────────────
 
 export const openingQuote = {
@@ -139,17 +186,17 @@ export const bookingModes: Capability[] = [
   {
     name: "Book a flight",
     detail: "Structured search, filters and comparison; hold, pay and confirm.",
-    status: "planned",
+    status: "live",
   },
   {
     name: "Book a stay",
     detail: "Search by city, dates and guests; the stay price is validated before payment.",
-    status: "planned",
+    status: "live",
   },
   {
     name: "Plan the whole trip",
     detail: "A form or a sentence produces ranked flight + hotel bundles that book through the same engine.",
-    status: "planned",
+    status: "live",
   },
 ];
 
@@ -224,6 +271,7 @@ export const capabilities: Capability[] = [
   { name: "Hotel ranker", detail: "LightGBM LambdaRank on Expedia click and booking data; NDCG@5 0.259 against 0.237 for the rule-based order", status: "live" },
   { name: "Fare estimator", detail: "LightGBM on 300,000 Indian domestic fares; 15.5% average error against 36.5% for a median baseline; domestic routes only", status: "live" },
   { name: "Home page", detail: "Cinematic scroll story with smooth scrolling, pinned scenes and a journey map; live search up front and live demo prices; works on phones and with reduced motion", status: "live" },
+  { name: "About presentation", detail: "This page: a scroll-driven deck with pinned scenes, keyboard control, a slide index, deep links and full-screen mode, with a calmer layout for reduced motion and phones", status: "live" },
   { name: "Monitoring dashboards", detail: "Prometheus metrics and alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger", status: "live" },
 ];
 

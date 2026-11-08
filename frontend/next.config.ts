@@ -17,6 +17,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  devIndicators: { position: "top-right" },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
