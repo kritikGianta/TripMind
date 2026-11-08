@@ -1,7 +1,7 @@
 {
   "name": "price_anomaly",
-  "version": "2026.11.07",
-  "trained_at": "2026-11-07T17:18:35.152960+00:00",
+  "version": "2026.11.08",
+  "trained_at": "2026-11-08T08:13:23.804956+00:00",
   "framework": "scikit-learn",
   "framework_version": "1.9.1",
   "dataset": "TripMind synthetic data, 3 seeds, injected 8x fares",

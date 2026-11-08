@@ -89,6 +89,7 @@ class FlightSearchService:
         self._locations = LocationService(session)
         self._airports: dict[uuid.UUID, AirportBrief] = {}
         self._coords: dict[str, tuple[float, float]] = {}
+        self._countries: dict[str, str | None] = {}
 
     # ------------------------------------------------------------------ public
 
@@ -176,6 +177,7 @@ class FlightSearchService:
                     City.name,
                     Airport.latitude,
                     Airport.longitude,
+                    Airport.country,
                 ).join(City, City.id == Airport.city_id)
             )
             .tuples()
@@ -183,13 +185,14 @@ class FlightSearchService:
         )
         self._airports = {
             i: AirportBrief(code=code, name=name, city_name=city)
-            for i, code, name, city, _, _ in rows
+            for i, code, name, city, _, _, _ in rows
         }
         self._coords = {
             code: (lat, lon)
-            for _, code, _, _, lat, lon in rows
+            for _, code, _, _, lat, lon, _ in rows
             if lat is not None and lon is not None
         }
+        self._countries = {code: country for _, code, _, _, _, _, country in rows}
 
     def _flights(self, *conditions: object) -> list[Flight]:
         return list(
@@ -362,6 +365,10 @@ class FlightSearchService:
         a, b = self._coords.get(first.origin.code), self._coords.get(last.destination.code)
         if a is None or b is None:
             return None
+        route_countries = {self._countries.get(leg.origin.code) for leg in legs}
+        route_countries.add(self._countries.get(last.destination.code))
+        if len(route_countries) != 1:
+            return None  # the model only learned domestic fares
         distance = haversine_km(a, b)
         if distance > FARE_ESTIMATOR_MAX_KM:
             return None  # outside the routes the model was trained on

@@ -22,8 +22,8 @@ from app.modules.ingestion.rejects import RejectLog
 
 MIN_FARES = 50  # below this there is not enough data to learn what is normal
 # Only deviations of at least e^1.0 = 2.7x the route median are reported. On the demo data,
-# genuine peak fares reach 0.81 (2.2x) and injected price errors start at 1.9 (6.7x); see
-# models/price_anomaly/ for the evaluation.
+# genuine fares (last-minute peaks included) reach 0.96 (2.6x), while injected price errors are
+# 8x; see models/price_anomaly/ for the evaluation.
 MIN_RELATIVE_JUMP = 1.0
 SEED = 7
 

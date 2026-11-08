@@ -235,6 +235,16 @@ class _Schedule:
     business_seats: int
     weekdays: frozenset[int]
     base_fare_inr: float
+    business_base_inr: float
+    domestic: bool
+
+
+def _domestic_booking_curve(days_out: int) -> float:
+    """Economy fares on Indian routes roughly double inside about 15 days of departure, the
+    pattern in public fare data (the Flight Price Prediction set the fare estimator learns from).
+    Flat on purpose: a steeper last-minute rise makes genuine fares trip the price-anomaly check.
+    """
+    return 1.85 if days_out <= 15 else 1.0
 
 
 class _Generator:
@@ -283,7 +293,10 @@ class _Generator:
                 aircraft, seats, business = "Airbus A321neo", 222, 12
             else:
                 aircraft, seats, business = "Airbus A320neo", 186, 0
-            base = (4000 + 6.5 * km) if international else (1800 + 4.2 * km)
+            # Domestic economy follows public Indian fare levels (advance fares; see the booking
+            # curve). Business and international fares are separate synthetic levels.
+            legacy = (4000 + 6.5 * km) if international else (1800 + 4.2 * km)
+            base = legacy if international else 1300 + 1.5 * km
             slots = sorted(self.rng.sample(range(5 * 60, 23 * 60, 25), per_day))
             for slot in slots:
                 airline, code = self.rng.choice(AIRLINES)
@@ -307,11 +320,14 @@ class _Generator:
                         business_seats=business,
                         weekdays=weekdays,
                         base_fare_inr=base * (1.08 if code == "SF" else 0.95),
+                        business_base_inr=legacy * 3.3 * (1.08 if code == "SF" else 0.95),
+                        domestic=not international,
                     )
                 )
         return schedules
 
-    def _fare(self, schedule: _Schedule, day: date) -> float:
+    def _fare(self, schedule: _Schedule, day: date) -> tuple[float, float]:
+        """Economy and business fares for one flight on one day."""
         hour = schedule.departure_minute // 60
         time_factor = (
             1.15
@@ -323,8 +339,13 @@ class _Generator:
         weekday_factor = {4: 1.12, 6: 1.12, 1: 0.92, 2: 0.92}.get(day.weekday(), 1.0)
         days_out = (day - self.o.start).days
         urgency = 1 + 0.6 * math.exp(-days_out / 7)
+        economy_urgency = _domestic_booking_curve(days_out) if schedule.domestic else urgency
         noise = self.rng.lognormvariate(0, 0.08)
-        return schedule.base_fare_inr * time_factor * weekday_factor * urgency * noise
+        common = time_factor * weekday_factor * noise
+        return (
+            schedule.base_fare_inr * economy_urgency * common,
+            schedule.business_base_inr * urgency * common,
+        )
 
     def schedule_rows(self) -> list[dict[str, Any]]:
         """The same flights as airline schedules: one row per flight number and cabin."""
@@ -342,7 +363,7 @@ class _Generator:
             ).astimezone(ZoneInfo(schedule.destination.timezone))
             cabins = [("Economy", schedule.base_fare_inr, schedule.seats)]
             if schedule.business_seats:
-                cabins.append(("Business", schedule.base_fare_inr * 3.3, schedule.business_seats))
+                cabins.append(("Business", schedule.business_base_inr, schedule.business_seats))
             for cabin, amount, seats in cabins:
                 local = amount * rate
                 rows.append(
@@ -384,10 +405,10 @@ class _Generator:
                 arrival = (
                     departure.replace(tzinfo=origin_tz) + timedelta(minutes=schedule.duration)
                 ).astimezone(destination_tz)
-                fare = self._fare(schedule, day)
+                fare, business_fare = self._fare(schedule, day)
                 cabins = [("Economy", fare, schedule.seats)]
                 if schedule.business_seats:
-                    cabins.append(("Business", fare * 3.3, schedule.business_seats))
+                    cabins.append(("Business", business_fare, schedule.business_seats))
                 for cabin, amount, seats in cabins:
                     local = amount * rate
                     rows.append(

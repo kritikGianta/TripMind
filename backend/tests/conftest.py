@@ -41,7 +41,7 @@ def database_url(tmp_path_factory: pytest.TempPathFactory) -> str:
 
 
 @pytest.fixture(scope="session")
-def settings(database_url: str) -> Settings:
+def settings(database_url: str, tmp_path_factory: pytest.TempPathFactory) -> Settings:
     return Settings(
         _env_file=None,
         environment="test",
@@ -50,6 +50,8 @@ def settings(database_url: str) -> Settings:
         log_json=False,
         log_level="WARNING",
         background_jobs=False,
+        # Empty on purpose: tests must not depend on which models have been trained locally.
+        models_dir=tmp_path_factory.mktemp("no_models"),
     )
 
 

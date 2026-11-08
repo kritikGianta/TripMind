@@ -13,11 +13,19 @@ import lightgbm
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.cli import seed
 from app.core.config import Settings
 from app.core.deps import get_settings_dep
-from app.modules.ml.features import FARE_ESTIMATOR_FEATURES, HOTEL_RANKER_FEATURES
+from app.models import Airport
+from app.modules.ml.features import (
+    FARE_ESTIMATOR_FEATURES,
+    FARE_ESTIMATOR_MAX_KM,
+    HOTEL_RANKER_FEATURES,
+    haversine_km,
+)
 from app.modules.ml.registry import load_model
 from app.modules.ml.similar import HotelProfile, similar_hotels
 
@@ -72,7 +80,11 @@ def test_registry_enforces_the_feature_contract(models_dir: Path) -> None:
 
 
 def test_models_are_used_when_present(
-    client: TestClient, catalog: None, settings: Settings, models_dir: Path
+    client: TestClient,
+    catalog: None,
+    settings: Settings,
+    models_dir: Path,
+    db_session: Session,
 ) -> None:
     city = client.get(f"{API}/locations", params={"q": "Delhi", "kind": "city"}).json()
     params = {
@@ -107,6 +119,25 @@ def test_models_are_used_when_present(
         params={"origin": "DEL", "destination": "LHR", "departure_date": "2026-11-14"},
     ).json()
     assert all(o["fare_insight"] is None for o in long_haul["outbound"]["offers"])  # out of domain
+    # Short international routes priced in rupees are out of domain too: it learned domestic fares.
+    india = {"India", "IN"}
+    foreign = [a for a in db_session.scalars(select(Airport)) if a.country not in india]
+    delhi = db_session.scalar(select(Airport).where(Airport.code == "DEL"))
+    assert delhi is not None
+    short = [
+        a.code
+        for a in foreign
+        if a.latitude is not None
+        and haversine_km((delhi.latitude, delhi.longitude), (a.latitude, a.longitude))
+        <= FARE_ESTIMATOR_MAX_KM
+    ]
+    assert short  # the demo network has short international routes from Delhi
+    for code in short:
+        offers = client.get(
+            f"{API}/flights/search",
+            params={"origin": "DEL", "destination": code, "departure_date": "2026-11-14"},
+        ).json()["outbound"]["offers"]
+        assert all(o["fare_insight"] is None for o in offers)
 
 
 def test_similar_stays() -> None:
