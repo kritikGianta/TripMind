@@ -140,6 +140,9 @@ html { font-size: clamp(15px, calc(0.55vw + 8px), 24px); }
 @media (max-width: 767px) { html { font-size: 16px; } }
 
 /* Headings across the inner pages use the home page's type. */
+:where(main) h1, .tm-page-hero__title {
+  font-variant-numeric: lining-nums;
+}
 :where(main) h1 {
   font-family: var(--tm-serif), Georgia, serif;
   font-size: clamp(1.9rem, 1.2rem + 1.8vw, 3rem);
@@ -156,6 +159,7 @@ html { font-size: clamp(15px, calc(0.55vw + 8px), 24px); }
   letter-spacing: 0;
 }
 [data-slot="card-title"] {
+  font-variant-numeric: lining-nums;
   font-family: var(--tm-serif), Georgia, serif;
   font-size: 1.4rem;
   font-style: italic;
@@ -246,7 +250,7 @@ html[data-motion="full"] .tm-overlap { animation: tm-page-up 0.9s 0.25s cubic-be
 .tm-fare-day[aria-current="date"] { color: var(--primary-foreground); background: var(--primary); border-color: var(--primary); }
 
 /* Seat map */
-.tm-seat-map { display: grid; justify-content: center; gap: 0.25rem; max-height: 26rem; overflow: auto; padding: 0.75rem; background: var(--muted); border-radius: var(--radius); }
+.tm-seat-map { display: grid; justify-content: safe center; gap: 0.25rem; max-height: 26rem; overflow: auto; padding: 0.75rem; background: var(--muted); border-radius: var(--radius); }
 .tm-seat-row { display: flex; align-items: center; gap: 0.5rem; }
 .tm-seat-group { display: flex; gap: 0.2rem; }
 .tm-seat-group--gap { margin-left: 1rem; }

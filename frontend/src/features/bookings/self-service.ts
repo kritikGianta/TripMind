@@ -60,6 +60,8 @@ export function useExtrasQuote(bookingId: string, itemId: string, selections: Se
     queryKey: ["extras-quote", bookingId, itemId, selections],
     queryFn: () =>
       apiFetch<ExtrasQuote>(`/bookings/${bookingId}/items/${itemId}/extras/quote`, { method: "POST", body: { selections } }),
+    // With nothing chosen there is nothing to price, and the API rightly refuses an empty list.
+    enabled: selections.length > 0,
     placeholderData: (previous) => previous,
     retry: false,
   });

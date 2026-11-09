@@ -100,6 +100,12 @@ test("seats, extras and a flight change on a real booking", async ({ page }) => 
   // Pick a seat from the map and pay for it.
   await page.getByRole("link", { name: "Seats and extras" }).click();
   await expect(page.getByRole("heading", { name: "Seats and extras" })).toBeVisible();
+  // Nothing chosen yet is not an error, and each column letter sits over its seats.
+  await expect(page.getByText("Nothing chosen yet.")).toBeVisible();
+  await expect(page.getByText("Some fields are invalid")).toBeHidden();
+  const letter = await page.locator(".tm-seat-letter").first().boundingBox();
+  const firstSeat = await page.locator(".tm-seat-map .tm-seat-row").nth(1).locator(".tm-seat").first().boundingBox();
+  expect(Math.abs(letter!.x - firstSeat!.x)).toBeLessThan(2);
   const seat = page.locator("button.tm-seat:not([disabled])").first();
   await seat.click();
   await expect(seat).toHaveAttribute("data-state", "picked");

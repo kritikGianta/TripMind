@@ -67,7 +67,7 @@ function SeatPicker({
       </ul>
       <div className="tm-seat-map" role="group" aria-label={`Seats on ${map.flight_number}`}>
         <div className="tm-seat-row" aria-hidden>
-          <span />
+          <span className="tm-seat-number" />
           {map.groups.map((group, index) => (
             <span key={group} className={`tm-seat-group${index ? " tm-seat-group--gap" : ""}`}>
               {group.split("").map((letter) => (
@@ -98,7 +98,6 @@ function SeatPicker({
                       title={`${seat.code} · ${seat.zone} · ${formatMoney(seat.price)}`}
                       onClick={() => onPick(mine ? null : seat.code)}
                     >
-                      {seat.price.amount_minor > 0 ? "" : ""}
                     </button>
                   );
                 })}
@@ -120,7 +119,8 @@ function ExtrasForm({ bookingId, itemId, catalog }: { bookingId: string; itemId:
   );
   const [card, setCard] = useState(EMPTY_CARD);
   const selections = useMemo(() => toSelections(choices), [choices]);
-  const quote = useExtrasQuote(bookingId, itemId, selections);
+  const quoteQuery = useExtrasQuote(bookingId, itemId, selections);
+  const quote = selections.length ? quoteQuery : { data: undefined, error: null };
   const purchase = usePurchaseExtras(bookingId, itemId);
   const flight = catalog.flights.find((f) => f.flight_id === flightId) ?? catalog.flights[0];
   const total = quote.data?.total.amount_minor ?? 0;
@@ -249,7 +249,7 @@ function ExtrasForm({ bookingId, itemId, catalog }: { bookingId: string; itemId:
             {total > 0 ? <CardFields card={card} onChange={setCard} idPrefix="extras" /> : null}
             <FormError error={purchase.error ?? quote.error} />
             <Button
-              disabled={purchase.isPending || !quote.data}
+              disabled={purchase.isPending || !quote.data || !selections.length}
               onClick={() =>
                 purchase.mutate(
                   { selections, expected_total_minor: total, payment: total > 0 ? cardPayload(card) : null },

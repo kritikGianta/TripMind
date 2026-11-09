@@ -24,7 +24,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 print:hidden">
-      <div className="mx-auto flex h-14 max-w-[80rem] items-center gap-4 px-4">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         <Logo />
         <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
           {siteConfig.nav.map((item) => (

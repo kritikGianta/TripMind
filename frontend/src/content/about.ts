@@ -353,7 +353,7 @@ export const proof = {
     { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "7 Nov 2026" },
     { value: "910 / 0", label: "synthetic requests from 8 virtual users in 46 s / server errors; search p95 0.47 s on a laptop in Docker", measuredOn: "7 Nov 2026" },
     { value: "100% / 100%", label: "precision / recall of the fare anomaly detector on 71,403 fares with injected price errors (3 seeds)", measuredOn: "7 Nov 2026" },
-    { value: "130", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "7 Nov 2026" },
+    { value: "212", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "9 Nov 2026" },
     { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [

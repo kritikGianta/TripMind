@@ -33,7 +33,7 @@ const STATUS: Record<string, { label: string; className: string }> = {
 
 export function StatusBadge({ status }: { status: string }) {
   const s = STATUS[status] ?? { label: status, className: "" };
-  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.className}`}>{s.label}</span>;
+  return <span className={`rounded-full px-2 py-0.5 font-sans text-xs font-medium not-italic ${s.className}`}>{s.label}</span>;
 }
 
 const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
