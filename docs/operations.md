@@ -65,6 +65,19 @@ There is no worker, Redis or monitoring, so background jobs do not run. Test the
 (`docker compose up -d --build web`) whenever a section is finished and before any demo: it is the real
 PostgreSQL setup, and the only place to catch problems that SQLite hides.
 
+## Reset the demo database
+
+The browser tests create real bookings, tickets and accounts, so reset before a demo. This deletes every account
+and booking and reloads the demo dataset; `docker compose up -d` alone does not.
+
+    docker compose stop api worker web
+    docker compose exec db psql -U tripmind -d postgres -c "DROP DATABASE tripmind WITH (FORCE)" -c "CREATE DATABASE tripmind OWNER tripmind"
+    docker compose run --rm migrate
+    docker compose exec redis redis-cli FLUSHALL
+    docker compose up -d --no-deps api worker web
+
+Add `python -m app.cli demo-scenario` in the `api` container to give the demo traveller a ready-made story.
+
 ## If Docker Desktop stops answering
 
 If `127.0.0.1:3000` gives an empty reply while `docker ps` shows healthy containers, the engine has
