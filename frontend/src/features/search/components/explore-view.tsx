@@ -60,7 +60,7 @@ export function ExploreView() {
   }
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <Card className="tm-overlap p-4">
         <form onSubmit={submit} className="grid grid-cols-[minmax(0,1fr)] items-end gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]">
           <div className="grid gap-1.5">
@@ -124,7 +124,7 @@ export function ExploreView() {
         </div>
       ) : null}
       {data ? (
-        <section className="grid gap-3">
+        <section className="grid grid-cols-[minmax(0,1fr)] gap-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2>
               {data.options.length} place{data.options.length === 1 ? "" : "s"} from {filters?.origin.label}
@@ -135,10 +135,10 @@ export function ExploreView() {
             </p>
           </div>
           {data.options.length === 0 ? <p className="py-6 text-center text-muted-foreground">Nothing fits. Try a higher budget or other dates.</p> : null}
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.options.map((option) => (
               <li key={option.city_id}>
-                <Card className="grid h-full gap-2 p-4">
+                <Card className="grid h-full min-w-0 grid-cols-[minmax(0,1fr)] gap-2 p-4">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="tm-explore-city">{option.city}</h3>
                     <span className="text-xs text-muted-foreground">{option.airport_code}</span>
