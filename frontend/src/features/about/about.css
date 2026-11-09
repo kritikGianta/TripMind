@@ -62,6 +62,8 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
   stroke-width: 0.7;
   pointer-events: none;
   transform: rotate(calc(var(--page, 0) * 120deg)) scale(1.25);
+  /* Its own layer, so turning it does not repaint the whole screen. */
+  will-change: transform;
 }
 
 /* Paintings */

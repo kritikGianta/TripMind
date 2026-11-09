@@ -12,6 +12,7 @@ import { UserMenu } from "@/features/auth/components/user-menu";
 import { NotificationBell } from "@/features/recovery/components/notification-bell";
 
 import { Media, useHome } from "./media";
+import { useScrollFrame } from "./motion";
 
 function Mark() {
   return (
@@ -119,15 +120,10 @@ export function HowItWorks() {
   const { fonts, howOpen, setHowOpen } = useHome();
   const tab = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    const onScroll = () => {
-      const fromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      tab.current?.toggleAttribute("data-shown", window.scrollY > window.innerHeight * 0.7 && fromBottom > window.innerHeight * 1.2);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  useScrollFrame((y, range) => {
+    const shown = y > window.innerHeight * 0.7 && range - y > window.innerHeight * 1.2;
+    if (tab.current && shown !== tab.current.hasAttribute("data-shown")) tab.current.toggleAttribute("data-shown", shown);
+  });
 
   return (
     <>

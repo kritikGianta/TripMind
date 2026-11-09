@@ -8,6 +8,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as about from "@/content/about";
 import { setMotionChoice, useMediaQuery, useMotionChoice } from "@/features/motion/use-motion";
 
+import { currentScrollY, useScrollFrame } from "@/features/home/motion";
+
 import { Scenes } from "./scenes";
 
 import "./about.css";
@@ -42,15 +44,16 @@ function Cursor({ rootRef }: { rootRef: React.RefObject<HTMLDivElement | null> }
     let shownY = y;
     let frame = 0;
     const loop = () => {
+      frame = requestAnimationFrame(loop);
+      if (Math.abs(x - shownX) < 0.2 && Math.abs(y - shownY) < 0.2) return;
       shownX += (x - shownX) * 0.18;
       shownY += (y - shownY) * 0.18;
       if (ring.current) ring.current.style.transform = `translate3d(${shownX}px, ${shownY}px, 0)`;
       if (float.current) float.current.style.transform = `translate3d(${shownX + 28}px, ${shownY - 110}px, 0) rotate(${(x - shownX) * 0.03}deg)`;
-      if (hero && window.scrollY < window.innerHeight) {
+      if (hero && currentScrollY() < window.innerHeight) {
         hero.style.setProperty("--mx", ((shownX / window.innerWidth - 0.5) * 2).toFixed(3));
         hero.style.setProperty("--my", ((shownY / window.innerHeight - 0.5) * 2).toFixed(3));
       }
-      frame = requestAnimationFrame(loop);
     };
     const move = (event: PointerEvent) => {
       x = event.clientX;
@@ -105,6 +108,8 @@ export function Presentation({ fonts }: { fonts: string }) {
   const root = useRef<HTMLDivElement>(null);
   const menu = useRef<HTMLDialogElement>(null);
   const lenis = useRef<Lenis | null>(null);
+  const lines = useRef<SVGSVGElement>(null);
+  const progress = useRef<HTMLDivElement>(null);
   const heading = useRef<{ top: number; until: number } | null>(null);
   const [ready, setReady] = useState(false);
   const [count, setCount] = useState(0);
@@ -219,23 +224,11 @@ export function Presentation({ fonts }: { fonts: string }) {
   }, []);
 
   // Scroll position for the progress line and the background geometry.
-  useEffect(() => {
-    let queued = false;
-    const measure = () => {
-      queued = false;
-      const height = document.documentElement.scrollHeight - window.innerHeight;
-      const page = (height > 0 ? window.scrollY / height : 0).toFixed(4);
-      root.current?.querySelectorAll<HTMLElement>(".ab-lines, .ab-progress").forEach((element) => element.style.setProperty("--page", page));
-    };
-    const onScroll = () => {
-      if (queued) return;
-      queued = true;
-      requestAnimationFrame(measure);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  useScrollFrame((y, range) => {
+    const page = (range > 0 ? y / range : 0).toFixed(4);
+    lines.current?.style.setProperty("--page", page);
+    progress.current?.style.setProperty("--page", page);
+  });
 
   // Fade rows and panels in once, as they first come into view.
   useEffect(() => {
@@ -281,7 +274,7 @@ export function Presentation({ fonts }: { fonts: string }) {
       <Loader done={ready} count={count} />
       <Cursor rootRef={root} />
 
-      <svg className="ab-lines" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <svg ref={lines} className="ab-lines" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden>
         <circle cx="500" cy="500" r="330" />
         <circle cx="500" cy="500" r="470" />
         <circle cx="500" cy="170" r="330" />
@@ -327,7 +320,7 @@ export function Presentation({ fonts }: { fonts: string }) {
           <MenuIcon aria-hidden />
         </button>
       </div>
-      <div className="ab-progress" aria-hidden />
+      <div ref={progress} className="ab-progress" aria-hidden />
 
       <dialog
         ref={menu}

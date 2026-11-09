@@ -10,7 +10,7 @@ import { setMotionChoice, useMotionChoice } from "@/features/motion/use-motion";
 import { FilmDialog, HomeNav, HowItWorks } from "./chrome";
 import { Confidence, Destinations, FinalCall, HomeFooter, JourneyMap, Proof, RouteCode, Ways } from "./journeys";
 import { HomeProvider, Letters, type MediaFiles } from "./media";
-import { CursorDot, SmoothScroll } from "./motion";
+import { CursorDot, SmoothScroll, useScrollFrame } from "./motion";
 import { Hero, SearchSection, Statement, WorksWithoutAi } from "./opening";
 
 import "./home.css";
@@ -40,24 +40,11 @@ export function HomeExperience({ media, fonts }: { media: MediaFiles; fonts: str
     return () => observer.disconnect();
   }, []);
 
-  // How far down the page we are, for the progress line.
-  useEffect(() => {
-    let queued = false;
-    const measure = () => {
-      queued = false;
-      const height = document.documentElement.scrollHeight - window.innerHeight;
-      // Written to the line itself: on a page-wide element this would restyle the whole page each frame.
-      progress.current?.style.setProperty("--page", (height > 0 ? window.scrollY / height : 0).toFixed(4));
-    };
-    const onScroll = () => {
-      if (queued) return;
-      queued = true;
-      requestAnimationFrame(measure);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  // How far down the page we are, for the progress line. Written to the line itself: on a page-wide
+  // element this would restyle the whole page each frame.
+  useScrollFrame((y, range) => {
+    progress.current?.style.setProperty("--page", (range > 0 ? y / range : 0).toFixed(4));
+  });
 
   return (
     <HomeProvider media={media} fonts={fonts}>

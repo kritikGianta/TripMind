@@ -14,27 +14,95 @@ import { useEffect, useRef } from "react";
 type Mode = "pin" | "pass";
 type Item = { el: HTMLElement; mode: Mode; last: number; onFrame?: (p: number, el: HTMLElement) => void };
 
-const items = new Set<Item>();
-let queued = false;
+type FrameListener = (scrollY: number, scrollRange: number) => void;
 
+const items = new Set<Item>();
+const frameListeners = new Set<FrameListener>();
+let queued = false;
+let lastScrollY = 0;
+let scrollRange = 0;
+let rangeObserver: ResizeObserver | null = null;
+
+function refreshRange() {
+  scrollRange = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+}
+
+/**
+ * Every read comes before every write. Writing a section's --p and then measuring the next section
+ * would make the browser recalculate styles once per section, on every frame.
+ */
 function measure() {
   queued = false;
   const vh = window.innerHeight;
+  lastScrollY = window.scrollY;
+  const changed: Item[] = [];
   items.forEach((item) => {
     const rect = item.el.getBoundingClientRect();
     const raw = item.mode === "pin" ? -rect.top / Math.max(1, rect.height - vh) : (vh - rect.top) / (vh + rect.height);
     const p = Math.min(1, Math.max(0, raw));
     if (Math.abs(p - item.last) < 0.0005) return;
     item.last = p;
-    item.el.style.setProperty("--p", p.toFixed(4));
-    item.onFrame?.(p, item.el);
+    changed.push(item);
   });
+  // Callbacks may read SVG geometry, so they also run before --p is written.
+  changed.forEach((item) => item.onFrame?.(item.last, item.el));
+  changed.forEach((item) => item.el.style.setProperty("--p", item.last.toFixed(4)));
+  frameListeners.forEach((listener) => listener(lastScrollY, scrollRange));
 }
 
 function schedule() {
   if (queued) return;
   queued = true;
   requestAnimationFrame(measure);
+}
+
+function onResize() {
+  refreshRange();
+  schedule();
+}
+
+function subscriberAdded() {
+  if (items.size + frameListeners.size !== 1) return;
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", onResize);
+  refreshRange();
+  // The page's height only changes when its content does, so it is not measured on every frame.
+  rangeObserver = new ResizeObserver(() => {
+    refreshRange();
+    schedule();
+  });
+  rangeObserver.observe(document.body);
+}
+
+function subscriberRemoved() {
+  if (items.size + frameListeners.size !== 0) return;
+  window.removeEventListener("scroll", schedule);
+  window.removeEventListener("resize", onResize);
+  rangeObserver?.disconnect();
+  rangeObserver = null;
+}
+
+/** The scroll position as of this frame, without making the browser recalculate anything. */
+export function currentScrollY() {
+  return lastScrollY;
+}
+
+/** Runs once per frame while scrolling, in the engine's write phase: write here, don't measure. */
+export function useScrollFrame(listener: FrameListener) {
+  const callback = useRef(listener);
+  useEffect(() => {
+    callback.current = listener;
+  });
+  useEffect(() => {
+    const entry: FrameListener = (y, range) => callback.current(y, range);
+    frameListeners.add(entry);
+    subscriberAdded();
+    schedule();
+    return () => {
+      frameListeners.delete(entry);
+      subscriberRemoved();
+    };
+  }, []);
 }
 
 export function useScrollProgress<T extends HTMLElement>(mode: Mode, onFrame?: (p: number, el: HTMLElement) => void) {
@@ -47,18 +115,12 @@ export function useScrollProgress<T extends HTMLElement>(mode: Mode, onFrame?: (
     const el = ref.current;
     if (!el) return;
     const item: Item = { el, mode, last: -1, onFrame: (p, target) => callback.current?.(p, target) };
-    if (items.size === 0) {
-      window.addEventListener("scroll", schedule, { passive: true });
-      window.addEventListener("resize", schedule);
-    }
     items.add(item);
+    subscriberAdded();
     schedule();
     return () => {
       items.delete(item);
-      if (items.size === 0) {
-        window.removeEventListener("scroll", schedule);
-        window.removeEventListener("resize", schedule);
-      }
+      subscriberRemoved();
     };
   }, [mode]);
   return ref;
@@ -128,7 +190,7 @@ export function CursorDot({ enabled }: { enabled: boolean }) {
       shownX += (x - shownX) * 0.22;
       shownY += (y - shownY) * 0.22;
       el.style.transform = `translate3d(${shownX}px, ${shownY}px, 0)`;
-      if (hero && window.scrollY < window.innerHeight) {
+      if (hero && currentScrollY() < window.innerHeight) {
         hero.style.setProperty("--mx", ((shownX / window.innerWidth - 0.5) * 2).toFixed(3));
         hero.style.setProperty("--my", ((shownY / window.innerHeight - 0.5) * 2).toFixed(3));
       }
