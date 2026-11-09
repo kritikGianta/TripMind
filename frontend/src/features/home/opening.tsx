@@ -1,7 +1,8 @@
 "use client";
 
 import { Pause, Play } from "lucide-react";
-import { Suspense, useState } from "react";
+import Image from "next/image";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { homeCopy } from "@/content/home";
@@ -12,11 +13,26 @@ import { SearchPanel } from "@/features/search/components/search-panel";
 import { Letters, Media, Rise, Scribble, useHome } from "./media";
 import { useScrollProgress } from "./motion";
 
+// Measured: only from here is the hero invisible behind the clouds at every window size.
+const COVERED_AT = 0.95;
+
 export function Hero() {
   const { setFilmOpen, media } = useHome();
   const [videoPaused, setVideoPaused] = useState(false);
+  const pausedRef = useRef(false);
+  useEffect(() => {
+    pausedRef.current = videoPaused;
+  }, [videoPaused]);
   const ref = useScrollProgress<HTMLElement>("pin", (p, el) => {
     el.toggleAttribute("data-past", p > 0.3);
+    // Once the clouds have covered everything, stop drawing what nobody can see.
+    const covered = p > COVERED_AT;
+    if (covered !== el.hasAttribute("data-covered")) {
+      el.toggleAttribute("data-covered", covered);
+      const video = el.querySelector("video");
+      if (covered) video?.pause();
+      else if (!pausedRef.current) void video?.play().catch(() => {});
+    }
   });
   return (
     <section ref={ref} className="tm-hero" aria-label="Welcome">
@@ -47,7 +63,10 @@ export function Hero() {
             </button>
           </div>
         </div>
-        <div className="tm-fog" aria-hidden />
+        <div className="tm-fog" aria-hidden>
+          <i className="tm-fog__back" />
+          <i className="tm-fog__front" />
+        </div>
       </div>
     </section>
   );
@@ -102,8 +121,10 @@ export function WorksWithoutAi() {
         <h2 className="tm-label">{homeCopy.promise.label}</h2>
         <p>{homeCopy.promise.text}</p>
       </div>
-      <Media slot="ridge-landscape" sizes="100vw" className="tm-promise__ridge tm-promise__ridge--back" />
-      <Media slot="ridge-landscape" sizes="100vw" className="tm-promise__ridge" />
+      <div className="tm-media tm-promise__ridge tm-promise__ridge--back" aria-hidden>
+        <Image src="/home/ridge-far.webp" alt="" fill sizes="130vw" />
+      </div>
+      <Media slot="ridge-landscape" sizes="118vw" className="tm-promise__ridge" />
     </section>
   );
 }

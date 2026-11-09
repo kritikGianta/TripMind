@@ -44,10 +44,10 @@ export const homeMedia = {
   },
   "ridge-landscape": {
     kind: "image",
-    section: "'Works with the AI off'; the top edge is cut into a jagged ridge by code",
-    brief: "Mountains or rock filling the whole frame, no sky needed. Himalaya, Ladakh or Spiti, warm rock against snow.",
-    size: "2400x1400",
-    alt: "A snow and rock mountain range",
+    section: "'Works with the AI off', rising up the page in front of a hazy far range",
+    brief: "A mountain cut out along its own outline, transparent above it. Stok Kangri, Ladakh: public domain, by Maverick34 on Wikimedia Commons.",
+    size: "2400x872, with transparency",
+    alt: "Stok Kangri, a snow-streaked peak in Ladakh",
     tone: sky("#c9ced6", "#8c6f5e", "#5d4436"),
   },
   "way-flights": {

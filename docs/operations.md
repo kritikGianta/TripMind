@@ -42,7 +42,9 @@ up on refresh; a Docker or production build needs rebuilding (`docker compose bu
 The original files as supplied stay in `Images&Videos/` (git-ignored). `hero-film.mp4` is a 1080p ffmpeg
 encode of `main-homepage-video.mp4`, 5.4 MB instead of 29.8 MB, with its last 2 s crossfaded into its start so
 the loop has no visible jump; `hero-film.jpg` is its first frame. Re-encoding a video? Do not record a canvas
-with MediaRecorder: that froze the picture while the timer kept running. The e2e suite now compares pixels. Three home images are public domain NASA photographs from Wikimedia Commons, recoloured or cropped for the page:
+with MediaRecorder: that froze the picture while the timer kept running. The e2e suite now compares pixels. `ridge-landscape` and `ridge-far` are [Stok Kangri, Ladakh](https://commons.wikimedia.org/wiki/File:StokKangri.jpg) by Maverick34, public domain, cut out along the peak's real outline against the sky; the far range is the same peak, hazed. The hero's clouds (`fog-back`, `fog-front`) are generated, so they have no source to credit. Next's image server caches by file name for about a minute, so a replaced image can look unchanged at first.
+
+Three home images are public domain NASA photographs from Wikimedia Commons, recoloured or cropped for the page:
 `route-opening` is [ISS036-E-48689, View of the Arabian Sea](https://commons.wikimedia.org/wiki/File:ISS036-E-48689_-_View_of_the_Arabian_Sea.jpg),
 `route-origin` is [India at night from space during Diwali 2012](https://commons.wikimedia.org/wiki/File:India_at_night_from_space_during_Diwali_2012.jpg),
 and `route-destination` is ISS-62, City lights of Mumbai to Goa, India. Replacing one means saving a file under
