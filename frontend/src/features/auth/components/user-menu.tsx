@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, CloudLightning, DatabaseZap, LogOut, ScrollText, UserRound } from "lucide-react";
+import { BarChart3, BellRing, Bookmark, Bot, CloudLightning, DatabaseZap, LifeBuoy, LogOut, ScrollText, ShieldCheck, UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -67,6 +67,26 @@ export function UserMenu() {
             <UserRound /> Account
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account?tab=saved">
+            <Bookmark /> Saved stays
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account?tab=alerts">
+            <BellRing /> Price alerts
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account?tab=security">
+            <ShieldCheck /> Security and privacy
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/support">
+            <LifeBuoy /> Support
+          </Link>
+        </DropdownMenuItem>
         {user.role === "admin" ? (
           <DropdownMenuItem asChild>
             <Link href="/admin/imports">
@@ -85,6 +105,27 @@ export function UserMenu() {
           <DropdownMenuItem asChild>
             <Link href="/admin/analytics">
               <BarChart3 /> Analytics
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
+        {user.role === "admin" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/support">
+              <LifeBuoy /> Support queue
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
+        {user.role === "admin" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/models">
+              <Bot /> Models
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
+        {user.role === "admin" ? (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/users">
+              <Users /> Users
             </Link>
           </DropdownMenuItem>
         ) : null}

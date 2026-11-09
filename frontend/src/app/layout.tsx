@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Inter_Tight, Oswald } from "next/font/google";
 import { Suspense } from "react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -10,8 +10,14 @@ import { siteConfig } from "@/config/site";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const display = Oswald({ subsets: ["latin"], variable: "--tm-display" });
+const serif = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--tm-serif",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+});
+const sans = Inter_Tight({ subsets: ["latin"], variable: "--tm-sans" });
 
 export const metadata: Metadata = {
   title: { default: siteConfig.name, template: `%s · ${siteConfig.name}` },
@@ -20,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${display.variable} ${serif.variable} ${sans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Providers>
           <a

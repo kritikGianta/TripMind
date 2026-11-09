@@ -23,19 +23,16 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b print:hidden bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
+    <header className="sticky top-0 z-40 border-b bg-background/95 print:hidden">
+      <div className="mx-auto flex h-14 max-w-[80rem] items-center gap-4 px-4">
         <Logo />
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
           {siteConfig.nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               aria-current={isActive(pathname, item.href) ? "page" : undefined}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
-                isActive(pathname, item.href) && "font-medium text-foreground",
-              )}
+              className={cn("tm-nav-link", item.href === "/plan" && "tm-nav-link--accent")}
             >
               {item.label}
             </Link>
@@ -47,7 +44,7 @@ export function SiteHeader() {
           <UserMenu />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
                 <Menu />
               </Button>
             </SheetTrigger>

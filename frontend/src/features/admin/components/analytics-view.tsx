@@ -118,6 +118,7 @@ export function AuditView() {
           {isPending || !data ? (
             <Skeleton className="h-64 w-full" />
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-muted-foreground">
                 <tr className="border-b">
@@ -146,6 +147,7 @@ export function AuditView() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </CardContent>
       </Card>

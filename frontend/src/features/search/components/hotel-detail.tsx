@@ -14,6 +14,7 @@ import { errorMessage } from "@/lib/api/errors";
 import { toQuery, useHotel } from "../api";
 import { BOARD_LABELS, formatDay, formatMoney } from "../format";
 import { RatingBadge, Stars } from "./hotel-results";
+import { HotelReviews, SaveStayButton, WatchPriceButton } from "./stay-extras";
 import { PriceBreakdown } from "./price-breakdown";
 
 const AMENITY_LABELS: Record<string, string> = {
@@ -48,7 +49,7 @@ export function HotelDetailView({ id }: { id: string }) {
 
   if (isPending) {
     return (
-      <div className="mx-auto grid w-full max-w-5xl gap-4 px-4 py-8">
+      <div className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-8">
         <Skeleton className="h-10 w-2/3" />
         <Skeleton className="h-40 w-full" />
         <Skeleton className="h-64 w-full" />
@@ -57,7 +58,7 @@ export function HotelDetailView({ id }: { id: string }) {
   }
   if (error || !data) {
     return (
-      <div className="mx-auto w-full max-w-5xl px-4 py-8">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8">
         <Alert variant="destructive">
           <AlertCircle />
           <AlertDescription>{errorMessage(error)}</AlertDescription>
@@ -69,7 +70,7 @@ export function HotelDetailView({ id }: { id: string }) {
   const backQuery = toQuery({ city: data.city.id, cityName: data.city.name, checkIn, checkOut, guests, rooms, trip });
 
   return (
-    <div className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-8">
+    <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8">
       <Button asChild variant="ghost" size="sm" className="w-fit">
         <Link href={`/stays?${backQuery}`}>
           <ArrowLeft /> All stays in {data.city.name}
@@ -81,6 +82,14 @@ export function HotelDetailView({ id }: { id: string }) {
           <h1 className="text-3xl font-semibold tracking-tight">{data.name}</h1>
           <Stars count={data.star_rating} />
           {data.origin === "synthetic" ? <Badge variant="outline">Demo data</Badge> : null}
+          <span className="flex flex-wrap gap-2 sm:ml-auto">
+            <SaveStayButton hotelId={data.id} />
+            {data.stay ? (
+              <WatchPriceButton
+                watch={{ kind: "hotel", hotel_id: data.id, check_in: data.stay.check_in, check_out: data.stay.check_out, guests: data.stay.guests, rooms: data.stay.rooms }}
+              />
+            ) : null}
+          </span>
         </div>
         <p className="flex items-center gap-1 text-muted-foreground">
           <MapPin className="size-4" aria-hidden />
@@ -189,6 +198,8 @@ export function HotelDetailView({ id }: { id: string }) {
           </div>
         </section>
       ) : null}
+
+      <HotelReviews hotelId={data.id} />
     </div>
   );
 }

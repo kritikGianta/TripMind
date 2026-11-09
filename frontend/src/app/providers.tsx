@@ -1,9 +1,10 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { useMotionChoice } from "@/features/motion/use-motion";
 import { ApiError } from "@/lib/api/errors";
 
 function makeQueryClient() {
@@ -22,6 +23,11 @@ function makeQueryClient() {
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(makeQueryClient);
+  const motion = useMotionChoice();
+  // Inner pages animate from CSS, so the Motion switch applies to them too.
+  useEffect(() => {
+    document.documentElement.dataset.motion = motion;
+  }, [motion]);
   return (
     <QueryClientProvider client={queryClient}>
       {children}

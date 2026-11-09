@@ -141,6 +141,7 @@ export function ImportsView() {
               <AlertDescription>{errorMessage(runs.error)}</AlertDescription>
             </Alert>
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-muted-foreground">
                 <tr className="border-b">
@@ -183,6 +184,7 @@ export function ImportsView() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </CardContent>
       </Card>

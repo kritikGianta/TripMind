@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PageHero } from "@/components/layout/page-hero";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -16,6 +17,7 @@ import { CABIN_LABELS, formatDay, formatMoney } from "../format";
 import { CheckboxFacet, FilterGroup, PriceFacet, SortBar, useUrlState } from "./filters";
 import { FlightOfferCard } from "./flight-offer-card";
 import { SearchPanel } from "./search-panel";
+import { FareCalendar, RecentSearchChips, WatchPriceButton } from "./stay-extras";
 
 const SORTS = [
   { value: "best", label: "Best" },
@@ -159,7 +161,15 @@ export function FlightResultsView() {
   );
 
   if (!query) {
-    return <div className="mx-auto w-full max-w-6xl px-4 py-8">{panel}</div>;
+    return (
+      <>
+        <PageHero title="Book a flight" eyebrow="On its own, no hotel needed" text="Every price itemised, with a plain label saying if it is below, near or above typical." image="/home/way-flights.png" position="50% 42%" overlap />
+        <div className="tm-overlap mx-auto grid w-full max-w-6xl gap-4 px-4 pb-10">
+          {panel}
+          <RecentSearchChips vertical="flights" />
+        </div>
+      </>
+    );
   }
 
   const current = data ? (leg === "inbound" && data.inbound ? data.inbound : data.outbound) : null;
@@ -182,7 +192,9 @@ export function FlightResultsView() {
   const filters = current ? <Filters results={current} /> : null;
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6">
+    <>
+    <PageHero title="Flights" image="/home/way-flights.png" position="50% 42%" as="p" compact overlap />
+    <div className="tm-overlap mx-auto grid w-full max-w-6xl gap-6 px-4 pb-10">
       {panel}
 
       {error ? (
@@ -197,9 +209,12 @@ export function FlightResultsView() {
           <AlertDescription>{n}</AlertDescription>
         </Alert>
       ))}
+      {from && to && depart ? (
+        <FareCalendar origin={from} destination={to} date={depart} adults={adults} cabin={cabin} onPick={(day) => update({ depart: day })} />
+      ) : null}
 
-      <div className="grid gap-6 md:grid-cols-[15rem_1fr]">
-        <aside className="hidden md:block">{filters}</aside>
+      <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="hidden lg:block">{filters}</aside>
         <section aria-busy={isFetching} className="grid content-start gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -214,10 +229,13 @@ export function FlightResultsView() {
                 </p>
               ) : null}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {from && to && depart ? (
+                <WatchPriceButton watch={{ kind: "flight", origin: from, destination: to, departure_date: depart, adults, cabin_class: cabin as "economy" }} />
+              ) : null}
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="md:hidden">
+                  <Button variant="outline" size="sm" className="lg:hidden">
                     <SlidersHorizontal /> Filters
                   </Button>
                 </SheetTrigger>
@@ -290,5 +308,6 @@ export function FlightResultsView() {
         </div>
       ) : null}
     </div>
+    </>
   );
 }

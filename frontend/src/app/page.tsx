@@ -1,20 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { Cormorant_Garamond, Inter_Tight, Oswald } from "next/font/google";
-
 import { homeMedia, type MediaSlot } from "@/content/home";
 import { HomeExperience } from "@/features/home/home-experience";
 import type { MediaFiles } from "@/features/home/media";
-
-const display = Oswald({ subsets: ["latin"], variable: "--tm-display" });
-const serif = Cormorant_Garamond({
-  subsets: ["latin"],
-  variable: "--tm-serif",
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
-});
-const sans = Inter_Tight({ subsets: ["latin"], variable: "--tm-sans" });
 
 const IMAGE = /\.(jpe?g|png|webp|avif)$/i;
 const VIDEO = /\.(mp4|webm)$/i;
@@ -43,5 +32,5 @@ function findMedia(): MediaFiles {
 }
 
 export default function HomePage() {
-  return <HomeExperience media={findMedia()} fonts={`${display.variable} ${serif.variable} ${sans.variable}`} />;
+  return <HomeExperience media={findMedia()} fonts="" />;
 }

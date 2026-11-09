@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Trip plan" };
 
 export default function PlanResultPage() {
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <Suspense fallback={<Skeleton className="h-96 w-full" />}>
         <RequireAuth>
           <PlanView />

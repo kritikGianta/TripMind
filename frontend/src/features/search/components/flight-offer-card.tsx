@@ -53,7 +53,7 @@ export function FlightOfferCard({
 
   return (
     <Card className={cn("gap-0 p-0 transition-shadow", selected && "ring-2 ring-primary")}>
-      <div className="grid gap-4 p-4 md:grid-cols-[14rem_1fr_auto] md:items-center">
+      <div className="grid gap-4 p-4 lg:grid-cols-[14rem_minmax(0,1fr)_auto] lg:items-center">
         <Airline offer={offer} />
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
           <div className="text-right">
@@ -77,7 +77,7 @@ export function FlightOfferCard({
             <div className="text-xs text-muted-foreground">{last.destination.code}</div>
           </div>
         </div>
-        <div className="flex items-center justify-between gap-4 md:justify-end">
+        <div className="flex flex-wrap items-center justify-between gap-4 lg:justify-end">
           <PriceBreakdown ledger={offer.price} caption={adults > 1 ? `total for ${adults} adults` : "per adult"} />
           {onSelect ? (
             <Button onClick={onSelect} disabled={!offer.bookable} variant={selected ? "secondary" : "default"}>

@@ -13,6 +13,7 @@ import { addDays, formatDay, formatMoney } from "@/features/search/format";
 import { errorMessage } from "@/lib/api/errors";
 
 import { useTrip, useTrips, type Trip } from "../api";
+import { useTripSuggestions } from "../self-service";
 import { StatusBadge } from "./booking-view";
 
 const STATE: Record<Trip["state"], { label: string; className: string }> = {
@@ -90,6 +91,7 @@ export function TripsView() {
 
 export function TripDetailView() {
   const { id } = useParams<{ id: string }>();
+  const suggestions = useTripSuggestions(id);
   const { data: trip, error, isPending } = useTrip(id);
   if (isPending) return <Skeleton className="h-64 w-full" />;
   if (error || !trip) {
@@ -102,6 +104,7 @@ export function TripDetailView() {
   }
 
   const active = trip.state !== "cancelled" && trip.state !== "past";
+  const hasSuggestions = (suggestions.data?.suggestions.length ?? 0) > 0;
   const city = trip.destination_city_id;
   const addStay =
     active && trip.has_flight && !trip.has_stay && city && trip.starts_on
@@ -121,14 +124,25 @@ export function TripDetailView() {
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">{trip.title}</h1>
+        <h1>{trip.title}</h1>
         <TripState state={trip.state} />
       </div>
-      <p className="flex items-center gap-1 text-muted-foreground">
-        <CalendarDays className="size-4" /> {dates(trip) ?? "Dates not set"}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-1 text-muted-foreground">
+          <CalendarDays className="size-4" /> {dates(trip) ?? "Dates not set"}
+        </p>
+        {trip.bookings.length ? (
+          <Button asChild variant="outline" size="sm">
+            <a href={`/api/v1/trips/${trip.id}/calendar.ics`} download>
+              <CalendarDays /> Add to calendar
+            </a>
+          </Button>
+        ) : null}
+      </div>
 
-      {addStay || addFlight ? (
+      {active ? <TripSuggestions tripId={trip.id} /> : null}
+
+      {(addStay || addFlight) && !hasSuggestions ? (
         <Card className="flex flex-wrap items-center justify-between gap-3 border-primary/30 bg-primary/5 p-5">
           <div>
             <p className="font-medium">{addStay ? `Need somewhere to stay in ${trip.destination_city_name}?` : "Need a flight for this stay?"}</p>
@@ -175,5 +189,42 @@ export function TripDetailView() {
         </Card>
       ))}
     </div>
+  );
+}
+
+/** The suggestion's link, carrying this trip so what is booked there joins it. */
+function linkInTrip(link: string, tripId: string) {
+  const url = new URL(link, "https://tripmind.invalid");
+  url.searchParams.set("trip", tripId);
+  return `${url.pathname}${url.search}`;
+}
+
+function TripSuggestions({ tripId }: { tripId: string }) {
+  const { data } = useTripSuggestions(tripId);
+  if (!data?.suggestions.length) return null;
+  return (
+    <Card className="grid gap-3 p-5">
+      <div>
+        <h2>What this trip is missing</h2>
+        <p className="text-sm text-muted-foreground">Options that fit your dates, ready to add. It stays one trip.</p>
+      </div>
+      <ul className="grid gap-2 md:grid-cols-2">
+        {data.suggestions.map((item) => (
+          <li key={item.link} className="grid content-start gap-1 rounded-sm border p-3">
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-medium">{item.title}</p>
+              {item.price ? <span className="font-medium tabular-nums">{formatMoney(item.price)}</span> : null}
+            </div>
+            <p className="text-sm text-muted-foreground">{item.subtitle}</p>
+            {item.reasons.length ? <p className="text-xs text-muted-foreground">{item.reasons.join(" · ")}</p> : null}
+            <Button asChild size="sm" variant="outline" className="mt-1 w-fit">
+              <Link href={linkInTrip(item.link, tripId)}>
+                <Plus /> Add to this trip
+              </Link>
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </Card>
   );
 }

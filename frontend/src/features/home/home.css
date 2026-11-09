@@ -248,10 +248,12 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
 }
 
 /* Film popup */
+/* The window takes the film's own shape, so nothing is cropped at any screen size. */
 .tm-film[data-slot="dialog-content"] {
-  width: calc(100vw - 3rem);
+  width: min(calc(100vw - 3rem), calc((100svh - 3rem) * 16 / 9));
   max-width: none;
-  height: calc(100svh - 3rem);
+  height: auto;
+  aspect-ratio: 16 / 9;
   padding: 0;
   background: #000;
   border: 0;
@@ -943,3 +945,5 @@ body:has(.tm-home[data-motion="reduced"]) .tm-how__step { animation: none; }
 .tm-home[data-motion="reduced"] .tm-map__stats, .tm-home[data-motion="reduced"] .tm-map__stages { position: static; width: auto; height: auto; transform: none; }
 .tm-home[data-motion="reduced"] .tm-map__stages li { position: static; opacity: 1; transform: none; margin-bottom: 0.5rem; }
 .tm-home[data-motion="reduced"] .tm-footer__word .tm-lt i { transform: none; }
+
+.tm-film .tm-fill { object-fit: contain; background: #000; }

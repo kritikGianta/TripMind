@@ -1,8 +1,8 @@
 "use client";
 
-import { AlertCircle, BedDouble, CheckCircle2, Clock, CreditCard, Plane, XCircle } from "lucide-react";
+import { Armchair, AlertCircle, BedDouble, CalendarClock, CheckCircle2, Clock, CreditCard, LifeBuoy, Plane, Star, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -19,6 +19,7 @@ import { RecoveryBanner } from "@/features/recovery/components/recovery-view";
 import { errorMessage } from "@/lib/api/errors";
 
 import { useBooking, useCancel, useCancellationQuote, usePay, type Booking, type BookingItem } from "../api";
+import { ChangeDialog, ReviewDialog } from "./booking-actions";
 
 const STATUS: Record<string, { label: string; className: string }> = {
   held: { label: "Awaiting payment", className: "bg-amber-500/15 text-amber-700 dark:text-amber-300" },
@@ -68,7 +69,8 @@ function PaymentCard({ booking, onExpire }: { booking: Booking; onExpire: () => 
       {
         key: crypto.randomUUID(),
         input: {
-          card_number: card.number,
+          // Cards are written with spaces, as printed; the API takes digits only.
+          card_number: card.number.replace(/\s/g, ""),
           expiry_month: Number(card.month),
           expiry_year: Number(card.year.length === 2 ? `20${card.year}` : card.year),
           cvc: card.cvc,
@@ -188,8 +190,28 @@ function CancelDialog({ booking, items, onClose }: { booking: Booking; items: Bo
   );
 }
 
-function ItemCard({ item, canCancel, onCancel }: { item: BookingItem; canCancel: boolean; onCancel: () => void }) {
+function hasEnded(item: BookingItem) {
+  return Date.parse(item.ends_at) < Date.now();
+}
+
+function ItemCard({
+  item,
+  bookingId,
+  canCancel,
+  onCancel,
+  onChange,
+  onReview,
+}: {
+  item: BookingItem;
+  bookingId: string;
+  canCancel: boolean;
+  onCancel: () => void;
+  onChange: () => void;
+  onReview: () => void;
+}) {
   const live = item.status === "held" || item.status === "confirmed";
+  const confirmed = item.status === "confirmed";
+  const ended = hasEnded(item);
   return (
     <div className="grid gap-2 border-b pb-4 last:border-0 last:pb-0 md:grid-cols-[1fr_auto] md:items-start">
       <div className="grid gap-1">
@@ -202,6 +224,38 @@ function ItemCard({ item, canCancel, onCancel }: { item: BookingItem; canCancel:
           {when.format(new Date(item.starts_at))} → {when.format(new Date(item.ends_at))}
         </p>
         <p className="text-xs text-muted-foreground">{item.policy}</p>
+        {item.extras?.length ? (
+          <ul className="flex flex-wrap gap-1.5 pt-1">
+            {item.extras.map((extra) => (
+              <li key={extra.id}>
+                <Badge variant="secondary">
+                  {extra.traveller_name}: {extra.label}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {confirmed ? (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {item.kind === "flight" && !ended ? (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/bookings/${bookingId}/extras/${item.id}`}>
+                  <Armchair /> Seats and extras
+                </Link>
+              </Button>
+            ) : null}
+            {!ended ? (
+              <Button variant="outline" size="sm" onClick={onChange}>
+                <CalendarClock /> {item.kind === "flight" ? "Change flight" : "Change dates"}
+              </Button>
+            ) : null}
+            {item.kind !== "flight" && ended ? (
+              <Button variant="outline" size="sm" onClick={onReview}>
+                <Star /> Write a review
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
       <div className="grid justify-items-end gap-2">
         <span className="font-semibold tabular-nums">{formatMoney(item.price)}</span>
@@ -219,6 +273,11 @@ export function BookingView() {
   const { id } = useParams<{ id: string }>();
   const { data: booking, error, isPending, refetch } = useBooking(id);
   const [cancelItems, setCancelItems] = useState<BookingItem[] | null>(null);
+  const [changeItem, setChangeItem] = useState<BookingItem | null>(null);
+  const [reviewItem, setReviewItem] = useState<BookingItem | null>(null);
+  // The account page links here with ?review= to open the review form straight away.
+  const reviewFromLink = useSearchParams().get("review");
+  const [linkHandled, setLinkHandled] = useState(false);
 
   if (isPending) return <Skeleton className="h-96 w-full" />;
   if (error || !booking) {
@@ -232,9 +291,10 @@ export function BookingView() {
 
   const open = booking.status === "held" || booking.status === "payment_failed";
   const liveItems = booking.items.filter((i) => i.status === "held" || i.status === "confirmed");
+  const linkedReview = !linkHandled && reviewFromLink ? booking.items.find((i) => i.id === reviewFromLink) ?? null : null;
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_22rem]">
+    <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
       <div className="grid content-start gap-6">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">Booking {booking.reference}</h1>
@@ -264,8 +324,15 @@ export function BookingView() {
           </CardHeader>
           <CardContent className="grid gap-4">
             {booking.items.map((item) => (
-              <ItemCard key={item.id} item={item} canCancel={booking.can_cancel && booking.items.length > 1}
-                onCancel={() => setCancelItems([item])} />
+              <ItemCard
+                key={item.id}
+                item={item}
+                bookingId={booking.id}
+                canCancel={booking.can_cancel && booking.items.length > 1}
+                onCancel={() => setCancelItems([item])}
+                onChange={() => setChangeItem(item)}
+                onReview={() => setReviewItem(item)}
+              />
             ))}
           </CardContent>
         </Card>
@@ -302,7 +369,7 @@ export function BookingView() {
         </Card>
       </div>
 
-      <aside className="grid content-start gap-4 md:sticky md:top-20">
+      <aside className="grid content-start gap-4 lg:sticky lg:top-20">
         {open ? <PaymentCard booking={booking} onExpire={() => void refetch()} /> : null}
         <Card>
           <CardHeader>
@@ -347,6 +414,11 @@ export function BookingView() {
                 {open ? "Cancel and release" : "Cancel booking"}
               </Button>
             ) : null}
+            <Button asChild variant="ghost">
+              <Link href={`/support/new?booking=${booking.id}`}>
+                <LifeBuoy /> Get help with this booking
+              </Link>
+            </Button>
             {booking.status === "confirmed" ? (
               <Badge variant="outline" className="w-fit">
                 Demo booking: no real ticket is issued
@@ -356,6 +428,15 @@ export function BookingView() {
         </Card>
       </aside>
       <CancelDialog booking={booking} items={cancelItems} onClose={() => setCancelItems(null)} />
+      <ChangeDialog booking={booking} item={changeItem} onClose={() => setChangeItem(null)} />
+      <ReviewDialog
+        booking={booking}
+        item={reviewItem ?? linkedReview}
+        onClose={() => {
+          setReviewItem(null);
+          setLinkHandled(true);
+        }}
+      />
     </div>
   );
 }

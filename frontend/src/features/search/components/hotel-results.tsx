@@ -6,6 +6,7 @@ import { useMemo } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { PageHero } from "@/components/layout/page-hero";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,6 +20,7 @@ import { BOARD_LABELS, formatDay } from "../format";
 import { CheckboxFacet, FilterGroup, PriceFacet, SortBar, useUrlState } from "./filters";
 import { PriceBreakdown } from "./price-breakdown";
 import { SearchPanel } from "./search-panel";
+import { RecentSearchChips } from "./stay-extras";
 
 const SORTS = [
   { value: "recommended", label: "Recommended" },
@@ -202,12 +204,24 @@ export function HotelResultsView() {
       }}
     />
   );
-  if (!query) return <div className="mx-auto w-full max-w-6xl px-4 py-8">{panel}</div>;
+  if (!query) {
+    return (
+      <>
+        <PageHero title="Book a stay" eyebrow="On its own, no flight needed" text="Search by city, dates and guests. The price is checked again before you pay." image="/home/way-stays.png" position="50% 62%" overlap />
+        <div className="tm-overlap mx-auto grid w-full max-w-6xl gap-4 px-4 pb-10">
+          {panel}
+          <RecentSearchChips vertical="hotels" />
+        </div>
+      </>
+    );
+  }
 
   const filters = data ? <Filters search={data} /> : null;
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6">
+    <>
+    <PageHero title="Stays" image="/home/way-stays.png" position="50% 62%" as="p" compact overlap />
+    <div className="tm-overlap mx-auto grid w-full max-w-6xl gap-6 px-4 pb-10">
       {panel}
       {error ? (
         <Alert variant="destructive">
@@ -221,8 +235,8 @@ export function HotelResultsView() {
           <AlertDescription>{n}</AlertDescription>
         </Alert>
       ))}
-      <div className="grid gap-6 md:grid-cols-[15rem_1fr]">
-        <aside className="hidden md:block">{filters}</aside>
+      <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="hidden lg:block">{filters}</aside>
         <section aria-busy={isFetching} className="grid content-start gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -242,7 +256,7 @@ export function HotelResultsView() {
             <div className="flex items-center gap-2">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="md:hidden">
+                  <Button variant="outline" size="sm" className="lg:hidden">
                     <SlidersHorizontal /> Filters
                   </Button>
                 </SheetTrigger>
@@ -270,5 +284,6 @@ export function HotelResultsView() {
         </section>
       </div>
     </div>
+    </>
   );
 }
