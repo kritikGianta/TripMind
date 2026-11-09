@@ -9,7 +9,7 @@ import { siteConfig } from "@/config/site";
 import { AiSearch } from "@/features/ai/ai-search";
 import { SearchPanel } from "@/features/search/components/search-panel";
 
-import { Media, Scribble, useHome } from "./media";
+import { Letters, Media, Rise, Scribble, useHome } from "./media";
 import { useScrollProgress } from "./motion";
 
 export function Hero() {
@@ -23,7 +23,9 @@ export function Hero() {
       <div className="tm-hero__stage">
         <Media slot="hero-film" priority paused={videoPaused} className="tm-hero__media" />
         <div className="tm-hero__scrim" />
-        <h1 className="tm-hero__word tm-display">{homeCopy.hero.wordmark}</h1>
+        <h1 className="tm-hero__word tm-display" aria-label={homeCopy.hero.wordmark}>
+          <Letters text={homeCopy.hero.wordmark} />
+        </h1>
         <div className="tm-hero__mid">
           <p className="tm-italic tm-hero__tagline">{siteConfig.tagline}</p>
           <div className="tm-hero__dock">
@@ -59,9 +61,11 @@ export function SearchSection() {
         <Scribble />
         <p className="tm-italic">{homeCopy.search.label}</p>
       </div>
-      <h2 className="tm-serif-h tm-serif-h--lg text-center">{homeCopy.search.heading}</h2>
+      <h2 className="tm-serif-h tm-serif-h--lg text-center" data-reveal="rise">
+        <Rise text={homeCopy.search.heading} />
+      </h2>
       <p className="mx-auto mt-4 max-w-md text-center text-sm text-[var(--ink-soft)]">{homeCopy.search.note}</p>
-      <div className="tm-search__panel">
+      <div className="tm-search__panel" data-reveal>
         <Suspense fallback={<Skeleton className="h-40 w-full" />}>
           <SearchPanel />
         </Suspense>
@@ -94,10 +98,11 @@ export function WorksWithoutAi() {
   const ref = useScrollProgress<HTMLElement>("pass");
   return (
     <section ref={ref} className="tm-lines tm-promise">
-      <div className="tm-promise__copy">
+      <div className="tm-promise__copy" data-reveal>
         <h2 className="tm-label">{homeCopy.promise.label}</h2>
         <p>{homeCopy.promise.text}</p>
       </div>
+      <Media slot="ridge-landscape" sizes="100vw" className="tm-promise__ridge tm-promise__ridge--back" />
       <Media slot="ridge-landscape" sizes="100vw" className="tm-promise__ridge" />
     </section>
   );

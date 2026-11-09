@@ -144,8 +144,8 @@ export function HowItWorks() {
           <div className="grid gap-3 overflow-y-auto p-6 md:p-12">
             <SheetTitle className="tm-serif-h mb-6 font-normal">{homeCopy.how.heading}</SheetTitle>
             <SheetDescription className="sr-only">The four steps of a booking on {siteConfig.name}</SheetDescription>
-            {homeCopy.how.steps.map((step) => (
-              <div key={step.name} className="bg-[var(--stone-2)] p-5 md:p-6">
+            {homeCopy.how.steps.map((step, index) => (
+              <div key={step.name} className="tm-how__step bg-[var(--stone-2)] p-5 md:p-6" style={{ "--i": index } as React.CSSProperties}>
                 <p className="tm-italic mb-2 text-xl text-[var(--ink)]">{step.name}</p>
                 <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{step.text}</p>
               </div>

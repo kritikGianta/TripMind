@@ -159,7 +159,7 @@ export const homeMedia = {
     section: "Giant DEL — GOI route code; the photo fades into white as you scroll",
     brief: "High-key, bright photo: clouds from a plane window, or the Arabian Sea from the air. Light colours so the fade to white looks natural.",
     size: "2400x1500",
-    alt: "The sea meeting the shore, seen from the air",
+    alt: "The Arabian Sea and white clouds, seen from orbit",
     tone: sky("#d5e3f2", "#a9c4e0", "#7fa3cb"),
   },
   "route-origin": {
@@ -167,7 +167,7 @@ export const homeMedia = {
     section: "Dark journey map, top: where the route starts",
     brief: "Satellite or night-lights view of Delhi or north India on a near-black background. Edges fade into black in code. Optional.",
     size: "1400x900",
-    alt: "North India from space at night",
+    alt: "The lights of India at night, seen from space",
     tone: "radial-gradient(60% 70% at 50% 30%, #3a4150 0%, #161a22 60%, #090b10 100%)",
   },
   "route-destination": {
@@ -175,7 +175,7 @@ export const homeMedia = {
     section: "Dark journey map, bottom: where the route ends",
     brief: "Satellite view of the Goa or Konkan coast on a near-black background. Edges fade into black in code. Optional.",
     size: "1400x900",
-    alt: "The Goa coast from space",
+    alt: "The lights of the coast from Mumbai to Goa, seen from orbit",
     tone: "radial-gradient(60% 70% at 50% 70%, #3a4a50 0%, #151b20 60%, #090b10 100%)",
   },
   "cta-landscape": {

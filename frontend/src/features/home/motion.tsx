@@ -78,9 +78,9 @@ export function scrollToSection(selector: string) {
 const OWN_SCROLL = '[role="dialog"], [role="listbox"], [data-slot$="overlay"], [data-radix-popper-content-wrapper]';
 
 /** Smooth wheel scrolling for the home page only; other pages keep native scrolling. */
-export function SmoothScroll() {
+export function SmoothScroll({ enabled }: { enabled: boolean }) {
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!enabled) return;
     const instance = new Lenis({
       autoRaf: true,
       lerp: 0.11,
@@ -92,47 +92,72 @@ export function SmoothScroll() {
       instance.destroy();
       lenis = null;
     };
-  }, []);
+  }, [enabled]);
   return null;
 }
 
-/** A tiny dot that trails the mouse and names what a click will do, from `data-cursor`. */
-export function CursorDot() {
+/**
+ * A tiny dot that trails the mouse and names what a click will do, from `data-cursor`.
+ * It also feeds the pointer's position to the page as --mx and --my, and pulls glass chips gently
+ * towards the pointer while it is over them.
+ */
+export function CursorDot({ enabled }: { enabled: boolean }) {
   const dot = useRef<HTMLDivElement>(null);
   const label = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const el = dot.current;
     const text = label.current;
-    if (!el || !text) return;
-    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (calm || !window.matchMedia("(pointer: fine)").matches) return;
+    if (!el || !text || !enabled || !window.matchMedia("(pointer: fine)").matches) return;
+    // Only the hero reads the pointer. Writing to a page-wide element would restyle the whole page.
+    const hero = document.querySelector<HTMLElement>(".tm-hero");
 
-    let x = 0;
-    let y = 0;
-    let shownX = 0;
-    let shownY = 0;
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
+    let shownX = x;
+    let shownY = y;
     let frame = 0;
+    let pulled: HTMLElement | null = null;
+    const release = () => {
+      if (pulled) pulled.style.transform = "";
+      pulled = null;
+    };
     const loop = () => {
+      frame = requestAnimationFrame(loop);
+      if (Math.abs(x - shownX) < 0.2 && Math.abs(y - shownY) < 0.2) return;
       shownX += (x - shownX) * 0.22;
       shownY += (y - shownY) * 0.22;
       el.style.transform = `translate3d(${shownX}px, ${shownY}px, 0)`;
-      frame = requestAnimationFrame(loop);
+      if (hero && window.scrollY < window.innerHeight) {
+        hero.style.setProperty("--mx", ((shownX / window.innerWidth - 0.5) * 2).toFixed(3));
+        hero.style.setProperty("--my", ((shownY / window.innerHeight - 0.5) * 2).toFixed(3));
+      }
     };
     const move = (event: PointerEvent) => {
       x = event.clientX;
       y = event.clientY;
       el.style.opacity = "1";
-      const target = event.target instanceof Element ? event.target.closest<HTMLElement>("[data-cursor]") : null;
-      text.textContent = target?.dataset.cursor ?? "";
+      const target = event.target instanceof Element ? event.target : null;
+      text.textContent = target?.closest<HTMLElement>("[data-cursor]")?.dataset.cursor ?? "";
+      const chip = target?.closest<HTMLElement>(".tm-chip") ?? null;
+      if (chip !== pulled) release();
+      if (chip) {
+        pulled = chip;
+        const box = chip.getBoundingClientRect();
+        chip.style.transform = `translate(${(x - box.left - box.width / 2) * 0.16}px, ${(y - box.top - box.height / 2) * 0.26}px)`;
+      }
     };
     window.addEventListener("pointermove", move, { passive: true });
     frame = requestAnimationFrame(loop);
     return () => {
       window.removeEventListener("pointermove", move);
       cancelAnimationFrame(frame);
+      release();
+      el.style.opacity = "";
+      hero?.style.removeProperty("--mx");
+      hero?.style.removeProperty("--my");
     };
-  }, []);
+  }, [enabled]);
 
   return (
     <div ref={dot} className="tm-cursor" aria-hidden>

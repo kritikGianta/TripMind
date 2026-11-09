@@ -3,66 +3,18 @@
 import Lenis from "lenis";
 import { ChevronDown, ChevronUp, Maximize2, Menu as MenuIcon, Minimize2, X } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import * as about from "@/content/about";
+import { setMotionChoice, useMediaQuery, useMotionChoice } from "@/features/motion/use-motion";
 
 import { Scenes } from "./scenes";
 
 import "./about.css";
 
-const CHOICE_KEY = "tm-about-motion";
 const SEEN_KEY = "tm-about-opened";
-const CALM = "(prefers-reduced-motion: reduce)";
 const SMALL = "(max-width: 900px), (max-height: 560px)";
-const CHOICE_EVENT = "tm-about-motion";
 const GLIDE_SECONDS = 1.3;
-
-function storedChoice() {
-  try {
-    return window.localStorage.getItem(CHOICE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function subscribe(onChange: () => void) {
-  const queries = [window.matchMedia(CALM), window.matchMedia(SMALL)];
-  queries.forEach((query) => query.addEventListener("change", onChange));
-  window.addEventListener(CHOICE_EVENT, onChange);
-  return () => {
-    queries.forEach((query) => query.removeEventListener("change", onChange));
-    window.removeEventListener(CHOICE_EVENT, onChange);
-  };
-}
-
-/**
- * Motion follows the system's reduced-motion setting until the presenter chooses, and the choice is
- * remembered. Pinned scenes need a tall, wide screen, so small screens get the plain flow layout.
- */
-function useDisplay() {
-  const value = useSyncExternalStore(
-    subscribe,
-    () => {
-      const choice = storedChoice();
-      const calm = choice ? choice === "reduced" : window.matchMedia(CALM).matches;
-      const flow = calm || window.matchMedia(SMALL).matches;
-      return `${calm ? "reduced" : "full"}:${flow ? "flow" : "stage"}`;
-    },
-    () => "full:stage",
-  );
-  const [motion, layout] = value.split(":");
-  return { motion, layout };
-}
-
-function setChoice(choice: "full" | "reduced") {
-  try {
-    window.localStorage.setItem(CHOICE_KEY, choice);
-  } catch {
-    // Private windows may refuse storage; the choice then lasts until the page reloads.
-  }
-  window.dispatchEvent(new Event(CHOICE_EVENT));
-}
 
 /** The opening count, up to the Delhi to Goa distance shown on the home page. */
 function Loader({ done, count }: { done: boolean; count: number }) {
@@ -81,8 +33,9 @@ function Cursor({ rootRef }: { rootRef: React.RefObject<HTMLDivElement | null> }
   const float = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root || !window.matchMedia("(pointer: fine)").matches) return;
+    // Only the hero cloud reads the pointer. Writing to the page root would restyle the whole page.
+    const hero = rootRef.current?.querySelector<HTMLElement>(".ab-hero");
+    if (!window.matchMedia("(pointer: fine)").matches) return;
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
     let shownX = x;
@@ -93,8 +46,10 @@ function Cursor({ rootRef }: { rootRef: React.RefObject<HTMLDivElement | null> }
       shownY += (y - shownY) * 0.18;
       if (ring.current) ring.current.style.transform = `translate3d(${shownX}px, ${shownY}px, 0)`;
       if (float.current) float.current.style.transform = `translate3d(${shownX + 28}px, ${shownY - 110}px, 0) rotate(${(x - shownX) * 0.03}deg)`;
-      root.style.setProperty("--mx", ((shownX / window.innerWidth - 0.5) * 2).toFixed(3));
-      root.style.setProperty("--my", ((shownY / window.innerHeight - 0.5) * 2).toFixed(3));
+      if (hero && window.scrollY < window.innerHeight) {
+        hero.style.setProperty("--mx", ((shownX / window.innerWidth - 0.5) * 2).toFixed(3));
+        hero.style.setProperty("--my", ((shownY / window.innerHeight - 0.5) * 2).toFixed(3));
+      }
       frame = requestAnimationFrame(loop);
     };
     const move = (event: PointerEvent) => {
@@ -143,7 +98,10 @@ function isTyping(target: EventTarget | null) {
  * the slide list. The URL hash follows the current scene, so any scene can be linked or reopened.
  */
 export function Presentation({ fonts }: { fonts: string }) {
-  const { motion, layout } = useDisplay();
+  const motion = useMotionChoice();
+  const small = useMediaQuery(SMALL);
+  // Pinned scenes need a tall, wide screen, so small screens and calm mode get the plain flow layout.
+  const layout = motion === "reduced" || small ? "flow" : "stage";
   const root = useRef<HTMLDivElement>(null);
   const menu = useRef<HTMLDialogElement>(null);
   const lenis = useRef<Lenis | null>(null);
@@ -266,7 +224,8 @@ export function Presentation({ fonts }: { fonts: string }) {
     const measure = () => {
       queued = false;
       const height = document.documentElement.scrollHeight - window.innerHeight;
-      root.current?.style.setProperty("--page", (height > 0 ? window.scrollY / height : 0).toFixed(4));
+      const page = (height > 0 ? window.scrollY / height : 0).toFixed(4);
+      root.current?.querySelectorAll<HTMLElement>(".ab-lines, .ab-progress").forEach((element) => element.style.setProperty("--page", page));
     };
     const onScroll = () => {
       if (queued) return;
@@ -359,7 +318,7 @@ export function Presentation({ fonts }: { fonts: string }) {
             type="button"
             className="ab-dock__motion"
             data-off={motion !== "full" || undefined}
-            onClick={() => setChoice(motion === "full" ? "reduced" : "full")}
+            onClick={() => setMotionChoice(motion === "full" ? "reduced" : "full")}
           >
             {motion === "full" ? "Motion on" : "Motion off · turn on"}
           </button>

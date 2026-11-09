@@ -112,6 +112,59 @@ test("home works on a phone with reduced motion, with no sideways scroll", async
   await context.close();
 });
 
+test("home motion: the switch overrides the system, and the scroll effects run", async ({ browser }) => {
+  const base = process.env.BASE_URL ?? "http://localhost:3000";
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+  const page = await context.newPage();
+  const errors = watchErrors(page);
+  const activeWay = () => page.locator(".tm-way").evaluateAll((ways) => ways.findIndex((way) => way.getAttribute("data-active") === "true"));
+  const showWays = () => page.evaluate(() => document.querySelector(".tm-ways")?.scrollIntoView({ behavior: "instant", block: "center" }));
+
+  // With motion off the page is the short, plain layout and nothing plays by itself.
+  await page.goto(base);
+  const home = page.locator(".tm-home");
+  await expect(home).toHaveAttribute("data-motion", "reduced");
+  const calmHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+  await showWays();
+  await page.waitForTimeout(5000);
+  expect(await activeWay()).toBe(0);
+
+  // The switch turns everything on, and the choice survives a reload.
+  await page.getByRole("button", { name: /Motion off/ }).click();
+  await expect(home).toHaveAttribute("data-motion", "full");
+  await page.reload();
+  await expect(home).toHaveAttribute("data-motion", "full");
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeGreaterThan(calmHeight * 1.4);
+  await expect(page.locator("html")).toHaveClass(/lenis/);
+
+  // The accordion now moves on by itself.
+  await showWays();
+  await expect.poll(activeWay, { timeout: 7000 }).not.toBe(0);
+
+  // Halfway along the destinations, cards sit at different depths and Goa has moved off centre.
+  await page.evaluate(() => {
+    const section = document.querySelector<HTMLElement>(".tm-dest")!;
+    const top = section.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + (section.offsetHeight - window.innerHeight) * 0.6, behavior: "instant" });
+  });
+  const depth = (index: number) => page.locator(".tm-dest__card").nth(index).evaluate((card) => Number((card as HTMLElement).style.getPropertyValue("--d")));
+  await expect.poll(() => depth(0)).toBeLessThan(-1);
+  await expect.poll(() => depth(4)).toBeGreaterThan(1);
+
+  // Fully through the route code, DEL and GOI have arrived and been drawn together.
+  await page.evaluate(() => {
+    const section = document.querySelector<HTMLElement>(".tm-code")!;
+    window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY + (section.offsetHeight - window.innerHeight) * 0.5, behavior: "instant" });
+  });
+  await expect.poll(() => page.locator(".tm-code__from").evaluate((element) => new DOMMatrix(getComputedStyle(element).transform).m41)).toBe(0);
+
+  // Elements that fade in must always end up visible once reached.
+  await page.evaluate(() => document.querySelector(".tm-after__text")?.scrollIntoView({ behavior: "instant", block: "center" }));
+  await expect(page.locator(".tm-after__text")).toHaveCSS("opacity", "1");
+  expect(errors).toEqual([]);
+  await context.close();
+});
+
 test("about keeps every word of the deck", async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto("/about");

@@ -111,6 +111,41 @@ export function Media({
   );
 }
 
+/** Words that slide up from behind a mask when their parent has `data-reveal="rise"`. */
+export function Rise({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(" ").map((word, index) => (
+        <span key={`${word}-${index}`}>
+          <span className="tm-rise">
+            <span style={{ "--i": index } as React.CSSProperties}>{word}</span>
+          </span>{" "}
+        </span>
+      ))}
+    </>
+  );
+}
+
+const DRIFT = [30, 12, 42, 20, 36, 8, 26, 16];
+
+/** A word set letter by letter, for the hero and footer wordmarks. Give the parent an aria-label. */
+export function Letters({ text }: { text: string }) {
+  return (
+    <>
+      {text.split("").map((letter, index) => (
+        <span
+          key={`${letter}-${index}`}
+          className="tm-lt"
+          aria-hidden
+          style={{ "--i": index, "--drift": DRIFT[index % DRIFT.length] } as React.CSSProperties}
+        >
+          <i>{letter}</i>
+        </span>
+      ))}
+    </>
+  );
+}
+
 /** A hand-drawn flight path that draws itself as its section scrolls past. */
 export function Scribble({ className }: { className?: string }) {
   return (

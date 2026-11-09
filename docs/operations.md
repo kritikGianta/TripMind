@@ -42,9 +42,14 @@ up on refresh; a Docker or production build needs rebuilding (`docker compose bu
 The original files as supplied stay in `Images&Videos/` (git-ignored). `hero-film.mp4` is a 1080p ffmpeg
 encode of `main-homepage-video.mp4`, 5.4 MB instead of 29.8 MB, with its last 2 s crossfaded into its start so
 the loop has no visible jump; `hero-film.jpg` is its first frame. Re-encoding a video? Do not record a canvas
-with MediaRecorder: that froze the picture while the timer kept running. The e2e suite now compares pixels. `route-opening.png` is a stand-in, a copy of
-`dest-backdrop.png`: replace it with a bright photo saved under the same name, and update that slot's `alt`
-in `home.ts`. `route-origin` and `route-destination` are optional and the map looks finished without them.
+with MediaRecorder: that froze the picture while the timer kept running. The e2e suite now compares pixels. Three home images are public domain NASA photographs from Wikimedia Commons, recoloured or cropped for the page:
+`route-opening` is [ISS036-E-48689, View of the Arabian Sea](https://commons.wikimedia.org/wiki/File:ISS036-E-48689_-_View_of_the_Arabian_Sea.jpg),
+`route-origin` is [India at night from space during Diwali 2012](https://commons.wikimedia.org/wiki/File:India_at_night_from_space_during_Diwali_2012.jpg),
+and `route-destination` is ISS-62, City lights of Mumbai to Goa, India. Replacing one means saving a file under
+the same name after deleting the old one, because the first match wins, and updating that slot's `alt` in `home.ts`.
+
+Home and About share one Motion switch (`features/motion/use-motion.ts`). Never write a value that changes every
+frame to a page-wide element: restyling the whole page cost Home half its frame rate.
 
 ## Frontend work without Docker
 

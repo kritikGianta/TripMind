@@ -8,22 +8,61 @@ import { useEffect, useRef, useState } from "react";
 import { homeCopy } from "@/content/home";
 import { toQuery, useDataset } from "@/features/search/api";
 import { addDays, formatMoney, todayIso } from "@/features/search/format";
+import { useMotionChoice } from "@/features/motion/use-motion";
 import { apiFetch, type Schemas } from "@/lib/api/client";
 
-import { Media, Scribble, useHome } from "./media";
+import { Media, Rise, Scribble, useHome } from "./media";
 import { scrollToSection, useScrollProgress } from "./motion";
+
+const WAY_SECONDS = 4.2;
 
 export function Ways() {
   const { heading, items } = homeCopy.ways;
   const [active, setActive] = useState(0);
   const ref = useScrollProgress<HTMLElement>("pass");
+  const motion = useMotionChoice();
+  const held = useRef(false);
+
+  // The strip moves on by itself while it is on screen, until someone points at it.
+  useEffect(() => {
+    const section = ref.current;
+    if (motion !== "full" || !section) return;
+    let visible = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+      },
+      { threshold: 0.4 },
+    );
+    observer.observe(section);
+    const timer = window.setInterval(() => {
+      if (visible && !held.current && !document.hidden && window.matchMedia("(min-width: 1024px)").matches) {
+        setActive((current) => (current + 1) % items.length);
+      }
+    }, WAY_SECONDS * 1000);
+    return () => {
+      observer.disconnect();
+      window.clearInterval(timer);
+    };
+  }, [motion, items.length, ref]);
+
   return (
-    <section ref={ref} className="tm-lines tm-ways">
+    <section ref={ref} className="tm-lines tm-ways" style={{ "--way": `${WAY_SECONDS}s` } as React.CSSProperties}>
       <div className="tm-ways__head">
-        <h2 className="tm-serif-h tm-serif-h--lg">{heading}</h2>
+        <h2 className="tm-serif-h tm-serif-h--lg" data-reveal="rise">
+          <Rise text={heading} />
+        </h2>
         <Scribble />
       </div>
-      <div className="tm-ways__rail">
+      <div
+        className="tm-ways__rail"
+        onPointerEnter={() => {
+          held.current = true;
+        }}
+        onPointerLeave={() => {
+          held.current = false;
+        }}
+      >
         {items.map((way, index) => (
           <Link
             key={way.slot}
@@ -43,6 +82,7 @@ export function Ways() {
           >
             <Media slot={way.slot} sizes="(max-width: 1023px) 100vw, 60vw" className="tm-way__media" />
             <div className="tm-way__shade" />
+            <span className="tm-way__bar" aria-hidden />
             <div className="tm-way__body">
               <h3 className="tm-way__title">
                 {way.title[0]}
@@ -74,11 +114,15 @@ export function Confidence() {
       <span className="tm-confidence__mark" aria-hidden>
         “
       </span>
-      <p className="tm-italic tm-confidence__text">{text}</p>
-      <h2 className="tm-label mt-8">{label}</h2>
+      <p className="tm-italic tm-confidence__text" data-reveal>
+        {text}
+      </p>
+      <h2 className="tm-label mt-8" data-reveal>
+        {label}
+      </h2>
       <dl className="tm-confidence__checks">
-        {checks.map((check) => (
-          <div key={check.name}>
+        {checks.map((check, index) => (
+          <div key={check.name} data-reveal style={{ "--i": index + 1 } as React.CSSProperties}>
             <dt className="tm-italic">{check.name}</dt>
             <dd>{check.text}</dd>
           </div>
@@ -113,7 +157,13 @@ function useLivePrices() {
 
 export function Destinations() {
   const { heading, label, text, items, origin, adults } = homeCopy.destinations;
-  const ref = useScrollProgress<HTMLElement>("pin");
+  const ref = useScrollProgress<HTMLElement>("pin", (p, el) => {
+    const move = Math.min(1, Math.max(0, (p - 0.2) / 0.76));
+    el.querySelectorAll<HTMLElement>(".tm-dest__card").forEach((card, index) => {
+      const away = index - move * (items.length - 1);
+      card.style.setProperty("--d", Math.min(1.7, Math.max(-1.7, away)).toFixed(3));
+    });
+  });
   const { data } = useLivePrices();
   const live = new Map(data?.options.map((option) => [option.city, option]));
 
@@ -122,7 +172,9 @@ export function Destinations() {
       <div className="tm-dest__stage">
         <Media slot="dest-opening" className="tm-dest__opening" />
         <div className="tm-dest__intro">
-          <h2 className="tm-serif-h tm-serif-h--xl">{heading}</h2>
+          <h2 className="tm-serif-h tm-serif-h--xl" data-reveal="rise">
+            <Rise text={heading} />
+          </h2>
           <div className="tm-dest__note">
             <p className="tm-label">{label}</p>
             <p>{text}</p>
@@ -176,7 +228,13 @@ export function Proof() {
       <Media slot="proof-landscape" className="tm-proof__media" />
       <div className="tm-proof__body">
         <h2 className="tm-label">{label}</h2>
-        <p className="tm-italic tm-proof__text">{text}</p>
+        <p className="tm-italic tm-proof__text">
+          {text.split(" ").map((word, index, words) => (
+            <span key={`${word}-${index}`} className="tm-word" style={{ "--i": index / words.length } as React.CSSProperties}>
+              {word}{" "}
+            </span>
+          ))}
+        </p>
         <p className="tm-proof__note">{note}</p>
         <Link href="/about" className="tm-chip tm-chip--wide">
           {cta}
@@ -195,7 +253,8 @@ export function RouteCode() {
         <div className="tm-code__stage">
           <Media slot="route-opening" className="tm-code__media" />
           <p className="tm-display tm-code__text" aria-hidden>
-            {code[0]} — {code[1]}
+            <span className="tm-code__from">{code[0]}</span> <span className="tm-code__dash">—</span>{" "}
+            <span className="tm-code__to">{code[1]}</span>
           </p>
           <div className="tm-code__fade" aria-hidden />
         </div>
@@ -211,8 +270,12 @@ export function RouteCode() {
             <span>{to.place}</span>
           </p>
         </div>
-        <h2 className="tm-serif-h tm-serif-h--lg text-center">{heading}</h2>
-        <p className="tm-after__text">{text}</p>
+        <h2 className="tm-serif-h tm-serif-h--lg text-center" data-reveal="rise">
+          <Rise text={heading} />
+        </h2>
+        <p className="tm-after__text" data-reveal style={{ "--i": 2 } as React.CSSProperties}>
+          {text}
+        </p>
       </section>
     </>
   );
@@ -314,12 +377,17 @@ export function JourneyMap() {
 
 export function FinalCall() {
   const { heading, action } = homeCopy.cta;
-  const ref = useScrollProgress<HTMLElement>("pass");
+  // Also lifts the footer's wordmark as this section moves away and uncovers it.
+  const ref = useScrollProgress<HTMLElement>("pass", (p, el) => {
+    if (p > 0.45) el.closest(".tm-home")?.querySelector<HTMLElement>(".tm-footer__word")?.style.setProperty("--curtain", p.toFixed(3));
+  });
   return (
     <section ref={ref} className="tm-cta">
       <Media slot="cta-landscape" className="tm-cta__media" />
       <div className="tm-cta__body">
-        <h2 className="tm-serif-h tm-serif-h--lg">{heading}</h2>
+        <h2 className="tm-serif-h tm-serif-h--lg" data-reveal="rise">
+          <Rise text={heading} />
+        </h2>
         <Link href="/plan" className="tm-chip tm-chip--wide">
           {action}
         </Link>
