@@ -191,7 +191,7 @@ test("about keeps every word of the deck", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("about runs like a presentation: keys, slide list, the how-it-works diagram, build groups, and the shared header returns", async ({ browser }) => {
+test("about runs like a presentation: keys, slide list, the how-it-works and under-the-hood diagrams, build groups, and the shared header returns", async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
   const page = await context.newPage();
   const errors = watchErrors(page);
@@ -204,21 +204,21 @@ test("about runs like a presentation: keys, slide list, the how-it-works diagram
   const moved = () => track.evaluate((element) => new DOMMatrix(getComputedStyle(element).transform).m41);
   await page.keyboard.press("ArrowRight");
   await expect(page).toHaveURL(/#case-studies/);
-  await expect(page.locator(".ab-dock__count")).toHaveText("02 / 16");
+  await expect(page.locator(".ab-dock__count")).toHaveText("02 / 17");
   await page.keyboard.press("ArrowRight");
   await expect.poll(moved).toBeLessThan(-200);
 
   // Rows fade in only when reached, and must end up visible.
   await page.getByRole("button", { name: "All slides" }).click();
   const slides = page.getByRole("navigation", { name: "Slides" }).getByRole("link");
-  await expect(slides).toHaveCount(16);
+  await expect(slides).toHaveCount(17);
   await slides.filter({ hasText: "Objectives" }).click();
   await expect(page).toHaveURL(/#objectives/);
   await expect(page.locator("#objectives .ab-row").first()).toHaveCSS("opacity", "1");
 
   // A pinned scene has to reach its final state from scrolling alone.
   await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about#closing`);
-  await expect(page.locator(".ab-dock__count")).toHaveText("15 / 16");
+  await expect(page.locator(".ab-dock__count")).toHaveText("16 / 17");
   await page.mouse.move(700, 500);
   await page.mouse.wheel(0, 1800);
   await expect.poll(() => page.locator(".ab-close__line").evaluate((element) => Number(getComputedStyle(element).opacity))).toBe(1);
@@ -228,7 +228,7 @@ test("about runs like a presentation: keys, slide list, the how-it-works diagram
   await page.goto("about:blank");
   await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about#workflow`);
   await expect(page.locator(".ab")).toHaveAttribute("data-ready", "true");
-  const captions = page.locator(".ab-how__steps > li");
+  const captions = page.locator("#workflow .ab-how__steps > li");
   await expect(captions).toHaveCount(about.workflow.steps.length);
   const opacity = (index: number) => captions.nth(index).evaluate((element) => Number(getComputedStyle(element).opacity));
   await expect.poll(() => opacity(0)).toBe(1);
@@ -236,6 +236,21 @@ test("about runs like a presentation: keys, slide list, the how-it-works diagram
   for (let press = 1; press < about.workflow.steps.length; press++) await page.keyboard.press("ArrowRight");
   await expect.poll(() => opacity(about.workflow.steps.length - 1), { timeout: 20_000 }).toBe(1);
   expect(await opacity(0)).toBe(0);
+
+  // Under the hood: the same, and the parts the last call touches are the ones lit.
+  await page.goto("about:blank");
+  await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about#under-the-hood`);
+  await expect(page.locator(".ab")).toHaveAttribute("data-ready", "true");
+  const calls = page.locator("#under-the-hood .ab-how__steps > li");
+  await expect(calls).toHaveCount(about.requestFlow.calls.length);
+  const callOpacity = (index: number) => calls.nth(index).evaluate((element) => Number(getComputedStyle(element).opacity));
+  await expect.poll(() => callOpacity(0)).toBe(1);
+  for (let press = 1; press < about.requestFlow.calls.length; press++) await page.keyboard.press("ArrowRight");
+  await expect.poll(() => callOpacity(about.requestFlow.calls.length - 1), { timeout: 20_000 }).toBe(1);
+  const glow = (label: string) =>
+    page.locator(".ab-hood__node", { hasText: label }).evaluate((element) => Number(getComputedStyle(element).opacity));
+  expect(await glow("Jaeger")).toBe(1);
+  expect(await glow("Planner")).toBeLessThan(0.5);
 
   // Build status comes in groups, each with a summary.
   await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about#implementation`);

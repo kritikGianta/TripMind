@@ -31,7 +31,10 @@ export type Group = { name: string; items: string[]; summary: string; status: St
 
 export type WorkflowNode = { label: string; step: number; tag?: "AI" | "Models" };
 
-export type StackItem = { area: string; choice: string; why: string; insteadOf?: string };
+/** A part of the system in the request diagram; `steps` are the calls that pass through it. */
+export type FlowNode = { label: string; steps: number[]; tag?: "AI" | "Models" };
+
+export type StackItem ={ area: string; choice: string; why: string; insteadOf?: string };
 
 export type Reference = { id: string; citation: string; url: string; checkedOn: string };
 
@@ -55,6 +58,12 @@ export const scenes = [
     title: "How it works",
     heading: "One trip, from the first click to the way home",
     lead: "Keep scrolling: each step lights up the part of TripMind doing the work.",
+  },
+  {
+    id: "under-the-hood",
+    title: "Under the hood",
+    heading: "How a request travels through TripMind",
+    lead: "Keep scrolling: each call lights up the parts it passes through, hop by hop.",
   },
   { id: "implementation", title: "Built with", heading: "What it is built with, and why" },
   { id: "ai", title: "AI boundaries", heading: "AI suggests. The traveller decides." },
@@ -299,7 +308,144 @@ export const workflow = {
   note: "AI and Models mark the optional helpers. Switch them all off and every step still works.",
 };
 
-// ── 9 · Built with: each choice and the reason for it ───────────────────────────────────────
+// ── 9 · Under the hood: the real calls, and every part each one passes through ─────────────────
+
+export const requestFlow = {
+  calls: [
+    {
+      title: "A page opens",
+      call: "GET /trips, a page",
+      hops: ["Browser", "Next.js server", "Finished HTML"],
+      detail:
+        "Next.js renders the page on the server and sends finished HTML, so it appears before any script runs. The page then fetches its data from /api on the same address.",
+    },
+    {
+      title: "Every call passes the same checks",
+      call: "Any /api/v1/… request",
+      hops: ["Browser", "Next.js /api proxy", "FastAPI checks", "Redis"],
+      detail:
+        "The proxy forwards the call to the API inside Docker, so the browser talks to one address and the sign-in cookies stay httpOnly. The API gives each call a request ID, returned in the X-Request-Id header and written on every log line, adds security headers and refuses oversized bodies. Sign-in is read from the tm_access cookie; if it has expired, the website refreshes it once and repeats the call. Rate limits are counted in Redis, so every copy of the API shares them.",
+    },
+    {
+      title: "Type a sentence",
+      call: "POST /api/v1/ai/parse-search",
+      hops: ["AI module", "Redis cache", "Groq → Gemini → OpenRouter", "PostgreSQL catalog"],
+      detail:
+        "Emails, phone numbers and card-like numbers are removed before the text leaves TripMind. A repeated question is answered from the Redis cache; otherwise the providers are tried in order, each with a timeout, and one that fails is rested for a while. If none answers, a rule-based parser takes over. Place names are then matched against the catalog, so a city we do not have is reported missing, never invented. The answer only fills the form.",
+    },
+    {
+      title: "Search",
+      call: "GET /api/v1/flights/search, GET /api/v1/hotels/search",
+      hops: ["Search", "PostgreSQL", "LightGBM models", "Priced results"],
+      detail:
+        "Search reads flights, stays, rooms and what is still free from PostgreSQL, and prices every line. On Indian domestic routes, a LightGBM model predicts the typical fare: 15% under it is labelled below typical, 15% over is above typical. A second LightGBM model orders the stays from stars, guest rating, nightly price, party size and how far ahead the stay is; without it, a fixed rule orders them.",
+    },
+    {
+      title: "Plan the whole trip",
+      call: "POST /api/v1/plans",
+      hops: ["Planner", "Flight and stay search", "Scored packages", "PostgreSQL"],
+      detail:
+        "The planner runs the same flight and stay searches, combines them into complete packages, then scores and ranks them. The plan is saved with its Journey Confidence Report, so it can be reopened and shared with a group.",
+    },
+    {
+      title: "Hold the seat",
+      call: "POST /api/v1/bookings, with an Idempotency-Key",
+      hops: ["Bookings", "One PostgreSQL transaction", "Hold for 15 minutes"],
+      detail:
+        "One transaction writes the booking, its items and the reservation. The seat is taken by a conditional update, “reserved + wanted ≤ capacity”: if no row changes, the seat has gone and the buyer is told so, which is why exactly one of 20 buyers wins the last seat. A retried call with the same Idempotency-Key returns the same booking, never a second one. The timeline event and the audit record are written in the same transaction.",
+    },
+    {
+      title: "Pay and confirm",
+      call: "POST /api/v1/bookings/{id}/payments, with an Idempotency-Key",
+      hops: ["Bookings", "Row lock", "Simulated card", "One commit"],
+      detail:
+        "The booking row is locked first, so two clicks cannot pay at once, and a repeated key returns the earlier result without a second charge. An expired hold is refused. On success, one commit records the payment, confirms the booking, adds loyalty points, and writes the notification and the audit record. On a decline, the hold is kept until it expires. Payment counters move only after the commit.",
+    },
+    {
+      title: "Ask TripMind",
+      call: "POST /api/v1/ai/assistant",
+      hops: ["BM25 help search", "Trip summary", "Groq → Gemini → OpenRouter", "Text classifier"],
+      detail:
+        "BM25 finds the four best help passages, and a summary of the traveller's trips is added: titles, dates and statuses, never names, emails or payment details. The model must answer from these and cite them; with no model available, the passages are shown as they are. A small text classifier sorts the question into a support topic and offers “Contact support” where it fits. The assistant never books, pays or cancels.",
+    },
+    {
+      title: "When the airline cancels",
+      call: "POST /api/v1/admin/operations/disruptions, then POST /api/v1/recovery/cases/{id}/accept",
+      hops: ["Admin console", "Recovery", "PostgreSQL", "Traveller chooses", "Bookings"],
+      detail:
+        "An operator records the disruption. Recovery finds every affected item: unpaid holds are released, paid ones get a case with real options (another flight or room, a refund, or keeping a delayed flight), and the traveller is notified. When they choose, price and seats are checked again and only the affected item is replaced. The rest of the trip is untouched, and every change goes on the timeline.",
+    },
+    {
+      title: "Meanwhile, the worker",
+      call: "python -m app.worker, with no web traffic",
+      hops: ["Worker", "Redis lock", "PostgreSQL"],
+      detail:
+        "A separate process runs jobs on timers: release unpaid holds every 30 seconds, re-check price alerts, retrain stay preferences, and once a day delete data past its retention date. Before each run it takes a Redis lock that expires just before the next run, so with several workers a job still runs once, and a crashed run never blocks the next. Holds are released with SKIP LOCKED, so two sweepers never touch the same booking.",
+    },
+    {
+      title: "Watching it all",
+      call: "GET /metrics, and traces over OpenTelemetry",
+      hops: ["API and worker", "Prometheus", "Grafana", "Jaeger"],
+      detail:
+        "Every request is counted and timed for Prometheus, alongside business counters such as searches, holds, payments, refunds and expired holds; the worker reports each run and a heartbeat. Prometheus checks the alert rules, and Grafana draws the dashboards. With tracing on, each request's path, down to its SQL statements, goes to Jaeger: statement text only, never the values.",
+    },
+  ],
+  tiers: [
+    {
+      name: "Browser",
+      nodes: [
+        { label: "Website", steps: [0, 1, 2, 3, 4, 5, 6, 7] },
+        { label: "Admin console", steps: [8] },
+      ],
+    },
+    {
+      name: "Next.js server",
+      nodes: [
+        { label: "Page rendering", steps: [0] },
+        { label: "/api proxy", steps: [1, 2, 3, 4, 5, 6, 7, 8] },
+      ],
+    },
+    {
+      name: "API (FastAPI)",
+      nodes: [
+        { label: "Request ID, limits, sign-in", steps: [1, 5, 6] },
+        { label: "AI module", steps: [2, 7] },
+        { label: "Search", steps: [3, 4] },
+        { label: "Planner", steps: [4] },
+        { label: "Bookings", steps: [5, 6, 8] },
+        { label: "Recovery", steps: [8] },
+      ],
+    },
+    {
+      name: "Stores",
+      nodes: [
+        { label: "PostgreSQL", steps: [2, 3, 4, 5, 6, 7, 8, 9] },
+        { label: "Redis", steps: [1, 2, 7, 9] },
+      ],
+    },
+    {
+      name: "Helpers",
+      nodes: [
+        { label: "LightGBM models", steps: [3, 4], tag: "Models" },
+        { label: "Text classifier", steps: [7], tag: "Models" },
+        { label: "BM25 help search", steps: [7] },
+        { label: "Groq, Gemini, OpenRouter", steps: [2, 7], tag: "AI" },
+        { label: "Card processor (simulated)", steps: [6] },
+      ],
+    },
+    {
+      name: "Alongside",
+      nodes: [
+        { label: "Worker", steps: [9] },
+        { label: "Prometheus and Grafana", steps: [10] },
+        { label: "Jaeger", steps: [10] },
+      ],
+    },
+  ] satisfies Array<{ name: string; nodes: FlowNode[] }>,
+  note: "Lit parts are the ones the current call touches. Redis, the AI providers and monitoring are optional: without them, TripMind still works.",
+};
+
+// ── 10 · Built with: each choice and the reason for it ───────────────────────────────────────
 
 export const techStack: StackItem[] = [
   {

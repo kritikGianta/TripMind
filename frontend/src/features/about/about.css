@@ -320,7 +320,7 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
 .ab-how__head .ab-lead { margin-top: 0.6rem; }
 .ab-how__body { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); align-items: center; gap: 4vw; }
 .ab-how__steps { display: grid; }
-.ab-how__steps li {
+.ab-how__steps > li {
   --d: calc(var(--p, 0) * var(--n) - var(--i));
   grid-area: 1 / 1;
   /* Fully shown for a short stretch around its own step, so a stop a pixel off still shows it whole. */
@@ -351,6 +351,44 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
 }
 .ab-how__tag { padding: 0.05rem 0.42rem; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bg); background: var(--glow); border-radius: 999px; }
 .ab-how__map > .ab-small { margin-top: 0.4rem; }
+
+/* 9b. Under the hood: the same pinned stage, but a part can serve several calls. The section
+   defines a glow per call (--k0, --k1, …) and each part takes the brightest of its own (--hot). */
+.ab-hood { height: calc(var(--n) * 62svh + 100svh); }
+.ab-hood .ab-how__stage { gap: clamp(1rem, 3svh, 2rem); padding-block: 2.25rem; }
+.ab-hood .ab-how__head .ab-h2 { max-width: 30ch; font-size: clamp(1.8rem, min(3.6vw, 6.5svh), 4rem); }
+.ab-hood .ab-how__body { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3.5vw; }
+.ab-hood .ab-how__steps .ab-display { margin: 0.25rem 0 0.55rem; font-size: clamp(1.4rem, min(2.4vw, 4.8svh), 2.5rem); }
+.ab-hood .ab-how__steps p { max-width: 38rem; font-size: clamp(0.88rem, 2svh, 1rem); }
+.ab-hood__call { display: inline-block; max-width: 100%; margin-bottom: 0.7rem; padding: 0.2rem 0.6rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; line-height: 1.5; color: var(--glow); border: 1px solid var(--line); border-radius: 0.35rem; overflow-wrap: anywhere; }
+.ab-hood__hops { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.4rem; margin-bottom: 0.85rem; }
+.ab-hood__hops li {
+  --h: clamp(0, calc((var(--d, 0) + 0.45) * 8 - var(--j) * 0.5), 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  opacity: var(--h);
+  transform: translateX(calc((1 - var(--h)) * -10px));
+}
+.ab-hood__hops li + li::before { content: "→"; color: var(--glow); }
+.ab-hood__map { gap: clamp(0.45rem, 1.5svh, 0.9rem); }
+.ab-hood__tier { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); align-items: center; gap: 0.9rem; }
+.ab-hood__tier .ab-how__lane-name { margin: 0; }
+.ab-hood__tier ul { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.ab-hood__node {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.36rem 0.8rem;
+  font-size: 0.86em;
+  border: 1px solid color-mix(in srgb, var(--glow) calc(var(--hot, 0) * 100%), var(--line));
+  border-radius: 999px;
+  background: rgb(234 191 144 / calc(var(--hot, 0) * 0.22));
+  box-shadow: 0 0 calc(var(--hot, 0) * 22px) rgb(234 191 144 / calc(var(--hot, 0) * 0.35));
+  opacity: calc(0.32 + var(--hot, 0) * 0.68);
+}
 
 /* 10. AI boundaries: the two lists arrive from either side */
 .ab-split { position: relative; overflow: clip; }
@@ -522,7 +560,9 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
 .ab[data-layout="flow"] .ab-modes { position: relative; inset: auto; margin: 0.75rem var(--gutter) 0; opacity: 1; transform: none; }
 .ab[data-layout="flow"] .ab-how__body { grid-template-columns: minmax(0, 1fr); }
 .ab[data-layout="flow"] .ab-how__steps { gap: 1.5rem; }
-.ab[data-layout="flow"] .ab-how__steps li { grid-area: auto; opacity: 1; transform: none; }
+.ab[data-layout="flow"] .ab-how__steps > li { grid-area: auto; opacity: 1; transform: none; }
+.ab[data-layout="flow"] .ab-hood__hops li { opacity: 1; transform: none; }
+.ab[data-layout="flow"] .ab-hood__node { opacity: 1; background: none; box-shadow: none; border-color: var(--line); }
 .ab[data-layout="flow"] .ab-how__node { --on: 1; --now: 0; }
 .ab[data-layout="flow"] .ab-how__map::after { transform: none; }
 .ab[data-layout="flow"] .ab-split__panels { --in: 1; }
@@ -548,6 +588,7 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
   .ab-row--line { grid-template-columns: 2.4rem minmax(0, 1fr); }
   .ab-name__parts, .ab-stack, .ab-groups, .ab-how__body, .ab-split__panels, .ab-edge, .ab-proof, .ab-streams, .ab-limits__columns, .ab-close__pieces, .ab-modes { grid-template-columns: minmax(0, 1fr); }
   .ab-edge__art { position: relative; top: auto; height: 42svh; }
+  .ab-hood__tier { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
   .ab-proof__demo { position: static; }
   .ab-compare thead { display: none; }
   .ab-compare, .ab-compare tbody, .ab-compare tr, .ab-compare td { display: block; width: auto; }

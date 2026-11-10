@@ -340,6 +340,76 @@ function HowItWorks() {
   );
 }
 
+/**
+ * Under the hood: the real API calls, one at a time while the scene is pinned. Each caption names
+ * the call and reveals its hops in order; on the right, every part that call passes through glows.
+ * A part can serve several calls, so each step gets a glow value (--k0, --k1, …) worked out from
+ * the scroll position, and a part takes the brightest of the steps it belongs to.
+ */
+function UnderTheHood() {
+  const ref = useScrollProgress<HTMLElement>("pin");
+  const scene = sceneOf("under-the-hood");
+  const { calls, tiers, note } = about.requestFlow;
+  const last = calls.length - 1;
+  const glow: Style = { "--n": last };
+  calls.forEach((_, index) => {
+    glow[`--k${index}`] =
+      `clamp(0, calc(1.15 - max(var(--p, 0) * ${last} - ${index}, ${index} - var(--p, 0) * ${last}) * 2.4), 1)`;
+  });
+  return (
+    <div id="under-the-hood" data-scene data-stops={calls.length} role="region" aria-label={scene.title}>
+      <section ref={ref} className="ab-how ab-hood" style={glow}>
+        <div className="ab-how__stage">
+          <div className="ab-how__head">
+            <Eyebrow id="under-the-hood" />
+            <Heading id="under-the-hood" />
+            <p className="ab-lead">{scene.lead}</p>
+          </div>
+          <div className="ab-how__body">
+            <ol className="ab-how__steps">
+              {calls.map((call, index) => (
+                <li key={call.title} style={{ "--i": index } as Style}>
+                  <span className="ab-row__mark">{String(index + 1).padStart(2, "0")}</span>
+                  <h3 className="ab-display">{call.title}</h3>
+                  <code className="ab-hood__call">{call.call}</code>
+                  <ol className="ab-hood__hops" aria-label="Hops">
+                    {call.hops.map((hop, hopIndex) => (
+                      <li key={hop} style={{ "--j": hopIndex } as Style}>
+                        {hop}
+                      </li>
+                    ))}
+                  </ol>
+                  <p>{call.detail}</p>
+                </li>
+              ))}
+            </ol>
+            <div className="ab-how__map ab-hood__map">
+              {tiers.map((tier) => (
+                <div key={tier.name} className="ab-hood__tier">
+                  <p className="ab-how__lane-name">{tier.name}</p>
+                  <ul>
+                    {tier.nodes.map((node: about.FlowNode) => (
+                      <li
+                        key={node.label}
+                        className="ab-hood__node"
+                        style={{ "--hot": `max(${node.steps.map((s) => `var(--k${s})`).join(", ")})` } as Style}
+                      >
+                        {node.label}
+                        {node.tag ? <span className="ab-how__tag">{node.tag}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <p className="ab-small ab-soft">{note}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 /** Several related capabilities or cases as one card: their names, then one summary. */
 function GroupCard({ group, index }: { group: Group; index: number }) {
   return (
@@ -657,6 +727,7 @@ export function Scenes() {
       <Solution />
       <Difference />
       <HowItWorks />
+      <UnderTheHood />
       <Implementation />
       <AiBoundaries />
       <EdgeCases />
