@@ -26,6 +26,13 @@ export type CaseStudy = {
 
 export type Capability = { name: string; detail: string; status: Status };
 
+/** Several capabilities or cases told as one group, with a summary underneath. */
+export type Group = { name: string; items: string[]; summary: string; status: Status };
+
+export type WorkflowNode = { label: string; step: number; tag?: "AI" | "Models" };
+
+export type StackItem = { area: string; choice: string; why: string; insteadOf?: string };
+
 export type Reference = { id: string; citation: string; url: string; checkedOn: string };
 
 // ── Scene headings, in presentation order ─────────────────────────────────────────────────────
@@ -43,8 +50,13 @@ export const scenes = [
     lead: "Each mode works on its own. All three share the same search, pricing, booking engine and My Trips.",
   },
   { id: "difference", title: "How it differs", heading: "Compared with a typical booking flow" },
-  { id: "implementation", title: "Implementation and workflow", heading: "How it is built, and what is running today" },
-  { id: "data", title: "Data handling", heading: "Any supplied dataset, imported honestly" },
+  {
+    id: "workflow",
+    title: "How it works",
+    heading: "One trip, from the first click to the way home",
+    lead: "Keep scrolling: each step lights up the part of TripMind doing the work.",
+  },
+  { id: "implementation", title: "Built with", heading: "What it is built with, and why" },
   { id: "ai", title: "AI boundaries", heading: "AI suggests. The traveller decides." },
   { id: "edge-cases", title: "Edge cases being solved", heading: "What happens when things go wrong" },
   { id: "proof", title: "Live demo and proof", heading: "Measured, not claimed" },
@@ -70,8 +82,6 @@ export const artwork = {
   wave: { src: "/about/wave.webp", title: "The Ninth Wave", artist: "Ivan Aivazovsky", year: "1850", page: "https://commons.wikimedia.org/wiki/File:Hovhannes_Aivazovsky_-_The_Ninth_Wave_-_Google_Art_Project.jpg" },
   map: { src: "/about/map.webp", title: "Typus Orbis Terrarum", artist: "Abraham Ortelius", year: "1570", page: "https://commons.wikimedia.org/wiki/File:OrteliusWorldMap1570.jpg" },
 } as const;
-
-export const artworkNote = "The copper clouds are Bierstadt's sky, cropped and regraded for this page.";
 
 export type ArtName = keyof typeof artwork;
 
@@ -211,90 +221,228 @@ export const differentiators: Array<{ typical: string; tripmind: string; status:
   { typical: "Bundle-only or AI-only flows", tripmind: "Every product bookable on its own, with AI switched off", status: "live" },
 ];
 
-// ── 8 · Implementation and workflow ───────────────────────────────────────────────────────────
+// ── 8 · How it works (a scroll-driven diagram) ───────────────────────────────────────────────
 
-export const architecture = {
-  layers: [
-    { name: "Web app", detail: "Next.js + TypeScript; types generated from the API contract" },
-    { name: "API", detail: "FastAPI modular monolith: routers → services → domain rules → repositories" },
-    { name: "Data", detail: "PostgreSQL as the source of truth; Alembic migrations" },
-    { name: "Plug-ins", detail: "AI providers, ranking models and cache behind interfaces and flags" },
+export const workflow = {
+  steps: [
+    {
+      title: "Open TripMind",
+      detail: "The traveller lands on the website. Looking around needs no account; signing in is one step, and only needed to book.",
+    },
+    {
+      title: "Choose a way in",
+      detail:
+        "Book a flight, book a stay, or plan the whole trip. Or type a sentence such as “2 of us, Delhi to Goa next Friday”: AI fills in the form, and simple rules do it when AI is off.",
+    },
+    {
+      title: "Search",
+      detail:
+        "Flights, direct or with one stop, and stays that fit the whole party. Every price is shown line by line, and anything it does not include is marked.",
+    },
+    {
+      title: "Rank and explain",
+      detail:
+        "Small models order the stays and label each fare as low, typical or high. For a whole trip, the planner builds complete flight and stay packages, scores them, and explains every score in a Journey Confidence Report.",
+    },
+    {
+      title: "Hold",
+      detail:
+        "The chosen seat or room is held for 15 minutes in a single database step, so when two people want the last seat, exactly one gets it.",
+    },
+    {
+      title: "Pay and confirm",
+      detail:
+        "Seat first, money second. A double click cannot charge twice, a declined card keeps the hold, and confirmation brings an invoice and loyalty points. Card payments are simulated.",
+    },
+    {
+      title: "My Trips, and friends",
+      detail:
+        "Every booking lands in one trip, which suggests the missing piece. A plan can be shared: friends vote Love, OK or No, set their budgets, and the organiser books.",
+    },
+    {
+      title: "When plans change",
+      detail:
+        "If the airline cancels, the options are saved and the traveller chooses: another flight or a refund, and for a delay, keeping it. Ask TripMind answers from the real policies, and support requests are filed automatically.",
+    },
   ],
-  workflow: [
-    "Import the dataset",
-    "Search",
-    "Compare and rank",
-    "Hold inventory",
-    "Pay (simulated)",
-    "Confirm",
-    "My Trips",
-    "Recover from disruption",
-  ],
+  lanes: [
+    { name: "Front door", nodes: [{ label: "Open TripMind", step: 0 }] },
+    {
+      name: "Ways in",
+      nodes: [
+        { label: "Type a sentence", step: 1, tag: "AI" },
+        { label: "Book a flight", step: 1 },
+        { label: "Book a stay", step: 1 },
+        { label: "Plan the whole trip", step: 1 },
+      ],
+    },
+    {
+      name: "Behind the scenes",
+      nodes: [
+        { label: "Search", step: 2 },
+        { label: "Rank and explain", step: 3, tag: "Models" },
+        { label: "Hold 15 minutes", step: 4 },
+        { label: "Pay", step: 5 },
+        { label: "Confirm", step: 5 },
+      ],
+    },
+    {
+      name: "Your trip",
+      nodes: [
+        { label: "My Trips", step: 6 },
+        { label: "Plan with friends", step: 6 },
+        { label: "Ask TripMind", step: 7, tag: "AI" },
+        { label: "Recovery", step: 7 },
+      ],
+    },
+  ] satisfies Array<{ name: string; nodes: WorkflowNode[] }>,
+  note: "AI and Models mark the optional helpers. Switch them all off and every step still works.",
 };
 
-export const capabilities: Capability[] = [
-  { name: "Accounts and sessions", detail: "Argon2id passwords, httpOnly cookie sessions, rotating refresh tokens", status: "live" },
-  { name: "Audit trail", detail: "Every sign-in success and failure recorded with a request ID", status: "live" },
-  { name: "Error contract", detail: "One error format with stable codes; request ID shown to users", status: "live" },
-  { name: "Health, readiness, metrics", detail: "/health, /ready and Prometheus /metrics", status: "live" },
-  { name: "Feature flags", detail: "Modules switched on or off by configuration", status: "live" },
-  { name: "One-command stack", detail: "Docker Compose: database, migrations, API, web", status: "live" },
-  { name: "Data ingestion", detail: "Profile, map, validate, quarantine and report on any supplied ZIP", status: "live" },
-  { name: "Flight and hotel search", detail: "Direct and one-stop flights, return trips, stays by party size, filters with live counts", status: "live" },
-  { name: "Price breakdown", detail: "Every price itemised; taxes the data lacks are listed as not included", status: "live" },
-  { name: "Admin data console", detail: "Upload a dataset, dry-run it, read the report and the quarantined rows", status: "live" },
-  { name: "Booking engine", detail: "Holds, idempotency, payment simulator, travellers, refunds, My Trips", status: "live" },
-  { name: "Booking changes", detail: "Move a flight to another time or a stay to other dates without cancelling: quoted fee and fare difference, payment or refund, seats and nights moved atomically", status: "live" },
-  { name: "Seats, bags and meals", detail: "Seat map from the aircraft type, priced zones, extra baggage and meals per traveller per flight; refunded with their flight", status: "live" },
-  { name: "Saved stays, price alerts, recent searches", detail: "Save stays, watch a flight search or a stay for a drop (the worker re-prices and notifies once), pick up recent searches or clear them", status: "live" },
-  { name: "Hotel reviews", detail: "Supplied and verified-stay reviews with a sentiment and per-aspect summary (location, staff, cleanliness...); travellers review a stay after check-out", status: "live" },
-  { name: "Support requests", detail: "Tickets filed by category automatically (request classifier, or keyword rules until trained), urgent when the trip is within 72 hours, admin queue with replies, re-filing and audit", status: "live" },
-  { name: "Fare calendar and Explore", detail: "Cheapest day to fly, and where a budget can take you with flight and stay totals", status: "live" },
-  { name: "Connected-trip suggestions", detail: "Sees what a trip is missing and offers stays or return flights ready to add; trip export to any calendar", status: "live" },
-  { name: "Account security and privacy", detail: "Password change and reset, sign-in lockout, sign out everywhere, data export and account deletion, automatic retention", status: "live" },
-  { name: "Admin: models and users", detail: "See which models are live with their metrics; find and disable accounts, audited", status: "live" },
-  { name: "Add-on booking", detail: "Add a stay to a flight trip (or the reverse) with dates prefilled", status: "live" },
-  { name: "Connected-trip planner", detail: "Ranked flight + stay bundles, score breakdown, Journey Confidence Report, booked in one checkout", status: "live" },
-  { name: "Disruption recovery", detail: "Cancellations, delays and room outages: options offered, traveller approves, only the affected item is replaced", status: "live" },
-  { name: "Notifications", detail: "In-app alerts for confirmations, changes and refunds, with a simulated email copy", status: "live" },
-  { name: "Account extras", detail: "Saved travellers for one-click checkout, loyalty points that follow refunds, printable invoice", status: "live" },
-  { name: "Promo codes", detail: "Rules in config, priced on the server, shown in the breakdown, spread across items so refunds stay exact", status: "live" },
-  { name: "Admin console", detail: "Data imports, disruptions, analytics from the database, and the audit log", status: "live" },
-  { name: "Natural-language search", detail: "A sentence becomes a filled search form; LLM with a rule parser filling gaps and as fallback", status: "live" },
-  { name: "Help assistant", detail: "Answers only from TripMind policies (generated from live config) and your trips, with citations", status: "live" },
-  { name: "Group planning", detail: "Share a plan by link; members vote Love, OK or No and set budgets; transparent consensus; organiser decides and books", status: "live" },
-  { name: "Price anomaly detector", detail: "Isolation Forest flags suspicious fares in every import; 100% precision and recall on injected errors", status: "live" },
-  { name: "Similar stays", detail: "TF-IDF similarity over amenities, stars, rating and price band, shown on every hotel page", status: "live" },
-  { name: "Personalised recommendations", detail: "Per-traveller model learned from stays opened, saved and booked; blended 30% into Recommended with plain reasons; viewable and resettable; offline check on simulated travellers (MRR 0.38 to 0.41 at the served blend)", status: "live" },
-  { name: "Review sentiment", detail: "TF-IDF + logistic regression on public hotel reviews, macro F1 0.73 against 0.56 for word lists; exported as JSON, never a pickle", status: "live" },
-  { name: "Request classifier", detail: "Files support requests by category; 86% right on 56 hand-written messages against 73% for keyword rules, which take over when the model is unsure", status: "live" },
-  { name: "Hotel ranker", detail: "LightGBM LambdaRank on Expedia click and booking data; NDCG@5 0.259 against 0.237 for the rule-based order", status: "live" },
-  { name: "Fare estimator", detail: "LightGBM on 300,000 Indian domestic fares; 15.5% average error against 36.5% for a median baseline; domestic routes only", status: "live" },
-  { name: "Home page", detail: "Cinematic scroll story with smooth scrolling, pinned scenes and a journey map over real views of India from orbit; live search up front and live demo prices; a Motion switch, and it works on phones", status: "live" },
-  { name: "About presentation", detail: "This page: a scroll-driven deck with pinned scenes, keyboard control, a slide index, deep links and full-screen mode, with a calmer layout for reduced motion and phones", status: "live" },
-  { name: "Monitoring dashboards", detail: "Prometheus metrics and alert rules, Grafana dashboard as code, OpenTelemetry traces in Jaeger", status: "live" },
+// ── 9 · Built with: each choice and the reason for it ───────────────────────────────────────
+
+export const techStack: StackItem[] = [
+  {
+    area: "Web app",
+    choice: "Next.js 16, React 19, TypeScript",
+    why: "Pages are rendered on the server, so they open fast, and the built-in proxy puts the API on the same address, so sign-in can use secure httpOnly cookies.",
+    insteadOf: "A plain React single-page app renders only in the browser and would need cross-site API calls.",
+  },
+  {
+    area: "Design",
+    choice: "Tailwind CSS 4 and shadcn/ui",
+    why: "Accessible components whose code we own, styled from shared design tokens, so every page matches.",
+    insteadOf: "Bootstrap or Material UI are harder to reshape into our own look.",
+  },
+  {
+    area: "Data fetching",
+    choice: "TanStack Query",
+    why: "Caching, retries and loading states for every API call, wrapped once so pages never flicker while they load.",
+    insteadOf: "Hand-written fetch calls in every component repeat the same mistakes.",
+  },
+  {
+    area: "Motion",
+    choice: "Lenis and CSS variables",
+    why: "Smooth scrolling, with every animation worked out by CSS from one scroll value, so React does not redraw on each frame.",
+    insteadOf: "Animating each element from JavaScript on every frame is slower.",
+  },
+  {
+    area: "API",
+    choice: "Python 3.12 and FastAPI",
+    why: "One language for the API and the models. Requests are checked from type hints, and the API describes itself, which generates the website's types.",
+    insteadOf: "Node.js would split the backend and the models across two languages; Django is heavier for a pure API.",
+  },
+  {
+    area: "Database access",
+    choice: "SQLAlchemy 2 and Alembic",
+    why: "Typed queries that run on PostgreSQL, and on SQLite for quick tests, with every schema change versioned.",
+    insteadOf: "Raw SQL strings scattered through the code.",
+  },
+  {
+    area: "Database",
+    choice: "PostgreSQL 16",
+    why: "Transactions and conditional updates let exactly one buyer win the last seat, partial unique indexes allow one passenger per seat, and a failed schema change rolls back cleanly.",
+    insteadOf: "MySQL has no partial indexes and commits schema changes implicitly; MongoDB suits loose documents better than tightly linked bookings, payments and seats.",
+  },
+  {
+    area: "Shared state",
+    choice: "Redis 7.4",
+    why: "Fast shared memory for rate limits, the AI cache, provider cooldowns and job locks, so several copies of the API agree. It is optional: limits fail open and locks fail closed.",
+    insteadOf: "Memory inside each server copy is not shared, and database tables would add load to the source of truth.",
+  },
+  {
+    area: "Background jobs",
+    choice: "One worker process",
+    why: "Releases unpaid holds, re-prices price alerts, retrains preferences and applies retention, each job under a Redis lock so it never runs twice.",
+    insteadOf: "Celery and a message broker add moving parts for four jobs.",
+  },
+  {
+    area: "Models",
+    choice: "LightGBM and scikit-learn",
+    why: "Small models that run on a laptop CPU, saved as text or JSON so loading one can never run hidden code.",
+    insteadOf: "Deep learning needs a GPU and far more data.",
+  },
+  {
+    area: "Language AI",
+    choice: "Groq, Gemini and OpenRouter",
+    why: "Free hosted models behind one OpenAI-compatible client, tried in order with timeouts, cooldowns and a cache.",
+    insteadOf: "A local model of useful size does not fit this laptop's 4 GB graphics card.",
+  },
+  {
+    area: "Help search",
+    choice: "BM25",
+    why: "Finds the right help article with no model and no quota, so the assistant still answers with AI off.",
+    insteadOf: "Embeddings and a vector database are a heavier setup for a small set of articles.",
+  },
+  {
+    area: "Security",
+    choice: "Argon2id, short-lived tokens in httpOnly cookies",
+    why: "Memory-hard password hashing that resists cracking on graphics cards, and sessions that page scripts cannot read.",
+    insteadOf: "bcrypt, and tokens kept in browser storage where any injected script can read them.",
+  },
+  {
+    area: "Monitoring",
+    choice: "Prometheus, Grafana, OpenTelemetry, Jaeger",
+    why: "Open standards, with metrics, dashboards, alert rules and traces kept as code. All of it is optional.",
+    insteadOf: "A paid hosted monitoring service.",
+  },
+  {
+    area: "Running it",
+    choice: "Docker Compose",
+    why: "The whole stack starts with one command on any machine.",
+    insteadOf: "Kubernetes is more than one machine needs.",
+  },
+  {
+    area: "Quality",
+    choice: "pytest, Playwright, ruff, mypy, import-linter, GitHub Actions",
+    why: "Tests on two databases, journeys in a real browser, type checks, and a rule that fails the build when code crosses its layers.",
+  },
 ];
 
-// ── 9 · Data handling ─────────────────────────────────────────────────────────────────────────
-
-export const dataPipeline = {
-  steps: [
-    { name: "Profile", detail: "Every file and column described; a draft mapping is suggested" },
-    { name: "Map", detail: "A YAML file maps the supplier's columns to TripMind fields" },
-    { name: "Normalise", detail: "Codes, city aliases, local time to UTC, money as exact minor units" },
-    { name: "Validate", detail: "Required fields, ranges, references between files, impossible times" },
-    { name: "Quarantine", detail: "Bad rows are kept with the reason and the original values" },
-    { name: "Publish", detail: "New, changed and retired rows applied in one transaction" },
-    { name: "Report", detail: "Per file: read, accepted, rejected, inserted, updated, retired" },
-  ],
-  principles: [
-    "Missing data is shown as \"not provided\", never guessed.",
-    "Demo data is generated as files and imported through the same pipeline, so swapping in the real dataset is a configuration change.",
-    "Re-importing the same file changes nothing; rows missing from a newer file are retired, not deleted.",
-    "If too many rows fail, nothing is published: a wrong mapping cannot corrupt the catalog.",
-  ],
-  status: "live" as Status,
-};
+export const capabilityGroups: Group[] = [
+  {
+    name: "Booking, for real",
+    items: ["Flight and stay search", "Itemised prices", "Holds and payments", "Changes and cancellations", "Seats, bags and meals", "Promo codes", "Add-on booking"],
+    summary: "Search flights and stays, see every price line by line, hold, pay, then change or cancel a single item, with seats, bags, meals and promo codes.",
+    status: "live",
+  },
+  {
+    name: "The connected trip",
+    items: ["Trip planner", "Journey Confidence Report", "What the trip is missing", "Plan with friends", "Fare calendar", "Explore by budget", "Saved stays and price alerts"],
+    summary: "Ranked flight and stay packages with reasons, a trip that suggests its missing piece, group voting with budgets, and ways to find the cheapest day or where a budget can take you.",
+    status: "live",
+  },
+  {
+    name: "After booking",
+    items: ["Disruption recovery", "Notifications", "Reviews", "Support requests", "Saved travellers", "Loyalty points", "Invoice"],
+    summary: "When an airline cancels, the traveller chooses the fix. Alerts, reviews after the stay, support requests filed by topic, and points that follow refunds.",
+    status: "live",
+  },
+  {
+    name: "AI and models",
+    items: ["Sentence search", "Ask TripMind", "Hotel ranker", "Fare estimator", "Personal recommendations", "Review sentiment", "Request classifier", "Similar stays", "Price anomaly check"],
+    summary: "Two language features and seven small models, each with plain rules underneath, so switching any of them off changes nothing a traveller depends on.",
+    status: "live",
+  },
+  {
+    name: "Accounts, safety and privacy",
+    items: ["Secure sessions", "Password reset and lockout", "Sign out everywhere", "Data export and deletion", "Audit trail", "Clear error codes"],
+    summary: "Sessions that scripts cannot steal, protection against password guessing, a record of every sign-in, and travellers who can take their data or delete it.",
+    status: "live",
+  },
+  {
+    name: "Running it",
+    items: ["Admin consoles", "Model status", "User management", "Monitoring dashboards", "Health checks", "Feature flags", "One-command start"],
+    summary: "Admins handle disruptions, support, models and accounts; dashboards and alerts show what is happening; and every feature can be switched on or off.",
+    status: "live",
+  },
+  {
+    name: "The website",
+    items: ["Home page", "This presentation", "Phone to large screen", "Motion switch"],
+    summary: "A cinematic home page and this scroll-driven presentation, one design across every page, and a calmer layout for anyone who prefers less motion.",
+    status: "live",
+  },
+];
 
 // ── 10 · AI boundaries ────────────────────────────────────────────────────────────────────────
 
@@ -317,51 +465,56 @@ export const aiBoundaries = {
   status: "live" as Status,
 };
 
-// ── 11 · Edge cases ───────────────────────────────────────────────────────────────────────────
+// ── 11 · Edge cases, in five families ──────────────────────────────────────────────────────
 
-export const edgeCases: Capability[] = [
-  { name: "Same email signs up twice", detail: "Rejected with a clear message; a database constraint guards simultaneous attempts", status: "live" },
-  { name: "Password guessing", detail: "Sign-in attempts are rate-limited per client", status: "live" },
-  { name: "Probing for registered emails", detail: "Unknown email and wrong password look identical and take the same time", status: "live" },
-  { name: "Stolen session token reused", detail: "Reuse is detected and every session from that sign-in is ended", status: "live" },
-  { name: "Session expires mid-use", detail: "Renewed silently once; otherwise the user is asked to sign in again", status: "live" },
-  { name: "Malicious redirect link", detail: "Only TripMind pages are accepted as post-sign-in destinations", status: "live" },
-  { name: "Two people book the last seat", detail: "Atomic stock update: exactly one succeeds", status: "live" },
-  { name: "Double-click or retry on pay", detail: "Idempotency keys return the first result", status: "live" },
-  { name: "Payment fails or the hold expires", detail: "Retry within the hold, or stock is released", status: "live" },
-  { name: "Price changes during checkout", detail: "The server re-prices; a different total is shown before anything is held", status: "live" },
-  { name: "Cancel only part of a booking", detail: "Item-level cancellation: drop the flight, keep the stay, refund per policy", status: "live" },
-  { name: "Traveller changes a flight late", detail: "Free within 24 hours of booking, then a per-traveller fee plus any fare difference; the new seat is secured before the card is charged", status: "live" },
-  { name: "Two people pick the same seat", detail: "A unique index allows one active passenger per seat: one succeeds, the other is asked to pick again", status: "live" },
-  { name: "Airline cancels a booked flight", detail: "Rebooking options or a full refund; the hotel in the same trip is never touched", status: "live" },
-  { name: "Long delay vs short delay", detail: "Short delays notify; delays of 3 hours or more also offer rebooking or a refund", status: "live" },
-  { name: "Disruption hits an unpaid hold", detail: "The hold is released at once and nothing is charged", status: "live" },
-  { name: "AI provider down or rate-limited", detail: "Next provider, then rule-based fallback", status: "live" },
-  { name: "Bad rows in the dataset", detail: "Quarantined with a reason and counted in the import report", status: "live" },
-  { name: "Flight lands after midnight in another timezone", detail: "Local times converted with each airport's timezone; arrival rolls to the next day", status: "live" },
-  { name: "Misspelt or renamed city", detail: "Aliases (Bombay, Bangalore) and fuzzy matching, each match listed in the report", status: "live" },
-  { name: "Price missing in the data", detail: "Shown as browse-only; no price is invented", status: "live" },
-  { name: "Connection too tight or too long", detail: "One-stop trips only with 1 to 6 hours to change planes at the same airport", status: "live" },
-  { name: "Prices in different currencies", detail: "Shown in the supplier's currency; totals converted with labelled fixed rates", status: "live" },
-  { name: "Date in the past or outside the data", detail: "Past dates are refused; dates with no flights say which dates the data covers", status: "live" },
+export const edgeCaseGroups: Group[] = [
+  {
+    name: "Your card, my seat",
+    items: ["Two people book the last seat", "Two people pick the same seat", "Double click or retry on Pay", "Payment fails or the hold runs out", "Price changes during checkout", "Cancel only part of a booking", "Change a flight late"],
+    summary: "The database lets exactly one buyer win, a retry returns the first result, and nobody pays for something they did not get.",
+    status: "live",
+  },
+  {
+    name: "The airline has other plans",
+    items: ["Flight cancelled", "Short delay or long delay", "Disruption on an unpaid hold"],
+    summary: "Short delays send a message; cancellations and delays of 3 hours or more offer rebooking or a refund. Only the affected item changes, and the traveller chooses.",
+    status: "live",
+  },
+  {
+    name: "Messy data",
+    items: ["Broken rows", "Late arrivals across timezones", "Misspelt or renamed cities", "Missing prices", "Impossible connections", "Mixed currencies", "Dates in the past"],
+    summary: "Nothing is guessed: bad rows are set aside with a reason, a missing price makes an item browse-only, and times and currencies are converted and labelled.",
+    status: "live",
+  },
+  {
+    name: "Someone pretending to be you",
+    items: ["Same email twice", "Password guessing", "Probing for accounts", "Stolen session reused", "Session expires", "Malicious redirect links"],
+    summary: "Limits and lockouts stop guessing, a stolen session ends every session from that sign-in, and the site only ever sends you to its own pages.",
+    status: "live",
+  },
+  {
+    name: "AI has gone home",
+    items: ["Provider down or busy"],
+    summary: "The next provider is tried, then simple rules. Booking carries on as if nothing happened.",
+    status: "live",
+  },
 ];
 
 // ── 12 · Proof (only measured results) ────────────────────────────────────────────────────────
 
 export const proof = {
   measured: [
-    { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "7 Nov 2026" },
+    { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "9 Nov 2026" },
     { value: "910 / 0", label: "synthetic requests from 8 virtual users in 46 s / server errors; search p95 0.47 s on a laptop in Docker", measuredOn: "7 Nov 2026" },
     { value: "100% / 100%", label: "precision / recall of the fare anomaly detector on 71,403 fares with injected price errors (3 seeds)", measuredOn: "7 Nov 2026" },
     { value: "212", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "9 Nov 2026" },
-    { value: "18.6 s", label: "to validate and publish 23,841 synthetic flight rows plus hotels and rooms in Docker; 98 deliberately broken rows quarantined with reasons", measuredOn: "7 Nov 2026" },
   ],
   demoScript: [
-    "Sign in with one click as the demo traveller",
+    "Sign up, or sign in with one click as the demo traveller",
     "Book a flight on its own, then a hotel on its own",
     "Plan a connected trip and compare bundles",
     "Inject a flight cancellation and approve the recovery",
-    "Show the monitoring dashboard: one seat, many buyers, one winner",
+    "Run the race test: 20 buyers, one seat, one winner",
   ],
 };
 

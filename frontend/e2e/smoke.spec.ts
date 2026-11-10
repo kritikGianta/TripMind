@@ -169,8 +169,12 @@ test("about keeps every word of the deck", async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto("/about");
   const shown = ((await page.locator(".ab").textContent()) ?? "").replace(/\s+/g, " ");
-  const { artwork, artworkNote, references, ...rest } = about;
-  const strings: string[] = [artworkNote];
+  // Paintings are decoration and carry no words; references are checked field by field below.
+  const rest: Record<string, unknown> = { ...about };
+  delete rest.artwork;
+  delete rest.references;
+  const { references } = about;
+  const strings: string[] = [];
   // Every string in the content file, apart from identifiers and image paths.
   const collect = (value: unknown, key = ""): void => {
     if (typeof value === "string") {
@@ -180,7 +184,6 @@ test("about keeps every word of the deck", async ({ page }) => {
   };
   collect(rest);
   references.forEach((reference) => strings.push(reference.citation, reference.url, reference.checkedOn));
-  Object.values(artwork).forEach((art) => strings.push(art.title, art.artist));
   strings.push(about.openingQuote.attribution);
   const missing = strings.filter((text) => !shown.includes(text.replace(/\s+/g, " ")));
   expect(missing).toEqual([]);
@@ -188,7 +191,7 @@ test("about keeps every word of the deck", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("about runs like a presentation: keys, slide list, filter, and the shared header returns", async ({ browser }) => {
+test("about runs like a presentation: keys, slide list, the how-it-works diagram, build groups, and the shared header returns", async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
   const page = await context.newPage();
   const errors = watchErrors(page);
@@ -220,11 +223,23 @@ test("about runs like a presentation: keys, slide list, filter, and the shared h
   await page.mouse.wheel(0, 1800);
   await expect.poll(() => page.locator(".ab-close__line").evaluate((element) => Number(getComputedStyle(element).opacity))).toBe(1);
 
+  // How it works: one caption at a time, and the keyboard walks it to its last step. A fresh load,
+  // because a same-page hash change leaves smooth scrolling where it was.
+  await page.goto("about:blank");
+  await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about#workflow`);
+  await expect(page.locator(".ab")).toHaveAttribute("data-ready", "true");
+  const captions = page.locator(".ab-how__steps > li");
+  await expect(captions).toHaveCount(about.workflow.steps.length);
+  const opacity = (index: number) => captions.nth(index).evaluate((element) => Number(getComputedStyle(element).opacity));
+  await expect.poll(() => opacity(0)).toBe(1);
+  expect(await opacity(1)).toBe(0);
+  for (let press = 1; press < about.workflow.steps.length; press++) await page.keyboard.press("ArrowRight");
+  await expect.poll(() => opacity(about.workflow.steps.length - 1), { timeout: 20_000 }).toBe(1);
+  expect(await opacity(0)).toBe(0);
+
+  // Build status comes in groups, each with a summary.
   await page.goto(`${process.env.BASE_URL ?? "http://localhost:3000"}/about#implementation`);
-  const rows = page.locator(".ab-caps .ab-cap");
-  const all = await rows.count();
-  await page.getByRole("button", { name: /^Planned/ }).click();
-  await expect.poll(() => rows.count()).toBeLessThan(all);
+  await expect(page.locator("#implementation .ab-group")).toHaveCount(about.capabilityGroups.length);
 
   await page.locator(".ab-foot").getByRole("link", { name: "Flights" }).click();
   await expect(page).toHaveURL(/\/flights/);

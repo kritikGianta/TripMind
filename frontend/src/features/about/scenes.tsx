@@ -3,11 +3,11 @@
 import { Check, CircleDashed, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 
 import { siteConfig } from "@/config/site";
 import * as about from "@/content/about";
-import type { ArtName, Capability, Status } from "@/content/about";
+import type { ArtName, Group, Status } from "@/content/about";
 import { useScrollProgress } from "@/features/home/motion";
 
 type Style = CSSProperties & Record<`--${string}`, string | number>;
@@ -290,115 +290,111 @@ function Difference() {
   );
 }
 
-function CapabilityRow({ item }: { item: Capability }) {
+/**
+ * How it works, as a diagram that runs while it is pinned: each step's caption takes its turn on
+ * the left, and the parts of TripMind doing that step light up on the right.
+ */
+function HowItWorks() {
+  const ref = useScrollProgress<HTMLElement>("pin");
+  const scene = sceneOf("workflow");
+  const { steps, lanes, note } = about.workflow;
   return (
-    <li className="ab-cap">
-      <div>
-        <p className="ab-cap__name">{item.name}</p>
-        <p className="ab-cap__detail">{item.detail}</p>
+    <div id="workflow" data-scene data-stops={steps.length} role="region" aria-label={scene.title}>
+      <section ref={ref} className="ab-how" style={{ "--n": steps.length - 1 } as Style}>
+        <div className="ab-how__stage">
+          <div className="ab-how__head">
+            <Eyebrow id="workflow" />
+            <Heading id="workflow" />
+            <p className="ab-lead">{scene.lead}</p>
+          </div>
+          <div className="ab-how__body">
+            <ol className="ab-how__steps">
+              {steps.map((step, index) => (
+                <li key={step.title} style={{ "--i": index } as Style}>
+                  <span className="ab-row__mark">{String(index + 1).padStart(2, "0")}</span>
+                  <h3 className="ab-display">{step.title}</h3>
+                  <p>{step.detail}</p>
+                </li>
+              ))}
+            </ol>
+            <div className="ab-how__map">
+              {lanes.map((lane) => (
+                <div key={lane.name} className="ab-how__lane">
+                  <p className="ab-how__lane-name">{lane.name}</p>
+                  <ul>
+                    {lane.nodes.map((node: about.WorkflowNode) => (
+                      <li key={node.label} className="ab-how__node" style={{ "--s": node.step } as Style}>
+                        {node.label}
+                        {node.tag ? <span className="ab-how__tag">{node.tag}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <p className="ab-small ab-soft">{note}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** Several related capabilities or cases as one card: their names, then one summary. */
+function GroupCard({ group, index }: { group: Group; index: number }) {
+  return (
+    <li className="ab-group" data-reveal style={{ "--i": index % 2 } as Style}>
+      <div className="ab-group__top">
+        <h4 className="ab-display">{group.name}</h4>
+        <StatusMark status={group.status} />
       </div>
-      <StatusMark status={item.status} />
+      <ul className="ab-group__items">
+        {group.items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+      <p className="ab-group__summary">{group.summary}</p>
     </li>
   );
 }
 
 function Implementation() {
-  const [filter, setFilter] = useState<"all" | Status>("all");
-  const ref = useScrollProgress<HTMLOListElement>("pass");
-  const { capabilities, architecture } = about;
-  const live = capabilities.filter((item) => item.status === "live").length;
-  const options = [
-    { value: "all" as const, label: `All ${capabilities.length}` },
-    { value: "live" as const, label: `Live ${live}` },
-    { value: "planned" as const, label: `Planned ${capabilities.length - live}` },
-  ];
+  const groups = about.capabilityGroups;
+  const live = groups.filter((group) => group.status === "live").length;
+  const features = groups.reduce((sum, group) => sum + group.items.length, 0);
   return (
     <section id="implementation" data-scene className="ab-plain" aria-label={sceneOf("implementation").title}>
       <Eyebrow id="implementation" />
       <Heading id="implementation" />
 
-      <div className="ab-build">
-        <div>
-          <h3 className="ab-label">Architecture</h3>
-          <ol className="ab-layers">
-            {architecture.layers.map((layer, index) => (
-              <li key={layer.name} data-reveal style={{ "--i": index } as Style}>
-                <p className="ab-display">{layer.name}</p>
-                <p>{layer.detail}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-        <div>
-          <h3 className="ab-label">Customer workflow</h3>
-          <ol ref={ref} className="ab-flow">
-            {architecture.workflow.map((item, index) => (
-              <li key={item} style={{ "--i": index / (architecture.workflow.length - 1) } as Style}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                {item}
-              </li>
-            ))}
-          </ol>
-        </div>
-      </div>
-
-      <div className="ab-filter">
-        <h3 className="ab-label">Build status</h3>
-        <div role="group" aria-label="Filter build status">
-          {options.map((option) => (
-            <button key={option.value} type="button" aria-pressed={filter === option.value} onClick={() => setFilter(option.value)}>
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <ul className="ab-caps">
-        {capabilities
-          .filter((item) => filter === "all" || item.status === filter)
-          .map((item) => (
-            <CapabilityRow key={item.name} item={item} />
-          ))}
-      </ul>
-    </section>
-  );
-}
-
-function DataHandling() {
-  const ref = useScrollProgress<HTMLElement>("pin");
-  const { steps, principles, status } = about.dataPipeline;
-  return (
-    <div id="data" data-scene role="region" aria-label={sceneOf("data").title}>
-      <section ref={ref} className="ab-pipe">
-        <div className="ab-pipe__stage">
-          <div className="ab-pipe__head">
-            <Eyebrow id="data" />
-            <Heading id="data" />
-            <StatusMark status={status} />
-          </div>
-          <div className="ab-pipe__line" aria-hidden />
-          <ol className="ab-pipe__steps">
-            {steps.map((item, index) => (
-              <li key={item.name} data-quarantine={item.name === "Quarantine" || undefined} style={{ "--i": index / (steps.length - 1) } as Style}>
-                <span className="ab-pipe__dot" aria-hidden />
-                <span className="ab-row__mark">{ROMAN[index]}</span>
-                <p className="ab-display">{item.name}</p>
-                <p className="ab-pipe__detail">{item.detail}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-      <ul className="ab-rows ab-rows--tight">
-        {principles.map((principle) => (
-          <li key={principle} className="ab-row ab-row--line" data-reveal>
-            <span className="ab-row__mark">
-              <Check aria-hidden />
-            </span>
-            <span className="ab-row__wide">{principle}</span>
+      <h3 className="ab-label ab-stack__label">Tech stack</h3>
+      <ul className="ab-stack">
+        {about.techStack.map((item, index) => (
+          <li key={item.choice} data-reveal style={{ "--i": index % 2 } as Style}>
+            <p className="ab-stack__area">{item.area}</p>
+            <p className="ab-display ab-stack__choice">{item.choice}</p>
+            <p>{item.why}</p>
+            {item.insteadOf ? (
+              <p className="ab-stack__over">
+                <span>Why not the alternatives?</span> {item.insteadOf}
+              </p>
+            ) : null}
           </li>
         ))}
       </ul>
-    </div>
+
+      <div className="ab-groups__head">
+        <h3 className="ab-label">Build status</h3>
+        <p className="ab-small ab-soft">
+          {features} features in {groups.length} groups · {live} of {groups.length} groups live
+        </p>
+      </div>
+      <ul className="ab-groups">
+        {groups.map((group, index) => (
+          <GroupCard key={group.name} group={group} index={index} />
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -454,9 +450,13 @@ function EdgeCases() {
       <div className="ab-edge__list">
         <Eyebrow id="edge-cases" />
         <Heading id="edge-cases" />
-        <ul>
-          {about.edgeCases.map((item) => (
-            <CapabilityRow key={item.name} item={item} />
+        <p className="ab-lead">
+          {about.edgeCaseGroups.reduce((sum, group) => sum + group.items.length, 0)} ways a trip can go wrong, in{" "}
+          {about.edgeCaseGroups.length} families.
+        </p>
+        <ul className="ab-groups ab-groups--single">
+          {about.edgeCaseGroups.map((group, index) => (
+            <GroupCard key={group.name} group={group} index={index} />
           ))}
         </ul>
       </div>
@@ -624,21 +624,6 @@ function References() {
           ))}
         </ol>
       </ListSection>
-      <ListSection title="Paintings, all public domain">
-        <ul>
-          {Object.values(about.artwork).map((art) => (
-            <li key={art.page}>
-              <span>
-                {art.artist}, <em>{art.title}</em>, {art.year}.{" "}
-                <a href={art.page} target="_blank" rel="noreferrer noopener" data-cursor="Open">
-                  Wikimedia Commons
-                </a>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="ab-small ab-soft">{about.artworkNote}</p>
-      </ListSection>
     </section>
   );
 }
@@ -671,8 +656,8 @@ export function Scenes() {
       <Objectives />
       <Solution />
       <Difference />
+      <HowItWorks />
       <Implementation />
-      <DataHandling />
       <AiBoundaries />
       <EdgeCases />
       <Proof />
