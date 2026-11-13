@@ -60,7 +60,7 @@ export const scenes = [
   },
   { id: "implementation", title: "Built with", heading: "What it is built with, and why" },
   { id: "edge-cases", title: "Edge cases being solved", heading: "What happens when things go wrong" },
-  { id: "business", title: "Business model", heading: "Who pays, and for what" },
+  { id: "business", title: "Future scope and business model", heading: "Future scope and business model" },
   { id: "closing", title: "The thought, explained" },
   {
     id: "references",
@@ -365,18 +365,28 @@ export const edgeCaseGroups: Group[] = [
 
 // ── 13 · Business model (hypothesis) ──────────────────────────────────────────────────────────
 
+export const futureScope = [
+  {
+    name: "Recommendation system",
+    value: "Suggest destinations, hotels and attractions from what a traveller searched, booked and liked before.",
+  },
+  {
+    name: "Multi-city travel",
+    value: "Trips that cross countries, with flights between cities and connections planned as one journey.",
+  },
+  {
+    name: "Smarter changes",
+    value: "When two events overlap after a change, suggest the best fix instead of only warning: another time, another day or another attraction.",
+  },
+];
+
 export const businessModel = {
   positioning:
-    "A B2B2C booking and journey layer that travel agencies, niche online travel agencies and corporate travel teams can embed or white-label.",
+    "A booking and holiday-planning layer that travel agencies, travel platforms and corporate travel teams can use or put their own brand on.",
   streams: [
-    { name: "SaaS subscription", payer: "Agencies and corporate travel teams", value: "Trip workspace, planning and analytics" },
-    { name: "White-label licensing", payer: "Travel platforms", value: "Branded search, planning and recovery modules" },
-    { name: "Transaction referrals", payer: "Suppliers, under contract", value: "Qualified, completed bookings" },
+    { name: "SaaS subscription", payer: "Agencies and corporate travel teams", value: "A monthly plan for the trip workspace, holiday builder, group planning and recovery tools" },
+    { name: "White-label licensing", payer: "Travel platforms", value: "TripMind's search, holiday builder and recovery under their own brand, licensed per year" },
   ],
-  unitEconomics:
-    "Contribution per booking = net commission or licence share − payment cost − support cost − variable cloud cost − refunds",
-  validate: ["Single-product conversion", "Multi-product attach rate", "Support contacts per booking", "Time to shortlist"],
-  note: "A hypothesis to test with a pilot partner. No revenue figures are claimed.",
 };
 
 // ── 15 · Closing: the opening thought, explained ─────────────────────────────────────────────

@@ -408,8 +408,9 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
 .ab-streams article { display: grid; align-content: start; gap: 0.5rem; min-height: clamp(13rem, 34svh, 21rem); padding: clamp(1.2rem, 3svh, 2rem); border: 1px solid var(--line); transition: background 0.4s, color 0.4s; }
 .ab-streams article:hover { background: linear-gradient(to top, #6b3a1f, #1a0f09); }
 .ab-streams h3 { margin-bottom: auto; font-size: clamp(1.6rem, min(2.8vw, 5.4svh), 2.9rem); }
-.ab-formula { margin: 0.75rem 0 1.25rem; padding: clamp(1.2rem, 3svh, 2rem); border: 1px solid var(--line); background: rgb(246 241 234 / 0.035); }
-.ab-formula__text { margin-bottom: 0.75rem; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.95em; }
+.ab-streams--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ab-business__label { margin-top: clamp(2.5rem, 6svh, 4rem); }
+.ab-business__label + .ab-lead { margin-top: 0.75rem; }
 
 /* 15. Closing: the fragments become one sentence */
 .ab-close { height: 300svh; }

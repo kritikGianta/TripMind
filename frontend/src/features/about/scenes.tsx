@@ -373,13 +373,24 @@ function EdgeCases() {
 }
 
 function Business() {
-  const { positioning, streams, unitEconomics, validate, note } = about.businessModel;
+  const { positioning, streams } = about.businessModel;
   return (
     <section id="business" data-scene className="ab-plain ab-business" aria-label={sceneOf("business").title}>
       <Eyebrow id="business" />
       <Heading id="business" />
-      <p className="ab-lead">{positioning}</p>
+      <h3 className="ab-label ab-business__label">Future scope</h3>
       <div className="ab-streams">
+        {about.futureScope.map((item, index) => (
+          <article key={item.name} data-reveal style={{ "--i": index } as Style}>
+            <span className="ab-row__mark">{ROMAN[index]}</span>
+            <h3 className="ab-display">{item.name}</h3>
+            <p>{item.value}</p>
+          </article>
+        ))}
+      </div>
+      <h3 className="ab-label ab-business__label">Business model</h3>
+      <p className="ab-lead">{positioning}</p>
+      <div className="ab-streams ab-streams--two">
         {streams.map((stream, index) => (
           <article key={stream.name} data-reveal style={{ "--i": index } as Style}>
             <span className="ab-row__mark">{ROMAN[index]}</span>
@@ -389,12 +400,6 @@ function Business() {
           </article>
         ))}
       </div>
-      <div className="ab-formula" data-reveal>
-        <h3 className="ab-label">Unit economics</h3>
-        <p className="ab-formula__text">{unitEconomics}</p>
-        <p className="ab-soft">To validate: {validate.join(" · ")}</p>
-      </div>
-      <p className="ab-small ab-soft">{note}</p>
     </section>
   );
 }
