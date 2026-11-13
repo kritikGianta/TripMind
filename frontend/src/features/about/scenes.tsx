@@ -394,7 +394,7 @@ function EdgeCases() {
         <Eyebrow id="edge-cases" />
         <Heading id="edge-cases" />
         <p className="ab-lead">
-          {about.edgeCaseGroups.reduce((sum, group) => sum + group.items.length, 0)} ways a trip can go wrong, in{" "}
+          {about.edgeCaseGroups.reduce((sum, group) => sum + group.items.length, 0)} important ways a trip can go wrong, in{" "}
           {about.edgeCaseGroups.length} families.
         </p>
         <ul className="ab-groups ab-groups--single">
@@ -403,38 +403,6 @@ function EdgeCases() {
           ))}
         </ul>
       </div>
-    </section>
-  );
-}
-
-function Proof() {
-  return (
-    <section id="proof" data-scene className="ab-plain ab-proof" aria-label={sceneOf("proof").title}>
-      <div>
-        <Eyebrow id="proof" />
-        <Heading id="proof" />
-        <h3 className="ab-label">Measured so far</h3>
-        <ul className="ab-proof__list">
-          {about.proof.measured.map((item) => (
-            <li key={item.label} data-reveal>
-              <p className="ab-display ab-proof__value">{item.value}</p>
-              <p>{item.label}</p>
-              <p className="ab-small ab-soft">Measured {item.measuredOn}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <aside className="ab-proof__demo">
-        <h3 className="ab-label">Demo script</h3>
-        <ol>
-          {about.proof.demoScript.map((item, index) => (
-            <li key={item}>
-              <span className="ab-row__mark">{ROMAN[index]}</span>
-              {item}
-            </li>
-          ))}
-        </ol>
-      </aside>
     </section>
   );
 }
@@ -462,36 +430,6 @@ function Business() {
         <p className="ab-soft">To validate: {validate.join(" · ")}</p>
       </div>
       <p className="ab-small ab-soft">{note}</p>
-    </section>
-  );
-}
-
-function Limits() {
-  const groups: Array<{ title: string; items: string[] }> = [
-    { title: "Honest limits today", items: about.limits.today },
-    { title: "Path to production", items: about.limits.next },
-  ];
-  return (
-    <section id="limits" data-scene className="ab-limits" aria-label={sceneOf("limits").title}>
-      <div className="ab-limits__sky">
-        <Art name="railway" sizes="100vw" />
-      </div>
-      <div className="ab-limits__inner">
-        <Eyebrow id="limits" />
-        <Heading id="limits" />
-        <div className="ab-limits__columns">
-          {groups.map((group) => (
-            <div key={group.title} data-reveal>
-              <h3 className="ab-label">{group.title}</h3>
-              <ul>
-                {group.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
     </section>
   );
 }
@@ -602,9 +540,7 @@ export function Scenes() {
       <HowItWorks />
       <Implementation />
       <EdgeCases />
-      <Proof />
       <Business />
-      <Limits />
       <Closing />
       <References />
       <Footer />

@@ -61,9 +61,7 @@ export const scenes = [
   },
   { id: "implementation", title: "Built with", heading: "What it is built with, and why" },
   { id: "edge-cases", title: "Edge cases being solved", heading: "What happens when things go wrong" },
-  { id: "proof", title: "Live demo and proof", heading: "Measured, not claimed" },
   { id: "business", title: "Business model", heading: "Who pays, and for what" },
-  { id: "limits", title: "Limits and what is next", heading: "What this prototype is, and is not" },
   { id: "closing", title: "The thought, explained" },
   {
     id: "references",
@@ -355,58 +353,28 @@ export const techStack: StackItem[] = [
   },
 ];
 
-// ── 11 · Edge cases, in five families ──────────────────────────────────────────────────────
+// ── 11 · Edge cases: the important ones ───────────────────────────────────────────────────────
 
 export const edgeCaseGroups: Group[] = [
   {
     name: "Two people, one seat",
-    items: ["Two people book the last seat or room", "Two people pick the same seat", "Double click or retry on Confirm", "Price changes before confirming", "Cancel only part of a booking", "Change a flight late"],
+    items: ["Two people book the last seat or room", "Double click or retry on Confirm", "Cancel only part of a booking"],
     summary: "The database lets exactly one booking win, a retry returns the first result, and nothing is confirmed that is not really free.",
     status: "live",
   },
   {
     name: "The airline has other plans",
-    items: ["Flight cancelled", "Short delay or long delay", "Disruption before confirming"],
-    summary: "Short delays send a message; cancellations and delays of 3 hours or more offer rebooking or a refund. Only the affected item changes, and the traveller chooses.",
-    status: "live",
-  },
-  {
-    name: "Times and places",
-    items: ["Late arrivals across timezones", "A city served by another city's airport", "Missing prices", "Dates in the past"],
-    summary: "Local times are kept as given and compared in UTC, Kyoto is reached through Osaka's airport, and an item without a price is shown but cannot be booked.",
-    status: "live",
-  },
-  {
-    name: "Someone pretending to be you",
-    items: ["Same email twice", "Password guessing", "Probing for accounts", "Stolen session reused", "Session expires", "Malicious redirect links"],
-    summary: "Limits and lockouts stop guessing, a stolen session ends every session from that sign-in, and the site only ever sends you to its own pages.",
+    items: ["Flight cancelled", "Long delay"],
+    summary: "Cancellations and delays of 3 hours or more offer rebooking or a refund. Only the affected item changes, and the traveller chooses.",
     status: "live",
   },
   {
     name: "A holiday that cannot be built",
-    items: ["Dates outside the data", "Budget too small", "No flight lands that day", "No free rooms", "A change that breaks a rule"],
+    items: ["Budget too small", "No flight or no free rooms", "A change that breaks a rule"],
     summary: "TripMind says why: the reason for no package, the cheapest total with a suggestion, or the rule a change would break.",
     status: "live",
   },
 ];
-
-// ── 12 · Proof (only measured results) ────────────────────────────────────────────────────────
-
-export const proof = {
-  measured: [
-    { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "9 Nov 2026" },
-    { value: "910 / 0", label: "synthetic requests from 8 virtual users in 46 s / server errors; search p95 0.47 s on a laptop in Docker", measuredOn: "7 Nov 2026" },
-    { value: "212", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "9 Nov 2026" },
-  ],
-  demoScript: [
-    "Type the Menon request in one sentence and fill the form",
-    "Compare the cheapest, fastest and best-rated packages day by day",
-    "Change a hotel, remove an attraction, then confirm for a 10-digit number",
-    "Open the reservation by its number, and see it in My Trips",
-    "Inject a flight cancellation and approve the recovery",
-    "Run the race test: 20 buyers, one seat, one winner",
-  ],
-};
 
 // ── 13 · Business model (hypothesis) ──────────────────────────────────────────────────────────
 
@@ -422,21 +390,6 @@ export const businessModel = {
     "Contribution per booking = net commission or licence share − payment cost − support cost − variable cloud cost − refunds",
   validate: ["Single-product conversion", "Multi-product attach rate", "Support contacts per booking", "Time to shortlist"],
   note: "A hypothesis to test with a pilot partner. No revenue figures are claimed.",
-};
-
-// ── 14 · Limits and what is next ─────────────────────────────────────────────────────────────
-
-export const limits = {
-  today: [
-    "Inventory comes from the official files and our synthetic extension; nothing is live availability.",
-    "There is no payment step: confirming books the trip.",
-    "No airline or hotel supplier integrations.",
-  ],
-  next: [
-    "Supplier adapters, with compensation steps for bookings that span systems",
-    "Separate scaling for search and planning when load requires it",
-    "Real payments, privacy and consumer-protection review before any launch",
-  ],
 };
 
 // ── 15 · Closing: the opening thought, explained ─────────────────────────────────────────────

@@ -413,15 +413,6 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
 .ab-edge__art img { transform: scale(calc(1.25 - var(--p, 0) * 0.25)); }
 .ab-edge__list .ab-lead { margin-top: 0.75rem; }
 
-/* 12. Proof */
-.ab-proof { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 4vw; }
-.ab-proof > div > .ab-label { margin-top: clamp(1.5rem, 4svh, 2.5rem); }
-.ab-proof__list li { padding: clamp(1rem, 2.6svh, 1.7rem) 0; border-top: 1px solid var(--line); }
-.ab-proof__value { margin-bottom: 0.4rem; font-size: clamp(2.6rem, min(6.4vw, 12svh), 6.6rem); color: var(--glow); }
-.ab-proof__demo { position: sticky; top: 12svh; align-self: start; }
-.ab-proof__demo ol { display: grid; gap: 0.3rem; }
-.ab-proof__demo li { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); padding: 0.8rem 0; border-top: 1px solid var(--line); }
-
 /* 13. Business model */
 .ab-streams { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin-top: clamp(2rem, 5svh, 3.5rem); }
 .ab-streams article { display: grid; align-content: start; gap: 0.5rem; min-height: clamp(13rem, 34svh, 21rem); padding: clamp(1.2rem, 3svh, 2rem); border: 1px solid var(--line); transition: background 0.4s, color 0.4s; }
@@ -429,15 +420,6 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
 .ab-streams h3 { margin-bottom: auto; font-size: clamp(1.6rem, min(2.8vw, 5.4svh), 2.9rem); }
 .ab-formula { margin: 0.75rem 0 1.25rem; padding: clamp(1.2rem, 3svh, 2rem); border: 1px solid var(--line); background: rgb(246 241 234 / 0.035); }
 .ab-formula__text { margin-bottom: 0.75rem; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.95em; }
-
-/* 14. Limits */
-.ab-limits { position: relative; overflow: clip; }
-.ab-limits__sky { position: absolute; inset: 0; opacity: 0.3; }
-.ab-limits__sky .ab-art { width: 100%; height: 100%; box-shadow: none; background: none; }
-.ab-limits__sky::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, var(--bg), transparent 30%, transparent 70%, var(--bg)); }
-.ab-limits__inner { position: relative; padding: clamp(5rem, 13svh, 9rem) var(--gutter); }
-.ab-limits__columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4vw; margin-top: clamp(2rem, 5svh, 3.5rem); }
-.ab-limits li { padding: 0.9rem 0; border-top: 1px solid var(--line); font-size: 1.15em; }
 
 /* 15. Closing: the fragments become one sentence */
 .ab-close { height: 300svh; }
@@ -586,10 +568,9 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
   .ab-row { grid-template-columns: 2.4rem minmax(0, 1fr); gap: 0.25rem 0.75rem; }
   .ab-row__detail { grid-column: 2; }
   .ab-row--line { grid-template-columns: 2.4rem minmax(0, 1fr); }
-  .ab-name__parts, .ab-stack, .ab-groups, .ab-how__body, .ab-split__panels, .ab-edge, .ab-proof, .ab-streams, .ab-limits__columns, .ab-close__pieces, .ab-modes { grid-template-columns: minmax(0, 1fr); }
+  .ab-name__parts, .ab-stack, .ab-groups, .ab-how__body, .ab-split__panels, .ab-edge, .ab-streams, .ab-close__pieces, .ab-modes { grid-template-columns: minmax(0, 1fr); }
   .ab-edge__art { position: relative; top: auto; height: 42svh; }
   .ab-hood__tier { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
-  .ab-proof__demo { position: static; }
   .ab-compare thead { display: none; }
   .ab-compare, .ab-compare tbody, .ab-compare tr, .ab-compare td { display: block; width: auto; }
   .ab-compare tr { padding: 1rem 0; border-top: 1px solid var(--line); }
