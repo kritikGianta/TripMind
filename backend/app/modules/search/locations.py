@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import NotFound
-from app.modules.catalog.models import Airport, City
+from app.modules.catalog.models import Airport, AirportServedCity, City
 from app.modules.catalog.vocabulary import Vocabulary, normalize_text
 from app.modules.search.schemas import LocationOut
 
@@ -114,9 +114,19 @@ class LocationService:
         except ValueError:
             city_id = None
         if city_id is not None:
-            airports = self._session.scalars(
-                select(Airport).where(Airport.city_id == city_id, Airport.is_active.is_(True))
+            # The airports that serve the city (Kyoto has none of its own: KIX serves it), as the
+            # data lists them; otherwise the airports located in the city.
+            served = self._session.scalars(
+                select(Airport)
+                .join(AirportServedCity, AirportServedCity.airport_id == Airport.id)
+                .where(AirportServedCity.city_id == city_id, Airport.is_active.is_(True))
             ).all()
+            airports = (
+                served
+                or self._session.scalars(
+                    select(Airport).where(Airport.city_id == city_id, Airport.is_active.is_(True))
+                ).all()
+            )
             if airports:
                 return list(airports)
         raise NotFound(f"No airport matches '{value}'.", code="LOCATION_NOT_FOUND")
