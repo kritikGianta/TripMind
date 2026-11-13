@@ -297,9 +297,7 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
 .ab-group { padding: 1.1rem 1.25rem 1.3rem; border: 1px solid var(--line); background: rgb(246 241 234 / 0.035); }
 .ab-group__top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .ab-group__top .ab-display { font-size: clamp(1.3rem, min(2.1vw, 4svh), 2.1rem); }
-.ab-group__items { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.85rem 0; }
-.ab-group__items li { padding: 0.18rem 0.62rem; font-size: 0.8rem; border: 1px solid var(--line); border-radius: 999px; color: var(--soft); }
-.ab-group__summary { max-width: 46rem; text-wrap: pretty; }
+.ab-group__summary { max-width: 46rem; margin-top: 0.75rem; text-wrap: pretty; }
 
 /* 9. How it works: captions take turns on the left while the matching parts light up on the right.
    --p runs 0 to 1 over the pin, --n is the last step's number, so --p * --n says which step is current. */

@@ -313,11 +313,6 @@ function GroupCard({ group, index }: { group: Group; index: number }) {
         <h4 className="ab-display">{group.name}</h4>
         <StatusMark status={group.status} />
       </div>
-      <ul className="ab-group__items">
-        {group.items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
       <p className="ab-group__summary">{group.summary}</p>
     </li>
   );
@@ -359,8 +354,7 @@ function EdgeCases() {
         <Eyebrow id="edge-cases" />
         <Heading id="edge-cases" />
         <p className="ab-lead">
-          {about.edgeCaseGroups.reduce((sum, group) => sum + group.items.length, 0)} important ways a trip can go wrong, in{" "}
-          {about.edgeCaseGroups.length} families.
+          The {about.edgeCaseGroups.length} most important ways a trip can go wrong, and what TripMind does.
         </p>
         <ul className="ab-groups ab-groups--single">
           {about.edgeCaseGroups.map((group, index) => (

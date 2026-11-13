@@ -27,7 +27,7 @@ export type CaseStudy = {
 export type Capability = { name: string; detail: string; status: Status };
 
 /** Several capabilities or cases told as one group, with a summary underneath. */
-export type Group = { name: string; items: string[]; summary: string; status: Status };
+export type Group = { name: string; summary: string; status: Status };
 
 export type WorkflowNode = { label: string; step: number; tag?: "AI" | "Models" };
 
@@ -345,19 +345,16 @@ export const techStack: StackItem[] = [
 export const edgeCaseGroups: Group[] = [
   {
     name: "Two people, one seat",
-    items: ["Two people book the last seat or room", "Double click or retry on Confirm", "Cancel only part of a booking"],
     summary: "The database lets exactly one booking win, a retry returns the first result, and nothing is confirmed that is not really free.",
     status: "live",
   },
   {
     name: "The airline has other plans",
-    items: ["Flight cancelled", "Long delay"],
     summary: "Cancellations and delays of 3 hours or more offer rebooking or a refund. Only the affected item changes, and the traveller chooses.",
     status: "live",
   },
   {
     name: "A holiday that cannot be built",
-    items: ["Budget too small", "No flight or no free rooms", "A change that breaks a rule"],
     summary: "TripMind says why: the reason for no package, the cheapest total with a suggestion, or the rule a change would break.",
     status: "live",
   },
