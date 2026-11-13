@@ -2,7 +2,22 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+# Slow or flaky networks can make npm crash ("Exit handler never called"): use fewer parallel
+# downloads, long timeouts and retries, and try the whole install up to three times. The cache
+# mount keeps what was already downloaded, so a retry is quick.
+ENV NPM_CONFIG_FETCH_RETRIES=5 \
+    NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=20000 \
+    NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=120000 \
+    NPM_CONFIG_FETCH_TIMEOUT=600000 \
+    NPM_CONFIG_MAXSOCKETS=6 \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_UPDATE_NOTIFIER=false
+RUN --mount=type=cache,target=/root/.npm \
+    for attempt in 1 2 3; do \
+      npm ci --prefer-offline && exit 0; \
+      echo "npm ci failed (attempt $attempt), retrying in 10 s"; sleep 10; \
+    done; exit 1
 
 FROM node:22-alpine AS build
 WORKDIR /app

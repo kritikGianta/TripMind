@@ -19,7 +19,12 @@ WORKDIR /app
 
 # Dependencies first so code changes do not invalidate the dependency layer.
 COPY pyproject.toml uv.lock ./
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev --no-install-project
+# Retried up to three times for slow networks; the cache keeps what was already downloaded.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    for attempt in 1 2 3; do \
+      uv sync --frozen --no-dev --no-install-project && exit 0; \
+      echo "uv sync failed (attempt $attempt), retrying in 10 s"; sleep 10; \
+    done; exit 1
 
 COPY alembic.ini ./
 COPY migrations ./migrations

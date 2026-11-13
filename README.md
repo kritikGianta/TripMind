@@ -16,6 +16,8 @@ docker compose up -d --build
 
 Open **http://localhost:3000**. The first start takes a few minutes while it builds and loads the data.
 
+On a slow connection, a package download can still fail after the built-in retries. If that happens, run the same command again. Packages that already downloaded are kept, so it continues from where it stopped.
+
 On Windows, if the build stops with `additional privileges requested: pass "--allow=fs.read=...Dockerfile"`, run this instead:
 
 ```powershell
