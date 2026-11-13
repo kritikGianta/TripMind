@@ -61,6 +61,7 @@ ignore = [
 "migrations/**" = ["E501"]
 "app/datagen/**" = ["S311"]  # seeded randomness for synthetic data, not security
 "scripts/**" = ["S311"]
+"app/modules/holiday/**" = ["E501"]  # long rule messages read better unbroken
 
 [tool.mypy]
 python_version = "3.12"
