@@ -19,6 +19,7 @@ from app.modules.catalog.models import Flight, RoomType
 from app.modules.holiday import engine as e
 from app.modules.holiday.models import HolidayPackage
 from app.modules.inventory.service import InventoryService, SoldOut
+from app.modules.notifications.service import NotificationService
 
 # ── API shapes ───────────────────────────────────────────────────────────────────────────────
 
@@ -485,6 +486,17 @@ class HolidayService:
             item["status"] = "BOOKED"
             item["booking"] = {"reference": row.reference}
         row.items = items
+        if row.user_id is not None:
+            cities = " → ".join(str(c["city"]) for c in _cities(row.items))
+            NotificationService(self._session).notify(
+                user_id=row.user_id,
+                kind="holiday_confirmed",
+                severity="success",
+                title=f"Holiday {row.reference} confirmed",
+                body=f"{req.country}: {cities}. Total ₹{row.total_inr:,}.",
+                link=f"/holiday/reservation?ref={row.reference}",
+                now=self._clock.now(),
+            )
         try:
             self._session.commit()
         except IntegrityError as exc:  # a reference collision, astronomically rare

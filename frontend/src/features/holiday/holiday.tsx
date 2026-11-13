@@ -326,7 +326,10 @@ export function PackageView() {
   });
   const confirm = useMutation({
     mutationFn: () => apiFetch<Package>(`/holiday/packages/${id}/confirm`, { method: "POST" }),
-    onSuccess: (data) => router.push(`/holiday/reservation?ref=${data.reference}`),
+    onSuccess: (data) => {
+      void client.invalidateQueries({ queryKey: ["notifications"] });
+      router.push(`/holiday/reservation?ref=${data.reference}`);
+    },
   });
   if (pkg.isPending) return <Skeleton className="h-96 w-full" />;
   if (!pkg.data) return <FormError error={pkg.error} />;

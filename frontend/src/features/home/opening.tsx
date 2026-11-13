@@ -1,8 +1,7 @@
 "use client";
 
-import { Pause, Play } from "lucide-react";
 import Image from "next/image";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { homeCopy } from "@/content/home";
@@ -16,12 +15,6 @@ import { useScrollProgress } from "./motion";
 const COVERED_AT = 0.95;
 
 export function Hero() {
-  const { setFilmOpen, media } = useHome();
-  const [videoPaused, setVideoPaused] = useState(false);
-  const pausedRef = useRef(false);
-  useEffect(() => {
-    pausedRef.current = videoPaused;
-  }, [videoPaused]);
   const ref = useScrollProgress<HTMLElement>("pin", (p, el) => {
     el.toggleAttribute("data-past", p > 0.3);
     // Once the clouds have covered everything, stop drawing what nobody can see.
@@ -30,34 +23,19 @@ export function Hero() {
       el.toggleAttribute("data-covered", covered);
       const video = el.querySelector("video");
       if (covered) video?.pause();
-      else if (!pausedRef.current) void video?.play().catch(() => {});
+      else void video?.play().catch(() => {});
     }
   });
   return (
     <section ref={ref} className="tm-hero" aria-label="Welcome">
       <div className="tm-hero__stage">
-        <Media slot="hero-film" priority paused={videoPaused} className="tm-hero__media" />
+        <Media slot="hero-film" priority className="tm-hero__media" />
         <div className="tm-hero__scrim" />
         <h1 className="tm-hero__word tm-display" aria-label={homeCopy.hero.wordmark}>
           <Letters text={homeCopy.hero.wordmark} />
         </h1>
         <div className="tm-hero__mid">
           <p className="tm-italic tm-hero__tagline">{siteConfig.tagline}</p>
-          <div className="tm-hero__actions">
-            {media["hero-film"] ? (
-              <button
-                type="button"
-                className="tm-chip tm-chip--wide tm-chip--icon"
-                aria-label={videoPaused ? "Play background video" : "Pause background video"}
-                onClick={() => setVideoPaused(!videoPaused)}
-              >
-                {videoPaused ? <Play className="size-3 fill-current" aria-hidden /> : <Pause className="size-3 fill-current" aria-hidden />}
-              </button>
-            ) : null}
-            <button type="button" className="tm-chip tm-chip--wide" data-cursor="Play" onClick={() => setFilmOpen(true)}>
-              {homeCopy.hero.film} <Play className="size-3 fill-current" aria-hidden />
-            </button>
-          </div>
         </div>
         <div className="tm-fog" aria-hidden>
           <i className="tm-fog__back" />

@@ -44,7 +44,12 @@ export function useTrip(id: string) {
  * retry still makes exactly one confirmed booking.
  */
 export function useCreateBooking(idempotencyKey: string) {
+  const client = useQueryClient();
   return useMutation({
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["notifications"] });
+      void client.invalidateQueries({ queryKey: ["trips"] });
+    },
     mutationFn: async (body: CreateBooking) => {
       const held = await apiFetch<Booking>("/bookings", { method: "POST", body, headers: { "Idempotency-Key": idempotencyKey } });
       if (held.status === "confirmed") return held;
@@ -71,6 +76,7 @@ export function usePay(bookingId: string) {
     onSettled: () => {
       void client.invalidateQueries({ queryKey: ["booking", bookingId] });
       void client.invalidateQueries({ queryKey: ["trips"] });
+      void client.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }
