@@ -69,17 +69,59 @@ export function HolidayPlanner() {
   const set = (key: keyof typeof form) => (value: string) => setForm({ ...form, [key]: value });
   const result = build.data;
 
+  // Quick request (S1): the backend reads the sentence with rules (no AI) and fills the form.
+  const [sentence, setSentence] = useState("");
+  const quick = useMutation({
+    mutationFn: (text: string) => apiFetch<Schemas["QuickOut"]>("/holiday/parse", { method: "POST", body: { text } }),
+    onSuccess: (data) => {
+      const f = data.fields as Record<string, unknown>;
+      setForm((current) => ({
+        ...current,
+        ...Object.fromEntries(
+          Object.entries(f).map(([key, value]) => [key, Array.isArray(value) ? value.join(", ") : String(value)]),
+        ),
+      }));
+    },
+  });
+
   return (
     <div className="grid gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Build my holiday</CardTitle>
+          <CardTitle>Book my holiday</CardTitle>
           <CardDescription>
-            Tell us the trip; TripMind chooses the cities and builds flights, hotels, transfers and attractions. Flights and rooms exist from 1 to
-            20 April 2027.
+            Tell us the trip; TripMind chooses the cities and builds flights, hotels, transfers and attractions.
+            {options.data ? ` Travel dates: ${dayName(options.data.first_night)} to ${dayName(options.data.last_departure)}.` : ""}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="grid gap-4">
+          <form
+            className="grid gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (sentence.trim().length >= 3) quick.mutate(sentence.trim());
+            }}
+          >
+            <Label htmlFor="quick">Quick request: type it in your own words</Label>
+            <div className="flex gap-2">
+              <Input
+                id="quick"
+                placeholder="2 adults and a 6 year old from Bengaluru to Japan on 10 April for 6 nights under 3.5 lakh"
+                value={sentence}
+                onChange={(e) => setSentence(e.target.value)}
+              />
+              <Button type="submit" variant="outline" disabled={quick.isPending}>
+                Fill the form
+              </Button>
+            </div>
+            {quick.data ? (
+              <p className="text-sm text-muted-foreground">
+                {quick.data.understood.length ? `Understood: ${quick.data.understood.join(" · ")}.` : "Nothing understood yet."}
+                {quick.data.missing.length ? ` Please check: ${quick.data.missing.join(", ")}.` : ""}
+              </p>
+            ) : null}
+            <FormError error={quick.error} />
+          </form>
           <form onSubmit={submit} className="grid gap-4 md:grid-cols-4" noValidate>
             <div className="grid gap-1.5">
               <Label>Departure city</Label>

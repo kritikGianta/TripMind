@@ -1,17 +1,6 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
-import { Skeleton } from "@/components/ui/skeleton";
-import { HolidayPlanner } from "@/features/holiday/holiday";
-
-export const metadata: Metadata = { title: "Build my holiday" };
-
+/** Book my holiday now lives on the Plan page, next to Plan a trip. */
 export default function HolidayPage() {
-  return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-        <HolidayPlanner />
-      </Suspense>
-    </div>
-  );
+  redirect("/plan?mode=holiday");
 }

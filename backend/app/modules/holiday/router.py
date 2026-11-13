@@ -7,6 +7,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
@@ -14,6 +15,7 @@ from app.core.deps import get_clock, rate_limit
 from app.db.session import get_session
 from app.modules.auth.dependencies import get_current_user, get_optional_user
 from app.modules.auth.models import User
+from app.modules.holiday.quick import parse
 from app.modules.holiday.service import (
     AlternativeOut,
     BuildOut,
@@ -31,6 +33,25 @@ def _service(
     session: Session = Depends(get_session), clock: Clock = Depends(get_clock)
 ) -> HolidayService:
     return HolidayService(session, clock)
+
+
+class QuickIn(BaseModel):
+    text: str = Field(min_length=3, max_length=300)
+
+
+class QuickOut(BaseModel):
+    fields: dict[str, Any] = Field(description="Form fields read from the sentence")
+    understood: list[str]
+    missing: list[str]
+
+
+@router.post(
+    "/parse",
+    response_model=QuickOut,
+    summary="Quick request: read a sentence with rules (no AI) and fill the form (S1)",
+)
+def parse_request(body: QuickIn, service: HolidayService = Depends(_service)) -> QuickOut:
+    return QuickOut(**parse(body.text, service.cat))
 
 
 @router.get("/options", response_model=OptionsOut, summary="Departure cities and countries (M1)")

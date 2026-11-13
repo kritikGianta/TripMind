@@ -96,3 +96,12 @@ def test_m8_budget_too_small_shows_cheapest_and_a_suggestion(
     assert "budget" in body["message"]
     assert body["cheapest_total_inr"] > 20000
     assert body["suggestion"]
+
+
+def test_s1_quick_request_fills_the_form_with_rules(client: TestClient, holiday_pack: None) -> None:
+    sentence = (
+        "2 adults and a 6 year old from Bengaluru to Japan on 10 April for 6 nights under 3.5 lakh"
+    )
+    body = client.post(f"{API}/parse", json={"text": sentence}).json()
+    assert body["fields"] == MENON  # every field of the Menon request, read from one sentence
+    assert body["missing"] == []

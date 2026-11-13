@@ -945,6 +945,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/holiday/parse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Quick request: read a sentence with rules (no AI) and fill the form (S1) */
+        post: operations["parse_request_api_v1_holiday_parse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/holiday/reservations": {
         parameters: {
             query?: never;
@@ -3841,6 +3858,25 @@ export interface components {
         ProfileUpdate: {
             /** Full Name */
             full_name: string;
+        };
+        /** QuickIn */
+        QuickIn: {
+            /** Text */
+            text: string;
+        };
+        /** QuickOut */
+        QuickOut: {
+            /**
+             * Fields
+             * @description Form fields read from the sentence
+             */
+            fields: {
+                [key: string]: unknown;
+            };
+            /** Missing */
+            missing: string[];
+            /** Understood */
+            understood: string[];
         };
         /** QuoteItemOut */
         QuoteItemOut: {
@@ -8381,6 +8417,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    parse_request_api_v1_holiday_parse_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuickIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuickOut"];
                 };
             };
             /** @description Validation Error */

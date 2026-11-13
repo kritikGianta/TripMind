@@ -5919,6 +5919,52 @@
         "title": "ProfileUpdate",
         "type": "object"
       },
+      "QuickIn": {
+        "properties": {
+          "text": {
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "QuickIn",
+        "type": "object"
+      },
+      "QuickOut": {
+        "properties": {
+          "fields": {
+            "additionalProperties": true,
+            "description": "Form fields read from the sentence",
+            "title": "Fields",
+            "type": "object"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing",
+            "type": "array"
+          },
+          "understood": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Understood",
+            "type": "array"
+          }
+        },
+        "required": [
+          "fields",
+          "understood",
+          "missing"
+        ],
+        "title": "QuickOut",
+        "type": "object"
+      },
       "QuoteItemOut": {
         "properties": {
           "details": {
@@ -13256,6 +13302,47 @@
           }
         },
         "summary": "Download as JSON, shared trip format (M5)",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
+    "/api/v1/holiday/parse": {
+      "post": {
+        "operationId": "parse_request_api_v1_holiday_parse_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuickOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Quick request: read a sentence with rules (no AI) and fill the form (S1)",
         "tags": [
           "holiday"
         ]
