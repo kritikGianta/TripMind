@@ -281,16 +281,6 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
 .ab-modes h3 { font-size: clamp(1.25rem, min(2vw, 4svh), 2rem); }
 .ab-frame:not(:has(.ab-modes:hover)) .ab-modes { pointer-events: none; }
 
-/* 7. How it differs */
-.ab-compare { width: 100%; margin-top: clamp(1.5rem, 4svh, 3rem); border-collapse: collapse; text-align: left; }
-.ab-compare th { padding: 0.6rem 1rem 0.6rem 0; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soft); }
-.ab-compare td { padding: clamp(0.9rem, 2.2svh, 1.4rem) 1.5rem clamp(0.9rem, 2.2svh, 1.4rem) 0; border-top: 1px solid var(--line); vertical-align: baseline; }
-.ab-compare td:last-child { padding-right: 0; }
-.ab-compare__old { position: relative; color: var(--soft); }
-.ab-compare__old::after { content: ""; position: absolute; left: 0; right: 0; top: 54%; height: 1px; background: var(--copper); transform: scaleX(1); transform-origin: left; transition: transform 1s 0.35s cubic-bezier(0.2, 0.7, 0.2, 1); }
-.ab[data-motion="full"] tr:not([data-in]) .ab-compare__old::after { transform: scaleX(0); }
-.ab-compare__new { font-family: var(--ab-display), serif; font-style: italic; font-size: clamp(1.15rem, min(1.9vw, 3.6svh), 1.95rem); line-height: 1.18; }
-
 /* 8. Implementation */
 /* Built with: each choice and why, then the build status in groups */
 .ab-stack__label { margin-top: clamp(2rem, 5svh, 3.5rem); }
@@ -571,10 +561,6 @@ body:has(.ab:not([style*="display"])) footer:not(.ab-foot) { display: none; }
   .ab-name__parts, .ab-stack, .ab-groups, .ab-how__body, .ab-split__panels, .ab-edge, .ab-streams, .ab-close__pieces, .ab-modes { grid-template-columns: minmax(0, 1fr); }
   .ab-edge__art { position: relative; top: auto; height: 42svh; }
   .ab-hood__tier { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
-  .ab-compare thead { display: none; }
-  .ab-compare, .ab-compare tbody, .ab-compare tr, .ab-compare td { display: block; width: auto; }
-  .ab-compare tr { padding: 1rem 0; border-top: 1px solid var(--line); }
-  .ab-compare td { padding: 0.15rem 0; border: 0; }
   .ab-menu[open] { place-content: start; }
   .ab-menu ol { grid-template-columns: minmax(0, 1fr); grid-auto-flow: row; grid-template-rows: none; }
   .ab-streams article { min-height: 0; }

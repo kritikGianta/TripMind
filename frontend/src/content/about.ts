@@ -52,7 +52,6 @@ export const scenes = [
     heading: "Three ways to book, one platform underneath",
     lead: "Each mode works on its own. All three share the same search, pricing, booking engine and My Trips.",
   },
-  { id: "difference", title: "How it differs", heading: "Compared with a typical booking flow" },
   {
     id: "workflow",
     title: "How it works",
@@ -207,17 +206,6 @@ export const bookingModes: Capability[] = [
     detail: "From a form or one sentence: TripMind picks the cities and builds the cheapest, fastest and best-rated packages.",
     status: "live",
   },
-];
-
-// ── 7 · How TripMind differs ──────────────────────────────────────────────────────────────────
-
-export const differentiators: Array<{ typical: string; tripmind: string; status: Status }> = [
-  { typical: "Ready-made packages, or a flight then a hotel", tripmind: "Builds the whole holiday and chooses the cities", status: "live" },
-  { typical: "Parts that may not fit together", tripmind: "Every rule checked: landing, pickups, rooms, opening hours", status: "live" },
-  { typical: "A change breaks the trip silently", tripmind: "Every change is checked again, or refused with the reason", status: "live" },
-  { typical: "A headline price", tripmind: "Every price line by line, and the total against the budget", status: "live" },
-  { typical: "Confirmation is the end", tripmind: "A 10-digit reservation, My Trips, and recovery when plans change", status: "live" },
-  { typical: "A chatbot that can invent facts", tripmind: "No AI: rules read your sentence and fill the form", status: "live" },
 ];
 
 // ── 8 · How it works (a scroll-driven diagram) ───────────────────────────────────────────────

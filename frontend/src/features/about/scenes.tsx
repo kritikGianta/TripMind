@@ -259,41 +259,6 @@ function Solution() {
   );
 }
 
-function Difference() {
-  return (
-    <section id="difference" data-scene className="ab-plain" aria-label={sceneOf("difference").title}>
-      <Eyebrow id="difference" />
-      <Heading id="difference" />
-      <table className="ab-compare">
-        <thead>
-          <tr>
-            <th scope="col">Typical</th>
-            <th scope="col">TripMind</th>
-            <th scope="col">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {about.differentiators.map((row) => (
-            <tr key={row.tripmind} data-reveal>
-              <td data-label="Typical">
-                <span className="ab-compare__old">{row.typical}</span>
-              </td>
-              <td data-label="TripMind" className="ab-compare__new">{row.tripmind}</td>
-              <td data-label="Status">
-                <StatusMark status={row.status} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-/**
- * How it works, as a diagram that runs while it is pinned: each step's caption takes its turn on
- * the left, and the parts of TripMind doing that step light up on the right.
- */
 function HowItWorks() {
   const ref = useScrollProgress<HTMLElement>("pin");
   const scene = sceneOf("workflow");
@@ -536,7 +501,6 @@ export function Scenes() {
       <ProjectTitle />
       <Objectives />
       <Solution />
-      <Difference />
       <HowItWorks />
       <Implementation />
       <EdgeCases />
