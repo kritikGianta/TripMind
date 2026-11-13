@@ -1,6 +1,7 @@
 """Catalog: the travel inventory that bookings are made against.
 
-Catalog rows are written only by the ingestion pipeline. Every row carries:
+Catalog rows are written only by the data pack loader (modules/holiday/pack.py). Every row
+carries:
 
 - a deterministic `id` derived from its `source_key`, so re-importing the same data produces the
   same IDs (plan v2, G15);
@@ -59,9 +60,6 @@ class CatalogRowMixin(TimestampMixin):
     row_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     retired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    import_run_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid, ForeignKey("import_runs.id", ondelete="SET NULL")
-    )
 
 
 class City(CatalogRowMixin, Base):

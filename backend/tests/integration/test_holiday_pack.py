@@ -22,7 +22,7 @@ from app.models import (
     RoomType,
     Transfer,
 )
-from app.modules.catalog.models import DataOrigin, catalog_id
+from app.modules.catalog.models import catalog_id
 from app.modules.holiday.pack import load_pack
 from app.modules.inventory.service import InventoryService, nights
 
@@ -101,14 +101,6 @@ def test_loading_twice_changes_nothing(
     load_pack(db_session, settings.holiday_data_dir, clock.now())
     after = {f.id: f.row_hash for f in db_session.scalars(select(Flight))}
     assert before == after and count(db_session, CityLink) == count(db_session, CityLink)
-
-
-def test_earlier_data_is_retired(
-    db_session: Session, catalog: None, settings: Settings, clock: FrozenClock
-) -> None:
-    load_pack(db_session, settings.holiday_data_dir, clock.now())
-    live = db_session.scalars(select(Flight.origin).where(Flight.is_active.is_(True))).all()
-    assert live and set(live) == {DataOrigin.PROVIDED.value}
 
 
 def test_stay_search_uses_the_pack(client: TestClient, holiday_pack: None) -> None:

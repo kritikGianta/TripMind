@@ -16,7 +16,7 @@ function formatDate(isoDate: string) {
 export function DatasetLabel() {
   const { data } = useQuery({
     queryKey: ["datasets", "current"],
-    queryFn: () => apiFetch<DatasetSummary>("/datasets/current"),
+    queryFn: () => apiFetch<DatasetSummary>("/holiday/window"),
     staleTime: 5 * 60_000,
   });
   if (!data || data.status !== "loaded") return null;
@@ -24,12 +24,7 @@ export function DatasetLabel() {
   const travel = data.travel_window;
   return (
     <p className="text-xs">
-      {data.is_demo_data ? (
-        <span className="mr-2 rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-medium text-amber-700 dark:text-amber-300">
-          Demo data
-        </span>
-      ) : null}
-      Dataset {data.dataset ?? "unknown"}
+      {data.dataset}
       {travel ? ` · travel dates ${formatDate(travel.first_departure)} to ${formatDate(travel.last_departure)}` : null}
     </p>
   );

@@ -243,7 +243,7 @@ function ExtrasForm({ bookingId, itemId, catalog }: { bookingId: string; itemId:
               <p className="text-muted-foreground">Nothing chosen yet.</p>
             )}
             <div className="flex justify-between border-t pt-2 font-semibold">
-              <span>To pay</span>
+              <span>Total</span>
               <span className="tabular-nums">{quote.data ? formatMoney(quote.data.total) : "—"}</span>
             </div>
             {total > 0 ? <CardFields card={card} onChange={setCard} idPrefix="extras" /> : null}
@@ -262,7 +262,7 @@ function ExtrasForm({ bookingId, itemId, catalog }: { bookingId: string; itemId:
                 )
               }
             >
-              {purchase.isPending ? "Saving…" : total > 0 ? `Pay ${formatMoney(quote.data?.total)}` : "Save choices"}
+              {purchase.isPending ? "Saving…" : total > 0 ? `Confirm (${formatMoney(quote.data?.total)})` : "Save choices"}
             </Button>
           </CardContent>
         </Card>

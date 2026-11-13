@@ -38,92 +38,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/imports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Import history, newest first */
-        get: operations["list_runs_api_v1_admin_imports_get"];
-        put?: never;
-        /** Import a dataset ZIP with a named mapping (dry_run validates without publishing) */
-        post: operations["run_import_api_v1_admin_imports_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/imports/mappings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Dataset mappings available in config/mappings */
-        get: operations["mappings_api_v1_admin_imports_mappings_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/imports/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Profile a dataset ZIP and draft a mapping (nothing is stored) */
-        post: operations["profile_api_v1_admin_imports_profile_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/imports/{run_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** One import report, including the file profiles */
-        get: operations["get_run_api_v1_admin_imports__run_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/imports/{run_id}/rejects": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Quarantined rows of one import */
-        get: operations["get_rejects_api_v1_admin_imports__run_id__rejects_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/operations/booked-flights": {
         parameters: {
             query?: never;
@@ -638,23 +552,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/datasets/current": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** The dataset currently live in the catalog */
-        get: operations["current_dataset_api_v1_datasets_current_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/explore": {
         parameters: {
             query?: never;
@@ -988,6 +885,23 @@ export interface paths {
         };
         /** Open a reservation by its number (M7) */
         get: operations["reservation_api_v1_holiday_reservations__reference__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/holiday/window": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dates the loaded data covers */
+        get: operations["window_api_v1_holiday_window_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1786,34 +1700,6 @@ export interface components {
              */
             item_id: string;
         };
-        /** Body_profile_api_v1_admin_imports_profile_post */
-        Body_profile_api_v1_admin_imports_profile_post: {
-            /**
-             * Dataset
-             * @default finale
-             */
-            dataset: string;
-            /**
-             * File
-             * @description Dataset ZIP
-             */
-            file: string;
-        };
-        /** Body_run_import_api_v1_admin_imports_post */
-        Body_run_import_api_v1_admin_imports_post: {
-            /**
-             * Dry Run
-             * @default false
-             */
-            dry_run: boolean;
-            /**
-             * File
-             * @description Dataset ZIP
-             */
-            file: string;
-            /** Mapping */
-            mapping: string;
-        };
         /** BookedFlightListOut */
         BookedFlightListOut: {
             /** Items */
@@ -2152,23 +2038,6 @@ export interface components {
             /** Name */
             name: string;
         };
-        /** ColumnProfileOut */
-        ColumnProfileOut: {
-            /** Distinct */
-            distinct: number;
-            /** Format */
-            format: string | null;
-            /** Kind */
-            kind: string;
-            /** Name */
-            name: string;
-            /** Non Null */
-            non_null: number;
-            /** Null Pct */
-            null_pct: number;
-            /** Samples */
-            samples: string[];
-        };
         /** ConfidenceOut */
         ConfidenceOut: {
             /** Checks */
@@ -2220,34 +2089,14 @@ export interface components {
         };
         /** DatasetSummaryOut */
         DatasetSummaryOut: {
-            /**
-             * By Origin
-             * @description Active flights, hotels and room types by provenance
-             */
-            by_origin?: {
-                [key: string]: number;
-            };
-            /** Counts */
-            counts?: {
-                [key: string]: number;
-            };
             /** Dataset */
-            dataset?: string | null;
-            /**
-             * Is Demo Data
-             * @default false
-             */
-            is_demo_data: boolean;
-            /** Origin */
-            origin?: ("provided" | "synthetic") | null;
-            /** Published At */
-            published_at?: string | null;
+            dataset: string;
             /**
              * Status
              * @enum {string}
              */
-            status: "empty" | "loaded";
-            travel_window?: components["schemas"]["TravelWindowOut"] | null;
+            status: "loaded" | "empty";
+            travel_window: components["schemas"]["TravelWindowOut"] | null;
         };
         /** DayOut */
         DayOut: {
@@ -2329,44 +2178,6 @@ export interface components {
             reason: string;
             /** Target */
             target: string;
-        };
-        /** EntityCountsOut */
-        EntityCountsOut: {
-            /**
-             * Accepted
-             * @default 0
-             */
-            accepted: number;
-            /**
-             * Inserted
-             * @default 0
-             */
-            inserted: number;
-            /**
-             * Read
-             * @default 0
-             */
-            read: number;
-            /**
-             * Rejected
-             * @default 0
-             */
-            rejected: number;
-            /**
-             * Retired
-             * @default 0
-             */
-            retired: number;
-            /**
-             * Unchanged
-             * @default 0
-             */
-            unchanged: number;
-            /**
-             * Updated
-             * @default 0
-             */
-            updated: number;
         };
         /** ErrorBody */
         ErrorBody: {
@@ -2603,19 +2414,6 @@ export interface components {
             features: {
                 [key: string]: boolean;
             };
-        };
-        /** FileProfileOut */
-        FileProfileOut: {
-            /** Columns */
-            columns: components["schemas"]["ColumnProfileOut"][];
-            /** Encoding */
-            encoding: string | null;
-            /** Entity */
-            entity?: string | null;
-            /** File */
-            file: string;
-            /** Rows */
-            rows: number;
         };
         /** FlightExtrasOut */
         FlightExtrasOut: {
@@ -3127,165 +2925,6 @@ export interface components {
              */
             rooms: number;
         };
-        /** ImportRunDetailOut */
-        ImportRunDetailOut: {
-            /** Adjustment Examples */
-            adjustment_examples?: {
-                [key: string]: string[];
-            };
-            /**
-             * Adjustments
-             * @description Normalisations applied instead of rejecting rows
-             */
-            adjustments?: {
-                [key: string]: number;
-            };
-            /** Dataset */
-            dataset: string;
-            /** Dry Run */
-            dry_run: boolean;
-            /** Duration Ms */
-            duration_ms: number | null;
-            /** Entity Counts */
-            entity_counts?: {
-                [key: string]: components["schemas"]["EntityCountsOut"];
-            };
-            /** Error */
-            error?: string | null;
-            /** Error Details */
-            error_details?: {
-                [key: string]: unknown;
-            } | null;
-            /** Files */
-            files?: components["schemas"]["FileProfileOut"][];
-            /** Finished At */
-            finished_at: string | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Mapping Name */
-            mapping_name: string;
-            /**
-             * Origin
-             * @enum {string}
-             */
-            origin: "provided" | "synthetic";
-            /**
-             * Reject Summary
-             * @description Rejected rows per entity and reason code
-             */
-            reject_summary?: {
-                [key: string]: {
-                    [key: string]: number;
-                };
-            };
-            /**
-             * Rejects Total
-             * @default 0
-             */
-            rejects_total: number;
-            /** Source Name */
-            source_name: string;
-            /** Source Sha256 */
-            source_sha256: string;
-            /**
-             * Started At
-             * Format: date-time
-             */
-            started_at: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "running" | "published" | "validated" | "blocked" | "failed";
-            travel_window?: components["schemas"]["TravelWindowOut"] | null;
-            /** Triggered Via */
-            triggered_via: string;
-        };
-        /** ImportRunOut */
-        ImportRunOut: {
-            /** Adjustment Examples */
-            adjustment_examples?: {
-                [key: string]: string[];
-            };
-            /**
-             * Adjustments
-             * @description Normalisations applied instead of rejecting rows
-             */
-            adjustments?: {
-                [key: string]: number;
-            };
-            /** Dataset */
-            dataset: string;
-            /** Dry Run */
-            dry_run: boolean;
-            /** Duration Ms */
-            duration_ms: number | null;
-            /** Entity Counts */
-            entity_counts?: {
-                [key: string]: components["schemas"]["EntityCountsOut"];
-            };
-            /** Error */
-            error?: string | null;
-            /** Finished At */
-            finished_at: string | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Mapping Name */
-            mapping_name: string;
-            /**
-             * Origin
-             * @enum {string}
-             */
-            origin: "provided" | "synthetic";
-            /**
-             * Reject Summary
-             * @description Rejected rows per entity and reason code
-             */
-            reject_summary?: {
-                [key: string]: {
-                    [key: string]: number;
-                };
-            };
-            /**
-             * Rejects Total
-             * @default 0
-             */
-            rejects_total: number;
-            /** Source Name */
-            source_name: string;
-            /** Source Sha256 */
-            source_sha256: string;
-            /**
-             * Started At
-             * Format: date-time
-             */
-            started_at: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "running" | "published" | "validated" | "blocked" | "failed";
-            travel_window?: components["schemas"]["TravelWindowOut"] | null;
-            /** Triggered Via */
-            triggered_via: string;
-        };
-        /** ImportRunPage */
-        ImportRunPage: {
-            /** Items */
-            items: components["schemas"]["ImportRunOut"][];
-            /** Limit */
-            limit: number;
-            /** Offset */
-            offset: number;
-            /** Total */
-            total: number;
-        };
         /** JoinIn */
         JoinIn: {
             /** Invite Code */
@@ -3375,11 +3014,6 @@ export interface components {
             points_to_next_tier: number | null;
             /** Tier */
             tier: string;
-        };
-        /** MappingListOut */
-        MappingListOut: {
-            /** Mappings */
-            mappings: string[];
         };
         /** MemberOut */
         MemberOut: {
@@ -3844,16 +3478,6 @@ export interface components {
             max: components["schemas"]["MoneyOut"];
             min: components["schemas"]["MoneyOut"];
         };
-        /** ProfileOut */
-        ProfileOut: {
-            /** Files */
-            files: components["schemas"]["FileProfileOut"][];
-            /**
-             * Suggested Mapping
-             * @description Draft mapping YAML; review before saving
-             */
-            suggested_mapping: string;
-        };
         /** ProfileUpdate */
         ProfileUpdate: {
             /** Full Name */
@@ -4058,36 +3682,6 @@ export interface components {
             full_name: string;
             /** Password */
             password: string;
-        };
-        /** RejectOut */
-        RejectOut: {
-            /** Code */
-            code: string;
-            /** Entity */
-            entity: string;
-            /** Field */
-            field: string | null;
-            /** Message */
-            message: string;
-            /** Raw */
-            raw: {
-                [key: string]: unknown;
-            } | null;
-            /** Row Number */
-            row_number: number;
-            /** Source File */
-            source_file: string;
-        };
-        /** RejectPage */
-        RejectPage: {
-            /** Items */
-            items: components["schemas"]["RejectOut"][];
-            /** Limit */
-            limit: number;
-            /** Offset */
-            offset: number;
-            /** Total */
-            total: number;
         };
         /** ReviewIn */
         ReviewIn: {
@@ -4754,474 +4348,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_runs_api_v1_admin_imports_get: {
-        parameters: {
-            query?: {
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportRunPage"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Request Entity Too Large */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    run_import_api_v1_admin_imports_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "x-requested-with"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["Body_run_import_api_v1_admin_imports_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportRunOut"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Request Entity Too Large */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    mappings_api_v1_admin_imports_mappings_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingListOut"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Request Entity Too Large */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    profile_api_v1_admin_imports_profile_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "x-requested-with"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["Body_profile_api_v1_admin_imports_profile_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProfileOut"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Request Entity Too Large */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    get_run_api_v1_admin_imports__run_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                run_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportRunDetailOut"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Request Entity Too Large */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    get_rejects_api_v1_admin_imports__run_id__rejects_get: {
-        parameters: {
-            query?: {
-                entity?: string | null;
-                code?: string | null;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path: {
-                run_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RejectPage"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Request Entity Too Large */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -7525,26 +6651,6 @@ export interface operations {
             };
         };
     };
-    current_dataset_api_v1_datasets_current_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DatasetSummaryOut"];
-                };
-            };
-        };
-    };
     explore_api_v1_explore_get: {
         parameters: {
             query: {
@@ -8510,6 +7616,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    window_api_v1_holiday_window_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetSummaryOut"];
                 };
             };
         };

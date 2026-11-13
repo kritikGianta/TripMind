@@ -41,7 +41,7 @@ export function useLocations(q: string, kind: LocationKind) {
 export function useDataset() {
   return useQuery({
     queryKey: ["datasets", "current"],
-    queryFn: () => apiFetch<DatasetSummary>("/datasets/current"),
+    queryFn: () => apiFetch<DatasetSummary>("/holiday/window"),
     staleTime: 5 * 60_000,
   });
 }

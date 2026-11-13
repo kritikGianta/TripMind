@@ -17,12 +17,10 @@ x-api-env: &api-env
   HOLIDAY_DATA_DIR: /holiday-pack
   HOLIDAY_EXTRA_DIR: /holiday-extra
   REDIS_URL: redis://redis:6379/0
-  # Set to http://jaeger:4318 (with the obs profile) to send traces to Jaeger.
-  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
 
 services:
-  # Shared state for API replicas and the worker (rate limits, AI cache, job locks).
-  # Business data stays in PostgreSQL; losing Redis only loses caches and counters.
+  # Shared state for API replicas and the worker (two jobs: rate limits
+  # and job locks). Business data stays in PostgreSQL; losing Redis only loses counters.
   redis:
     image: redis:7.4-alpine
     command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb",
@@ -92,7 +90,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # Scheduled jobs (hold expiry, price alerts, ...). Same image as the API.
+  # Scheduled jobs (price alerts, releasing unconfirmed bookings, data clean-up). Same image as the API.
   worker:
     image: tripmind-api:local
     pull_policy: never
@@ -124,52 +122,5 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # ── Optional monitoring stack: docker compose --profile obs up -d ──────────────────────────────
-  # The app never depends on these. Grafana: http://localhost:3001 (anonymous viewer),
-  # Prometheus: http://localhost:9090, Jaeger: http://localhost:16686.
-  prometheus:
-    image: prom/prometheus:v2.55.1
-    profiles: ["obs"]
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.retention.time=7d
-    volumes:
-      - ./ops/prometheus:/etc/prometheus:ro
-    ports:
-      - "127.0.0.1:9090:9090"
-    depends_on:
-      api:
-        condition: service_healthy
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana:11.3.0
-    profiles: ["obs"]
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-tripmind}
-      GF_AUTH_ANONYMOUS_ENABLED: "true"
-      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
-      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/tripmind-overview.json
-      GF_ANALYTICS_REPORTING_ENABLED: "false"
-    volumes:
-      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
-      - grafana:/var/lib/grafana
-    ports:
-      - "127.0.0.1:3001:3000"
-    depends_on:
-      - prometheus
-    restart: unless-stopped
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.62.0
-    profiles: ["obs"]
-    environment:
-      COLLECTOR_OTLP_ENABLED: "true"
-    ports:
-      - "127.0.0.1:16686:16686"
-    restart: unless-stopped
-
 volumes:
   pgdata:
-  grafana:

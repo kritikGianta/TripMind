@@ -2,14 +2,14 @@
 
 API tests run the real Alembic migrations against a throwaway database, so the schema under test is
 exactly what production gets. By default this is SQLite; set TEST_DATABASE_URL to run the same
-suite against PostgreSQL (CI does both).
+suite against PostgreSQL.
 """
 
 from __future__ import annotations
 
 import os
 from collections.abc import Iterator
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -23,7 +23,6 @@ from app.core.clock import FrozenClock
 from app.core.config import Settings, get_settings
 from app.core.deps import get_clock, get_rate_limiter, get_settings_dep
 from app.core.rate_limit import InMemoryRateLimiter
-from app.datagen.generator import GeneratorOptions, generate
 from app.db.session import get_session
 from app.main import create_app
 from app.models import Base
@@ -46,7 +45,7 @@ def settings(database_url: str, tmp_path_factory: pytest.TempPathFactory) -> Set
         _env_file=None,
         environment="test",
         database_url=database_url,
-        jwt_secret=TEST_SECRET,  # type: ignore[arg-type]
+        jwt_secret=TEST_SECRET,
         log_json=False,
         log_level="WARNING",
         background_jobs=False,
@@ -107,32 +106,6 @@ def client(
     app.dependency_overrides[get_rate_limiter] = lambda: limiter
     with TestClient(app) as test_client:
         yield test_client
-
-
-@pytest.fixture(scope="session")
-def demo_zip(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """A small synthetic dataset: 3 travel days from 13 Nov 2026, a quarter of the hotels."""
-    path = tmp_path_factory.mktemp("data") / "synthetic.zip"
-    generate(path, GeneratorOptions(seed=11, start=date(2026, 11, 13), days=3, hotels_scale=0.25))
-    return path
-
-
-@pytest.fixture
-def catalog(db_session: Session, settings: Settings, clock: FrozenClock, demo_zip: Path) -> None:
-    """The synthetic dataset imported through the real pipeline."""
-    from app.core.request_context import RequestMeta
-    from app.modules.ingestion.service import Actor, ImportService
-    from app.modules.ingestion.sources import ZipSource
-
-    source = ZipSource(
-        demo_zip.read_bytes(), name="demo.zip", max_members=50, max_uncompressed_mb=200
-    )
-    ImportService(db_session, settings, clock).run_import(
-        source,
-        mapping_name="synthetic-v1",
-        dry_run=False,
-        actor=Actor(user_id=None, via="cli", meta=RequestMeta(None, None)),
-    )
 
 
 @pytest.fixture

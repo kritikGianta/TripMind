@@ -157,7 +157,6 @@ class PackLoader:
             "row_hash": _hash(record),
             "is_active": True,
             "retired_at": None,
-            "import_run_id": None,
         }
 
     def _count(self, name: str, n: int) -> None:

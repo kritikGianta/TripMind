@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
@@ -15,6 +17,7 @@ from app.core.deps import get_clock, rate_limit
 from app.db.session import get_session
 from app.modules.auth.dependencies import get_current_user, get_optional_user
 from app.modules.auth.models import User
+from app.modules.catalog.models import Flight
 from app.modules.holiday.quick import parse
 from app.modules.holiday.service import (
     AlternativeOut,
@@ -52,6 +55,33 @@ class QuickOut(BaseModel):
 )
 def parse_request(body: QuickIn, service: HolidayService = Depends(_service)) -> QuickOut:
     return QuickOut(**parse(body.text, service.cat))
+
+
+class TravelWindowOut(BaseModel):
+    first_departure: date
+    last_departure: date
+
+
+class DatasetSummaryOut(BaseModel):
+    status: Literal["loaded", "empty"]
+    dataset: str
+    travel_window: TravelWindowOut | None
+
+
+@router.get("/window", response_model=DatasetSummaryOut, summary="Dates the loaded data covers")
+def window(session: Session = Depends(get_session)) -> DatasetSummaryOut:
+    first, last = session.execute(
+        select(func.min(Flight.departure_at), func.max(Flight.departure_at)).where(
+            Flight.is_active.is_(True)
+        )
+    ).one()
+    if first is None or last is None:
+        return DatasetSummaryOut(status="empty", dataset="none", travel_window=None)
+    return DatasetSummaryOut(
+        status="loaded",
+        dataset="Official pack + TripMind extension",
+        travel_window=TravelWindowOut(first_departure=first.date(), last_departure=last.date()),
+    )
 
 
 @router.get("/options", response_model=OptionsOut, summary="Departure cities and countries (M1)")

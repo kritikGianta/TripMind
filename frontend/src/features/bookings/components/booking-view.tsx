@@ -20,11 +20,11 @@ import { useBooking, useCancel, useCancellationQuote, usePay, type Booking, type
 import { ChangeDialog, ReviewDialog } from "./booking-actions";
 
 const STATUS: Record<string, { label: string; className: string }> = {
-  held: { label: "Awaiting payment", className: "bg-amber-500/15 text-amber-700 dark:text-amber-300" },
-  payment_failed: { label: "Payment failed", className: "bg-destructive/15 text-destructive" },
+  held: { label: "Not confirmed yet", className: "bg-amber-500/15 text-amber-700 dark:text-amber-300" },
+  payment_failed: { label: "Not confirmed", className: "bg-destructive/15 text-destructive" },
   confirmed: { label: "Confirmed", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
   cancelled: { label: "Cancelled", className: "bg-muted text-muted-foreground" },
-  expired: { label: "Hold expired", className: "bg-muted text-muted-foreground" },
+  expired: { label: "Expired", className: "bg-muted text-muted-foreground" },
   released: { label: "Released", className: "bg-muted text-muted-foreground" },
   replaced: { label: "Replaced", className: "bg-sky-500/15 text-sky-700 dark:text-sky-300" },
 };
@@ -69,7 +69,7 @@ function PaymentCard({ booking, onExpire }: { booking: Booking; onExpire: () => 
           <CreditCard className="size-4" /> Confirm {formatMoney(booking.total)}
         </CardTitle>
         <CardDescription className="flex items-center gap-1">
-          <Clock className="size-3.5" /> Held for you for <Countdown until={booking.hold_expires_at} onExpire={onExpire} />
+          <Clock className="size-3.5" /> Confirm within <Countdown until={booking.hold_expires_at} onExpire={onExpire} />
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
@@ -86,7 +86,7 @@ function PaymentCard({ booking, onExpire }: { booking: Booking; onExpire: () => 
         >
           {pay.isPending ? "Confirming…" : "Confirm booking"}
         </Button>
-        <p className="text-xs text-muted-foreground">No payment is taken: confirming books the seats and rooms held for you.</p>
+        <p className="text-xs text-muted-foreground">No payment is taken: confirming books the seats and rooms.</p>
       </CardContent>
     </Card>
   );
@@ -270,8 +270,8 @@ export function BookingView() {
         ) : booking.status === "expired" ? (
           <Alert>
             <XCircle />
-            <AlertTitle>The hold expired</AlertTitle>
-            <AlertDescription>Nothing was charged and the seats or rooms were released. Search again to book.</AlertDescription>
+            <AlertTitle>This booking was not confirmed</AlertTitle>
+            <AlertDescription>The seats or rooms were released. Search again to book.</AlertDescription>
           </Alert>
         ) : null}
 
@@ -330,7 +330,7 @@ export function BookingView() {
         {open ? <PaymentCard booking={booking} onExpire={() => void refetch()} /> : null}
         <Card>
           <CardHeader>
-            <CardTitle>Payment summary</CardTitle>
+            <CardTitle>Confirmation</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-2 text-sm">
             {booking.discount ? (

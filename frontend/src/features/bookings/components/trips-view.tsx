@@ -23,7 +23,7 @@ const STATE: Record<Trip["state"], { label: string; className: string }> = {
   in_progress: { label: "On the trip", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
   past: { label: "Completed", className: "bg-muted text-muted-foreground" },
   cancelled: { label: "Cancelled", className: "bg-muted text-muted-foreground" },
-  pending: { label: "Awaiting payment", className: "bg-amber-500/15 text-amber-700 dark:text-amber-300" },
+  pending: { label: "Not confirmed yet", className: "bg-amber-500/15 text-amber-700 dark:text-amber-300" },
 };
 
 function TripState({ state }: { state: Trip["state"] }) {

@@ -110,7 +110,7 @@ export function CheckoutView() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Checkout</h1>
           <p className="text-sm text-muted-foreground">
-            {tripId ? "Adding to an existing trip. " : ""}Review, add traveller details, then pay on the next step.
+            {tripId ? "Adding to an existing trip. " : ""}Review, add traveller details, then confirm. No payment is needed.
           </p>
         </div>
 
@@ -290,10 +290,10 @@ export function CheckoutView() {
               disabled={!quote.data || create.isPending}
               onClick={() => priceChanged && void quote.refetch()}
             >
-              <Lock /> {create.isPending ? "Holding…" : `Hold for ${quote.data?.hold_minutes ?? 15} minutes and pay`}
+              <Lock /> {create.isPending ? "Confirming…" : "Confirm booking"}
             </Button>
             <p className="text-xs text-muted-foreground">
-              Seats and rooms are reserved for you while you pay. Nothing is charged until you confirm payment.
+              Confirming books the seats and rooms straight away and gives you a 10-digit reference.
             </p>
           </CardContent>
         </Card>

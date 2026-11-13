@@ -338,13 +338,13 @@ export const techStack: StackItem[] = [
   {
     area: "Shared state",
     choice: "Redis 7.4",
-    why: "Fast shared memory for rate limits, sign-in lockouts and job locks, so several copies of the API agree. It is optional: limits fail open and locks fail closed.",
+    why: "Fast shared memory for two things: rate limits and job locks, so several copies of the API agree. It is optional: limits fail open and locks fail closed.",
     insteadOf: "Memory inside each server copy is not shared, and database tables would add load to the source of truth.",
   },
   {
     area: "Background jobs",
     choice: "One worker process",
-    why: "Frees unpaid holds, re-checks price alerts and applies retention, each job under a Redis lock so it never runs twice.",
+    why: "Releases bookings that were never confirmed, re-checks price alerts and clears old data, each job under a Redis lock so it never runs twice.",
     insteadOf: "Celery and a message broker add moving parts for three jobs.",
   },
   {
@@ -359,21 +359,21 @@ export const techStack: StackItem[] = [
 
 export const edgeCaseGroups: Group[] = [
   {
-    name: "Your card, my seat",
-    items: ["Two people book the last seat", "Two people pick the same seat", "Double click or retry on Pay", "Payment fails or the hold runs out", "Price changes during checkout", "Cancel only part of a booking", "Change a flight late"],
-    summary: "The database lets exactly one buyer win, a retry returns the first result, and nobody pays for something they did not get.",
+    name: "Two people, one seat",
+    items: ["Two people book the last seat or room", "Two people pick the same seat", "Double click or retry on Confirm", "Price changes before confirming", "Cancel only part of a booking", "Change a flight late"],
+    summary: "The database lets exactly one booking win, a retry returns the first result, and nothing is confirmed that is not really free.",
     status: "live",
   },
   {
     name: "The airline has other plans",
-    items: ["Flight cancelled", "Short delay or long delay", "Disruption on an unpaid hold"],
+    items: ["Flight cancelled", "Short delay or long delay", "Disruption before confirming"],
     summary: "Short delays send a message; cancellations and delays of 3 hours or more offer rebooking or a refund. Only the affected item changes, and the traveller chooses.",
     status: "live",
   },
   {
-    name: "Messy data",
-    items: ["Broken rows", "Late arrivals across timezones", "Misspelt or renamed cities", "Missing prices", "Impossible connections", "Mixed currencies", "Dates in the past"],
-    summary: "Nothing is guessed: bad rows are set aside with a reason, a missing price makes an item browse-only, and times and currencies are converted and labelled.",
+    name: "Times and places",
+    items: ["Late arrivals across timezones", "A city served by another city's airport", "Missing prices", "Dates in the past"],
+    summary: "Local times are kept as given and compared in UTC, Kyoto is reached through Osaka's airport, and an item without a price is shown but cannot be booked.",
     status: "live",
   },
   {
@@ -429,7 +429,7 @@ export const businessModel = {
 export const limits = {
   today: [
     "Inventory comes from the official files and our synthetic extension; nothing is live availability.",
-    "Payments are simulated; no money moves.",
+    "There is no payment step: confirming books the trip.",
     "No airline or hotel supplier integrations.",
   ],
   next: [

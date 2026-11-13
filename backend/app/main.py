@@ -26,8 +26,6 @@ from app.modules.bookings.jobs import run_hold_sweeper
 from app.modules.bookings.router import router as bookings_router
 from app.modules.groups.router import router as groups_router
 from app.modules.holiday.router import router as holiday_router
-from app.modules.ingestion.router import admin_router as imports_admin_router
-from app.modules.ingestion.router import public_router as datasets_router
 from app.modules.loyalty.module import router as loyalty_router
 from app.modules.meta.router import router as meta_router
 from app.modules.notifications.router import router as notifications_router
@@ -94,7 +92,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(meta_router, prefix=settings.api_prefix)
     app.include_router(auth_router, prefix=settings.api_prefix)
-    app.include_router(datasets_router, prefix=settings.api_prefix)
     app.include_router(search_router, prefix=settings.api_prefix)
     app.include_router(bookings_router, prefix=settings.api_prefix)
     app.include_router(planner_router, prefix=settings.api_prefix)
@@ -110,7 +107,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(reviews_router, prefix=settings.api_prefix)
     app.include_router(support_router, prefix=settings.api_prefix)
     app.include_router(privacy_router, prefix=settings.api_prefix)
-    app.include_router(imports_admin_router, prefix=settings.api_prefix)
 
     # Served on the API's own port only; the web proxy forwards /api/* and never /metrics.
     @app.get("/metrics", include_in_schema=False)

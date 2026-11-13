@@ -1,8 +1,7 @@
 /**
  * Words and media on the home page. The layout lives in features/home; change the copy here.
  *
- * Every claim must match what the product does. Numbers come from the backend: the 15-minute hold
- * from config/rules.yaml; the Bengaluru-Tokyo flying time from the official flight AV 520.
+ * Every claim must match what the product does. Numbers come from the official data: the Bengaluru-Tokyo flying time from the official flight AV 520.
  */
 
 export type MediaSlotInfo = {

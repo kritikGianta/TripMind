@@ -38,10 +38,22 @@ export function useTrip(id: string) {
   return useQuery({ queryKey: ["trip", id], queryFn: () => apiFetch<Trip>(`/trips/${id}`) });
 }
 
+/**
+ * Book and confirm in one step: the seats and rooms are taken, then the booking is confirmed at
+ * once (there is no payment step). Both calls carry idempotency keys, so a double click or a
+ * retry still makes exactly one confirmed booking.
+ */
 export function useCreateBooking(idempotencyKey: string) {
   return useMutation({
-    mutationFn: (body: CreateBooking) =>
-      apiFetch<Booking>("/bookings", { method: "POST", body, headers: { "Idempotency-Key": idempotencyKey } }),
+    mutationFn: async (body: CreateBooking) => {
+      const held = await apiFetch<Booking>("/bookings", { method: "POST", body, headers: { "Idempotency-Key": idempotencyKey } });
+      if (held.status === "confirmed") return held;
+      return apiFetch<Booking>(`/bookings/${held.id}/payments`, {
+        method: "POST",
+        body: {},
+        headers: { "Idempotency-Key": `${idempotencyKey}-confirm` },
+      });
+    },
   });
 }
 

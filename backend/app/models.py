@@ -33,7 +33,6 @@ from app.modules.catalog.models import (
 )
 from app.modules.groups.models import GroupMember, GroupVote, TripGroup
 from app.modules.holiday.models import HolidayPackage
-from app.modules.ingestion.models import ImportReject, ImportRun
 from app.modules.inventory.models import FlightInventory, InventoryClaim, RoomNightInventory
 from app.modules.loyalty.module import LoyaltyEntry
 from app.modules.notifications.models import Notification
@@ -69,8 +68,6 @@ __all__ = [
     "Hotel",
     "HotelAmenity",
     "HotelReview",
-    "ImportReject",
-    "ImportRun",
     "InventoryClaim",
     "LoyaltyEntry",
     "Notification",

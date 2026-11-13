@@ -17,10 +17,7 @@ dependencies = [
     "structlog>=24.4",
     "prometheus-client>=0.21",
     "pyyaml>=6.0",
-    "pandas>=3.1.1",
     "rapidfuzz>=3.14.6",
-    "python-multipart>=0.0.33",
-    "openpyxl>=3.1.5",
     "opentelemetry-sdk>=1.45.2",
     "opentelemetry-exporter-otlp-proto-http>=1.45.2",
     "opentelemetry-instrumentation-fastapi>=0.66b2",
@@ -36,7 +33,6 @@ dev = [
     "mypy>=1.13",
     "types-pyyaml>=6.0",
     "import-linter>=2.1",
-    "pandas-stubs>=3.1.0.261029",
     "fakeredis>=2.40.0",
 ]
 
@@ -57,7 +53,6 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106"]
 "migrations/**" = ["E501"]
-"app/datagen/**" = ["S311"]  # seeded randomness for synthetic data, not security
 "scripts/**" = ["S311"]
 "app/modules/holiday/**" = ["E501"]  # long rule messages read better unbroken
 
@@ -82,14 +77,14 @@ root_package = "app"
 name = "Layered architecture"
 type = "layers"
 layers = [
-    "app.main : app.cli : app.models : app.worker : app.demo",
+    "app.main : app.cli : app.models : app.worker",
     "app.worker_jobs",
     "app.modules.admin | app.modules.privacy",
     "app.modules.holiday",
     "app.modules.recovery | app.modules.groups | app.modules.reviews | app.modules.support",
     "app.modules.bookings | app.modules.planner",
     "app.modules.loyalty | app.modules.watchlist",
-    "app.modules.ingestion | app.datagen | app.modules.search | app.modules.notifications | app.modules.profiles",
+    "app.modules.search | app.modules.notifications | app.modules.profiles",
     "app.modules.inventory",
     "app.modules.auth | app.modules.meta | app.modules.catalog | app.modules.operations",
     "app.modules.audit",

@@ -53,8 +53,8 @@ function QuoteLines({ quote }: { quote: ChangeQuote }) {
       {quote.new_price ? row("New price", formatMoney(quote.new_price)) : null}
       {row("Change fee", formatMoney(quote.change_fee))}
       {quote.extras_refund.amount_minor ? row("Extras refunded", formatMoney(quote.extras_refund)) : null}
-      {back > 0 ? row("We refund you", formatMoney(quote.refund_due), true) : row("You pay now", formatMoney(quote.amount_due), true)}
-      {due === 0 && back === 0 ? <p className="text-xs text-muted-foreground">Nothing to pay.</p> : null}
+      {back > 0 ? row("We refund you", formatMoney(quote.refund_due), true) : row("Price difference", formatMoney(quote.amount_due), true)}
+      {due === 0 && back === 0 ? <p className="text-xs text-muted-foreground">No price difference.</p> : null}
       <p className="text-xs text-muted-foreground">{quote.policy}</p>
     </div>
   );
@@ -189,7 +189,7 @@ function ChangeForm({ booking, item, onClose }: { booking: Booking; item: Bookin
               )
             }
           >
-            {confirm.isPending ? "Changing…" : due > 0 ? `Pay ${formatMoney(quote.data.amount_due)} and change` : "Confirm change"}
+            {confirm.isPending ? "Changing…" : due > 0 ? `Confirm change (${formatMoney(quote.data.amount_due)})` : "Confirm change"}
           </Button>
         ) : (
           <Button disabled={!ready || quote.isPending} onClick={() => quote.mutate(request)}>
