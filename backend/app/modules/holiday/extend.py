@@ -22,6 +22,8 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from app.modules.holiday.world import generate_world
+
 OFFICIAL_FIRST, OFFICIAL_LAST = date(2027, 4, 1), date(2027, 4, 20)
 FLIGHTS_PER_ROUTE_PER_DAY = 2
 
@@ -80,8 +82,14 @@ def generate(
         for day in days
     ]
 
+    world = generate_world(start, end)
+    world["flights"] = new_flights + world["flights"]
+    world["availability"] = new_availability + world["availability"]
     target = out_dir / "data" / "catalog"
     target.mkdir(parents=True, exist_ok=True)
-    (target / "flights.json").write_text(json.dumps(new_flights, indent=1), encoding="utf-8")
-    (target / "availability.json").write_text(json.dumps(new_availability), encoding="utf-8")
-    return {"flights": len(new_flights), "availability": len(new_availability), "days": len(days)}
+    for name, rows in world.items():
+        (target / f"{name}.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+    return {
+        name: len(rows) if isinstance(rows, list) else len(rows["countries"])
+        for name, rows in world.items()
+    }

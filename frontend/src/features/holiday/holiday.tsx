@@ -105,7 +105,7 @@ export function HolidayPlanner() {
                 <SelectContent>
                   {(options.data?.countries ?? []).map((c) => (
                     <SelectItem key={c.name as string} value={c.name as string}>
-                      {c.name as string}
+                      {c.name as string} · {(c.cities as string[]).join(", ")}
                     </SelectItem>
                   ))}
                 </SelectContent>

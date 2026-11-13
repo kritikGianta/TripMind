@@ -107,8 +107,12 @@ def read_pack(pack_dir: Path, extra_dir: Path | None = None) -> dict[str, Any]:
             raise PackError(f"The data pack has no {path.name} (looked in {folder}).")
         out[name] = json.loads(path.read_text(encoding="utf-8"))
         extra = extra_dir / "data" / "catalog" / f"{name}.json" if extra_dir else None
-        if extra is not None and extra.exists() and isinstance(out[name], list):
-            out[name] += json.loads(extra.read_text(encoding="utf-8"))
+        if extra is not None and extra.exists():
+            more = json.loads(extra.read_text(encoding="utf-8"))
+            if isinstance(out[name], list):
+                out[name] += more
+            else:  # destinations.json: add the extra countries
+                out[name]["countries"] += more.get("countries", [])
     return out
 
 
