@@ -20,16 +20,31 @@ No AI, LLM or ML is used anywhere: packages come from rules and plain arithmetic
 
 ## Run it
 
-You need Docker Desktop. Copy `.env.example` to `.env` and set `JWT_SECRET`, then:
+You only need Docker Desktop. No `.env` file is required.
 
 ```bash
+git clone https://github.com/kritikGianta/TripMind.git
+cd TripMind
 docker compose up -d --build
 ```
+
+On Windows, recent Docker versions can stop with `additional privileges requested: pass "--allow=fs.read=...Dockerfile"`. If you see that, run the build like this instead:
+
+| Shell | Command |
+|---|---|
+| PowerShell | `$env:BUILDX_BAKE_ENTITLEMENTS_FS=0; docker compose up -d --build` |
+| Git Bash, macOS or Linux | `BUILDX_BAKE_ENTITLEMENTS_FS=0 docker compose up -d --build` |
+
+The first build takes a few minutes.
 
 - Website: http://localhost:3000
 - API documentation: http://localhost:8000/docs
 
-`migrate` runs first: it applies the database migrations and loads the data. Then `api`, `worker` and `web` start.
+The site needs ports 3000, 8000 and 5432 to be free. To stop it, run `docker compose down`.
+
+`migrate` runs first: it applies the database migrations and loads the data (about a minute). Then `api`, `worker` and `web` start.
+
+For anything public, copy `.env.example` to `.env` and set your own `JWT_SECRET`. The built-in one is for local use only, and production refuses it.
 
 | Service | What it does |
 |---|---|

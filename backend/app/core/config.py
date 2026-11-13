@@ -90,7 +90,9 @@ class Settings(BaseSettings):
     def _guard_production(self) -> Settings:
         if self.environment in ("staging", "production"):
             secret = self.jwt_secret.get_secret_value()
-            if secret == _INSECURE_DEFAULT_SECRET or len(secret) < 32:
+            # The compose file's local default starts with "local-demo-only": never in production.
+            insecure = secret == _INSECURE_DEFAULT_SECRET or secret.startswith("local-demo-only")
+            if insecure or len(secret) < 32:
                 raise ValueError(
                     "JWT_SECRET must be set to a random value of at least 32 characters"
                 )
