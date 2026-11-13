@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import CheckConstraint, DateTime, Integer, String
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON
 
@@ -24,6 +25,10 @@ class HolidayPackage(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         CheckConstraint("total_inr >= 0", name="total_non_negative"),
     )
 
+    # The traveller (often a guest) who built it, so it shows in their My Trips.
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
     label: Mapped[str] = mapped_column(String(16), nullable=False)  # cheapest, fastest, ...
     status: Mapped[str] = mapped_column(String(8), nullable=False, default="PLANNED")
     request: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

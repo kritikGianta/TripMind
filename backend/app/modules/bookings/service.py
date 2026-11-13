@@ -95,7 +95,6 @@ from app.modules.search.pricing import (
     rules_section,
 )
 
-_REFERENCE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 OPEN = (BookingStatus.HELD, BookingStatus.PAYMENT_FAILED)
 
 
@@ -375,7 +374,7 @@ class BookingService:
 
     def _reference(self) -> str:
         while True:
-            ref = "TM" + "".join(secrets.choice(_REFERENCE_ALPHABET) for _ in range(6))
+            ref = str(secrets.randbelow(9 * 10**9) + 10**9)  # 10 digits, never a leading 0
             if self._session.scalar(select(Booking.id).where(Booking.reference == ref)) is None:
                 return ref
 

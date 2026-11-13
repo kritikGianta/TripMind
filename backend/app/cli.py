@@ -204,7 +204,12 @@ def holiday_load(pack_dir: Path | None) -> int:
 
     settings = get_settings()
     with get_session_factory()() as session:
-        report = load_pack(session, pack_dir or settings.holiday_data_dir, datetime.now(UTC))
+        report = load_pack(
+            session,
+            pack_dir or settings.holiday_data_dir,
+            datetime.now(UTC),
+            settings.holiday_extra_dir,
+        )
     counts = ", ".join(f"{n} {name}" for name, n in report.counts.items())
     print(f"holiday pack loaded: {counts}")
     retired = {k: v for k, v in report.retired.items() if v}
@@ -233,6 +238,10 @@ def _parser() -> argparse.ArgumentParser:
     hload.add_argument(
         "--pack", type=Path, default=None, help="Data pack folder (default: setting)"
     )
+
+    hext = holiday_sub.add_parser("extend", help="Write more dates in the pack's schema")
+    hext.add_argument("--start", type=date.fromisoformat, default=date(2026, 11, 13))
+    hext.add_argument("--end", type=date.fromisoformat, default=date(2027, 5, 31))
 
     data = sub.add_parser("data", help="Dataset generation, profiling and import")
     data_sub = data.add_subparsers(dest="data_command", required=True)
@@ -282,6 +291,12 @@ def main(argv: list[str] | None = None) -> int:
         return export_openapi(args.path)
     if args.command == "create-admin":
         return create_admin(args.email, args.name)
+    if args.command == "holiday" and args.holiday_command == "extend":
+        from app.modules.holiday.extend import generate
+
+        settings = get_settings()
+        print(generate(settings.holiday_data_dir, settings.holiday_extra_dir, args.start, args.end))
+        return 0
     if args.command == "holiday":
         return holiday_load(args.pack)
     if args.data_command == "generate":

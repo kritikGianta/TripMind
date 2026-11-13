@@ -12,6 +12,8 @@ from sqlalchemy.orm import Session
 from app.core.clock import Clock
 from app.core.deps import get_clock, rate_limit
 from app.db.session import get_session
+from app.modules.auth.dependencies import get_current_user, get_optional_user
+from app.modules.auth.models import User
 from app.modules.holiday.service import (
     AlternativeOut,
     BuildOut,
@@ -42,8 +44,23 @@ def options(service: HolidayService = Depends(_service)) -> OptionsOut:
     dependencies=[Depends(rate_limit("holiday.build", limit=30, window_seconds=60))],
     summary="Build the cheapest, fastest and best-rated packages for a request (M2, G4, M8)",
 )
-def build(body: HolidayRequestIn, service: HolidayService = Depends(_service)) -> BuildOut:
-    return service.build(body)
+def build(
+    body: HolidayRequestIn,
+    service: HolidayService = Depends(_service),
+    user: User | None = Depends(get_optional_user),
+) -> BuildOut:
+    return service.build(body, user.id if user else None)
+
+
+@router.get(
+    "/reservations",
+    response_model=list[PackageOut],
+    summary="My confirmed holidays (shown in My Trips)",
+)
+def my_reservations(
+    service: HolidayService = Depends(_service), user: User = Depends(get_current_user)
+) -> list[PackageOut]:
+    return service.mine(user.id)
 
 
 @router.get("/packages/{package_id}", response_model=PackageOut, summary="One package")
@@ -81,8 +98,12 @@ def change(
     response_model=PackageOut,
     summary="Confirm: reserve the seats and rooms and get a 10-digit reservation number (M7, S2)",
 )
-def confirm(package_id: uuid.UUID, service: HolidayService = Depends(_service)) -> PackageOut:
-    return service.confirm(package_id)
+def confirm(
+    package_id: uuid.UUID,
+    service: HolidayService = Depends(_service),
+    user: User | None = Depends(get_optional_user),
+) -> PackageOut:
+    return service.confirm(package_id, user.id if user else None)
 
 
 @router.get(

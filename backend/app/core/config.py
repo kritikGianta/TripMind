@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     config_dir: Path = _REPO_ROOT / "config"
     # The official finale data pack (read-only): data/catalog/*.json and images/.
     holiday_data_dir: Path = _REPO_ROOT / "hackathon-problem-1-holiday-package"
+    # More dates in the same schema, made by `python -m app.cli holiday extend`.
+    holiday_extra_dir: Path = _REPO_ROOT / "data" / "extended"
 
     # Database
     database_url: str = "postgresql+psycopg://tripmind:tripmind@127.0.0.1:5432/tripmind"

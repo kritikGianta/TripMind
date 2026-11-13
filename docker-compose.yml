@@ -15,6 +15,7 @@ x-api-env: &api-env
   CONFIG_DIR: /config
   # The official finale data pack, mounted read-only (the files must never change).
   HOLIDAY_DATA_DIR: /holiday-pack
+  HOLIDAY_EXTRA_DIR: /holiday-extra
   REDIS_URL: redis://redis:6379/0
   # Set to http://jaeger:4318 (with the obs profile) to send traces to Jaeger.
   OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
@@ -66,6 +67,7 @@ services:
     volumes:
       - ./config:/config:ro
       - ./hackathon-problem-1-holiday-package:/holiday-pack:ro
+      - ./data/extended:/holiday-extra:ro
     depends_on:
       db:
         condition: service_healthy
@@ -80,6 +82,7 @@ services:
     volumes:
       - ./config:/config:ro
       - ./hackathon-problem-1-holiday-package:/holiday-pack:ro
+      - ./data/extended:/holiday-extra:ro
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:

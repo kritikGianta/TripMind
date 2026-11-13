@@ -56,18 +56,11 @@ export function addDays(isoDate: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** The official data has flights and rooms from 1 to 20 April 2027 only. */
-export const DATA_FIRST_DAY = "2027-04-01";
-export const DATA_LAST_DAY = "2027-04-20";
-
-/**
- * The first day a traveller can pick: today, but never before the data window opens, so every
- * search form defaults to dates the official data actually has.
- */
+/** Today in the traveller's own timezone (the data has flights and rooms from today onwards). */
 export function todayIso(): string {
   const now = new Date();
   const today = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
-  return today < DATA_FIRST_DAY ? DATA_FIRST_DAY : today;
+  return today;
 }
 
 export const CABIN_LABELS: Record<string, string> = {

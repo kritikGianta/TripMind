@@ -37,6 +37,7 @@ from app.modules.inventory.models import RoomNightInventory
 from app.modules.inventory.service import InventoryService
 
 # The data window and trip limits (destinations.json `rules`).
+# Used only when the catalog is empty; the real window is computed from the data.
 FIRST_NIGHT = date(2027, 4, 1)
 LAST_DEPARTURE = date(2027, 4, 20)
 MIN_NIGHTS, MAX_NIGHTS, MIN_NIGHTS_PER_CITY = 3, 10, 2
@@ -177,6 +178,15 @@ class Catalog:
     free: dict[tuple[str, date], int]  # (room key, night) -> rooms still free
     transfers: dict[str, TransferRow]
     attractions: dict[str, AttractionRow]
+
+    @property
+    def first_night(self) -> date:
+        """First night any room is listed (the data window comes from the data)."""
+        return min((night for _, night in self.free), default=FIRST_NIGHT)
+
+    @property
+    def last_departure(self) -> date:
+        return max((f.departure.date() for f in self.flights.values()), default=LAST_DEPARTURE)
 
     def rooms_free(self, room: str, nights: list[date]) -> int:
         return min((self.free.get((room, n), 0) for n in nights), default=0)
@@ -379,10 +389,11 @@ def request_problems(req: Request, cat: Catalog) -> list[str]:
         out.append("A child is aged 0 to 17.")
     if req.budget <= 0:
         out.append("The budget must be more than zero.")
-    if req.start < FIRST_NIGHT or req.end > LAST_DEPARTURE:
+    if req.start < cat.first_night or req.end > cat.last_departure:
         out.append(
-            "Flights and rooms exist only from 1 to 20 April 2027: the first night must be on or "
-            "after 1 April and the flight home on or before 20 April."
+            f"Flights and rooms exist from {cat.first_night:%d %b %Y} to "
+            f"{cat.last_departure:%d %b %Y}: the first night must be on or after the first date "
+            "and the flight home on or before the last."
         )
     return out
 

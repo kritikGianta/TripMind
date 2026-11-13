@@ -149,8 +149,8 @@ class HolidayService:
                 for code, city in sorted(self.cat.departures.items())
             ],
             countries=[{"name": n, "cities": c} for n, c in sorted(self.cat.countries.items())],
-            first_night=e.FIRST_NIGHT,
-            last_departure=e.LAST_DEPARTURE,
+            first_night=self.cat.first_night,
+            last_departure=self.cat.last_departure,
             min_nights=e.MIN_NIGHTS,
             max_nights=e.MAX_NIGHTS,
         )
@@ -175,7 +175,7 @@ class HolidayService:
         )
 
     # M1, M2, M5, M8, G4
-    def build(self, body: HolidayRequestIn) -> BuildOut:
+    def build(self, body: HolidayRequestIn, user_id: uuid.UUID | None = None) -> BuildOut:
         req = body.to_request()
         problems = e.request_problems(req, self.cat)
         if problems:
@@ -193,6 +193,7 @@ class HolidayService:
         saved = []
         for label, items in packages.items():
             row = HolidayPackage(
+                user_id=user_id,
                 label=label,
                 status="PLANNED",
                 request=body.model_dump(mode="json"),
@@ -427,8 +428,19 @@ class HolidayService:
         return sorted(out, key=lambda o: o.difference_inr)
 
     # M7, S2
-    def confirm(self, package_id: uuid.UUID) -> PackageOut:
+    def mine(self, user_id: uuid.UUID) -> list[PackageOut]:
+        """The traveller's confirmed holidays, newest first (shown in My Trips)."""
+        rows = self._session.scalars(
+            select(HolidayPackage)
+            .where(HolidayPackage.user_id == user_id, HolidayPackage.status == "BOOKED")
+            .order_by(HolidayPackage.booked_at.desc())
+        )
+        return [self.out(r) for r in rows]
+
+    def confirm(self, package_id: uuid.UUID, user_id: uuid.UUID | None = None) -> PackageOut:
         row = self.get(package_id)
+        if row.user_id is None:
+            row.user_id = user_id
         if row.status == "BOOKED":
             return self.out(row)  # confirming twice gives the same reservation
         req = _request_of(row)

@@ -12,6 +12,8 @@ import { toQuery } from "@/features/search/api";
 import { addDays, formatDay, formatMoney } from "@/features/search/format";
 import { errorMessage } from "@/lib/api/errors";
 
+import { HolidayReservations } from "@/features/holiday/holiday";
+
 import { useTrip, useTrips, type Trip } from "../api";
 import { useTripSuggestions } from "../self-service";
 import { StatusBadge } from "./booking-view";
@@ -35,7 +37,17 @@ function dates(trip: Trip) {
     : formatDay(trip.starts_on);
 }
 
+/** My Trips: confirmed holidays first, then trips made of flight and stay bookings. */
 export function TripsView() {
+  return (
+    <div className="grid gap-8">
+      <HolidayReservations />
+      <BookedTrips />
+    </div>
+  );
+}
+
+function BookedTrips() {
   const { data, error, isPending } = useTrips();
   if (isPending) return <Skeleton className="h-48 w-full" />;
   if (error) {

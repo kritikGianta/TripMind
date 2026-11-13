@@ -111,7 +111,7 @@ export function HolidayPlanner() {
                 </SelectContent>
               </Select>
             </div>
-            <Field id="start" label="Holiday start date (you land)" type="date" value={form.start_date} onChange={set("start_date")} min="2027-04-01" max="2027-04-17" />
+            <Field id="start" label="Holiday start date (you land)" type="date" value={form.start_date} onChange={set("start_date")} min={options.data?.first_night} max={options.data?.last_departure} />
             <Field id="nights" label="Nights (3-10)" type="number" value={form.nights} onChange={set("nights")} />
             <Field id="adults" label="Adults" type="number" value={form.adults} onChange={set("adults")} />
             <Field id="ages" label="Children's ages (e.g. 6, 9)" value={form.child_ages} onChange={set("child_ages")} />
@@ -446,5 +446,35 @@ export function ReservationView() {
         </div>
       ) : null}
     </div>
+  );
+}
+
+// ── My Trips: confirmed holidays with their 10-digit reservation numbers ─────────────────────
+
+export function HolidayReservations() {
+  const mine = useQuery({ queryKey: ["holiday", "mine"], queryFn: () => apiFetch<Package[]>("/holiday/reservations") });
+  if (!mine.data?.length) return null;
+  return (
+    <section className="grid gap-3">
+      <h2 className="text-lg font-semibold">Holidays</h2>
+      <div className="grid gap-3 md:grid-cols-2">
+        {mine.data.map((p) => (
+          <Link key={p.id} href={`/holiday/reservation?ref=${p.reference}`} className="group">
+            <Card className="h-full gap-2 p-5 transition-colors group-hover:border-primary/40">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-lg font-semibold">{String(p.request.country)} holiday</p>
+                <Badge variant="secondary">Confirmed</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {p.cities.map((c) => `${c.city as string} ${c.nights as number}n`).join(" → ")} · from {dayName(String(p.request.start_date))}
+              </p>
+              <p className="text-sm">
+                Reservation <span className="font-mono font-semibold">{p.reference}</span> · {inr(p.total_inr)}
+              </p>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

@@ -93,8 +93,12 @@ def _utc(local: datetime, tz: str) -> datetime:
     return local.replace(tzinfo=ZoneInfo(tz)).astimezone(UTC)
 
 
-def read_pack(pack_dir: Path) -> dict[str, Any]:
-    """Read the 8 catalog files. The files are UTF-8 (they hold Japanese names)."""
+def read_pack(pack_dir: Path, extra_dir: Path | None = None) -> dict[str, Any]:
+    """Read the 8 catalog files (UTF-8: they hold Japanese names).
+
+    `extra_dir` holds more rows in the same schema (TripMind's own extension, see extend.py);
+    any file it has is appended to the official one.
+    """
     folder = pack_dir / "data" / "catalog"
     out: dict[str, Any] = {}
     for name in PACK_FILES:
@@ -102,6 +106,9 @@ def read_pack(pack_dir: Path) -> dict[str, Any]:
         if not path.exists():
             raise PackError(f"The data pack has no {path.name} (looked in {folder}).")
         out[name] = json.loads(path.read_text(encoding="utf-8"))
+        extra = extra_dir / "data" / "catalog" / f"{name}.json" if extra_dir else None
+        if extra is not None and extra.exists() and isinstance(out[name], list):
+            out[name] += json.loads(extra.read_text(encoding="utf-8"))
     return out
 
 
@@ -110,6 +117,7 @@ class PackLoader:
         self._session = session
         self._now = now
         self.report = LoadReport()
+        self._by_key: dict[type[Any], dict[str, Any]] = {}
 
     # ------------------------------------------------------------------ helpers
 
@@ -122,9 +130,11 @@ class PackLoader:
         """
         row = None
         if "source_key" in values:
-            row = self._session.scalar(
-                select(model).where(model.source_key == values["source_key"])
-            )
+            if model not in self._by_key:  # one query per table, not one per row
+                self._by_key[model] = {
+                    r.source_key: r for r in self._session.scalars(select(model))
+                }
+            row = self._by_key[model].get(values["source_key"])
         if row is None:
             row = self._session.get(model, row_id)
         if row is None:
@@ -343,10 +353,13 @@ class PackLoader:
 
     def _availability(self, records: list[dict[str, Any]]) -> None:
         self._session.flush()
+        existing = {
+            (r.room_type_id, r.night): r for r in self._session.scalars(select(RoomNightInventory))
+        }
         for a in records:
             room_type_id = catalog_id("room_types", a["room_id"])
             night = date.fromisoformat(a["date"])
-            row = self._session.get(RoomNightInventory, (room_type_id, night))
+            row = existing.get((room_type_id, night))
             capacity = int(a["rooms_left"])
             if row is None:
                 self._session.add(
@@ -459,9 +472,11 @@ class PackLoader:
             self.report.retired[model.__tablename__] = int(result.rowcount or 0)  # type: ignore[attr-defined]
 
 
-def load_pack(session: Session, pack_dir: Path, now: datetime) -> LoadReport:
-    """Read the pack and load it in one transaction (all of it, or nothing)."""
-    pack = read_pack(pack_dir)
+def load_pack(
+    session: Session, pack_dir: Path, now: datetime, extra_dir: Path | None = None
+) -> LoadReport:
+    """Read the pack (and its extension) and load it in one transaction (all of it, or nothing)."""
+    pack = read_pack(pack_dir, extra_dir)
     try:
         report = PackLoader(session, now).load(pack)
         session.commit()

@@ -13261,6 +13261,31 @@
         ]
       }
     },
+    "/api/v1/holiday/reservations": {
+      "get": {
+        "operationId": "my_reservations_api_v1_holiday_reservations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PackageOut"
+                  },
+                  "title": "Response My Reservations Api V1 Holiday Reservations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "My confirmed holidays (shown in My Trips)",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
     "/api/v1/holiday/reservations/{reference}": {
       "get": {
         "operationId": "reservation_api_v1_holiday_reservations__reference__get",
