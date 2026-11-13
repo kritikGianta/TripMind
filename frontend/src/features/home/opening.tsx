@@ -87,14 +87,10 @@ export function Statement() {
   );
 }
 
-export function WorksWithoutAi() {
+export function Ridge() {
   const ref = useScrollProgress<HTMLElement>("pass");
   return (
-    <section ref={ref} className="tm-lines tm-promise">
-      <div className="tm-promise__copy" data-reveal>
-        <h2 className="tm-label">{homeCopy.promise.label}</h2>
-        <p>{homeCopy.promise.text}</p>
-      </div>
+    <section ref={ref} className="tm-lines tm-promise" aria-hidden>
       <div className="tm-media tm-promise__ridge tm-promise__ridge--back" aria-hidden>
         <Image src="/home/ridge-far.webp" alt="" fill sizes="130vw" />
       </div>

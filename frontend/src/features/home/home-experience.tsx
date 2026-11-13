@@ -8,10 +8,10 @@ import { DatasetLabel } from "@/features/meta/dataset-label";
 import { setMotionChoice, useMotionChoice } from "@/features/motion/use-motion";
 
 import { FilmDialog, HomeNav, HowItWorks } from "./chrome";
-import { Confidence, Destinations, FinalCall, HomeFooter, JourneyMap, Proof, RouteCode, Ways } from "./journeys";
+import { Confidence, Destinations, FinalCall, HomeFooter, JourneyMap, RouteCode, Ways } from "./journeys";
 import { HomeProvider, Letters, type MediaFiles } from "./media";
 import { CursorDot, SmoothScroll, useScrollFrame } from "./motion";
-import { Hero, SearchSection, Statement, WorksWithoutAi } from "./opening";
+import { Hero, Ridge, SearchSection, Statement } from "./opening";
 
 import "./home.css";
 
@@ -67,11 +67,10 @@ export function HomeExperience({ media, fonts }: { media: MediaFiles; fonts: str
           <Hero />
           <SearchSection />
           <Statement />
-          <WorksWithoutAi />
+          <Ridge />
           <Ways />
           <Confidence />
           <Destinations />
-          <Proof />
           <RouteCode />
           <JourneyMap />
           <FinalCall />

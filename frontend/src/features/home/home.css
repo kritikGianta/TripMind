@@ -408,18 +408,9 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
   opacity: clamp(0.16, calc((var(--reveal) - var(--i)) * 7 + 0.16), 1);
   transform: translateY(calc((1 - clamp(0, (var(--reveal) - var(--i)) * 7, 1)) * 0.32em));
 }
-.tm-proof__text .tm-word { --reveal: calc((var(--p, 1) - 0.18) / 0.24); }
 
-/* 4. Works with the AI off */
+/* 4. Ridge */
 .tm-promise { position: relative; height: clamp(46rem, 140svh, 92rem); overflow: hidden; }
-.tm-promise__copy {
-  position: relative;
-  z-index: 1;
-  width: min(23rem, 100%);
-  margin-left: calc(var(--gutter) + (100% - 2 * var(--gutter)) / 6);
-  padding: 2rem 1rem 0 0.75rem;
-}
-.tm-promise__copy p { margin-top: 0.75rem; font-size: 0.9rem; line-height: 1.5; color: var(--ink-soft); }
 /* The photo is transparent above the mountain's real outline, so nothing is cut here. */
 .tm-promise__ridge {
   inset: auto auto 0 50%;
@@ -436,9 +427,6 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
   width: max(128%, 980px);
   aspect-ratio: 2600 / 860;
   transform: translate3d(-50%, calc((1 - var(--p, 1)) * 14%), 0);
-}
-@media (max-width: 767px) {
-  .tm-promise__copy { margin-left: 0; width: 100%; padding-inline: var(--gutter); }
 }
 
 /* 5. Ways to travel */
@@ -600,39 +588,6 @@ body:has(.tm-home:not([style*="display"])) footer:not(.tm-footer) { display: non
 .tm-dest__price { font-size: 1.15rem; font-weight: 600; }
 .tm-dest__price span { font-size: 0.78rem; font-weight: 500; }
 .tm-dest__coords { font-size: 0.74rem; font-weight: 600; letter-spacing: 0.05em; }
-
-/* 8. Proof */
-.tm-proof { position: relative; height: 130svh; overflow: hidden; color: #fff; background: #fff; }
-/* The lone traveller stands left of centre in the photo: zoom around them, and crop towards them. */
-.tm-proof__media {
-  --e: clamp(0, calc(var(--p, 0) / 0.3), 1);
-  transform: scale(calc(1.2 - var(--p, 0) * 0.2));
-  transform-origin: 13% 85%;
-  will-change: transform, clip-path;
-  clip-path: inset(calc((1 - var(--e)) * 12%) calc((1 - var(--e)) * 15%));
-}
-.tm-proof__media img { object-position: 5% 50%; }
-.tm-proof__body {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 1.1rem;
-  padding: var(--gutter);
-  text-align: center;
-  text-shadow: 0 1px 24px rgb(9 11 16 / 0.35);
-}
-.tm-proof__text { max-width: 44rem; font-size: clamp(2.2rem, 4.8vw, 4.4rem); line-height: 1.02; }
-.tm-proof__note { max-width: 32rem; font-size: 0.95rem; line-height: 1.45; font-weight: 500; }
-
-.tm-proof__media::after,
-.tm-cta__media::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(70% 55% at 50% 50%, rgb(9 11 16 / 0.34), rgb(9 11 16 / 0.08) 100%);
-}
 
 /* 9. Route code and fade to white */
 .tm-code { position: relative; height: 260svh; }
@@ -925,7 +880,7 @@ body:has(.tm-home[data-motion="reduced"]) .tm-how__step { animation: none; }
 .tm-home[data-motion="reduced"] .tm-hero__stage, .tm-home[data-motion="reduced"] .tm-code__stage, .tm-home[data-motion="reduced"] .tm-dest__stage, .tm-home[data-motion="reduced"] .tm-map__stage { position: relative; }
 .tm-home[data-motion="reduced"] .tm-hero__word { filter: none; transform: none; }
 .tm-home[data-motion="reduced"] .tm-fog, .tm-home[data-motion="reduced"] .tm-code__fade { display: none; }
-.tm-home[data-motion="reduced"] .tm-hero__media, .tm-home[data-motion="reduced"] .tm-promise__ridge, .tm-home[data-motion="reduced"] .tm-way, .tm-home[data-motion="reduced"] .tm-code__media, .tm-home[data-motion="reduced"] .tm-proof__media, .tm-home[data-motion="reduced"] .tm-cta__media, .tm-home[data-motion="reduced"] .tm-lt, .tm-home[data-motion="reduced"] .tm-lt i, .tm-home[data-motion="reduced"] .tm-word { transform: none; clip-path: none; }
+.tm-home[data-motion="reduced"] .tm-hero__media, .tm-home[data-motion="reduced"] .tm-promise__ridge, .tm-home[data-motion="reduced"] .tm-way, .tm-home[data-motion="reduced"] .tm-code__media, .tm-home[data-motion="reduced"] .tm-cta__media, .tm-home[data-motion="reduced"] .tm-lt, .tm-home[data-motion="reduced"] .tm-lt i, .tm-home[data-motion="reduced"] .tm-word { transform: none; clip-path: none; }
 .tm-home[data-motion="reduced"] .tm-promise__ridge { transform: translateX(-50%); }
 .tm-home[data-motion="reduced"] .tm-promise__ridge--back { display: none; }
 .tm-home[data-motion="reduced"] .tm-dest__card, .tm-home[data-motion="reduced"] .tm-dest__card-media img, .tm-home[data-motion="reduced"] .tm-way__title, .tm-home[data-motion="reduced"] .tm-way__foot { transform: none; }

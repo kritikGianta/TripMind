@@ -220,30 +220,6 @@ export function Destinations() {
   );
 }
 
-export function Proof() {
-  const { label, text, note, cta } = homeCopy.proof;
-  const ref = useScrollProgress<HTMLElement>("pass");
-  return (
-    <section ref={ref} className="tm-proof">
-      <Media slot="proof-landscape" className="tm-proof__media" />
-      <div className="tm-proof__body">
-        <h2 className="tm-label">{label}</h2>
-        <p className="tm-italic tm-proof__text">
-          {text.split(" ").map((word, index, words) => (
-            <span key={`${word}-${index}`} className="tm-word" style={{ "--i": index / words.length } as React.CSSProperties}>
-              {word}{" "}
-            </span>
-          ))}
-        </p>
-        <p className="tm-proof__note">{note}</p>
-        <Link href="/about" className="tm-chip tm-chip--wide">
-          {cta}
-        </Link>
-      </div>
-    </section>
-  );
-}
-
 export function RouteCode() {
   const { code, from, to, heading, text } = homeCopy.route;
   const ref = useScrollProgress<HTMLElement>("pin");

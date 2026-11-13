@@ -43,7 +43,7 @@ export const homeMedia = {
   },
   "ridge-landscape": {
     kind: "image",
-    section: "'No AI, just rules you can check', rising up the page in front of a hazy far range",
+    section: "Mountain ridge rising up the page in front of a hazy far range",
     brief: "A mountain cut out along its own outline, transparent above it. Stok Kangri, Ladakh: public domain, by Maverick34 on Wikimedia Commons.",
     size: "2400x872, with transparency",
     alt: "Stok Kangri, a snow-streaked peak in Ladakh",
@@ -145,14 +145,7 @@ export const homeMedia = {
     alt: "Sheikh Zayed Grand Mosque in Abu Dhabi",
     tone: sky("#a7cfb6", "#58967f", "#1f4f4a"),
   },
-  "proof-landscape": {
-    kind: "image",
-    section: "'No AI. Every rule checked.' full screen, white text on top",
-    brief: "Bright, spacious landscape with one small human figure near the centre: dunes, salt flats (Rann of Kutch) or snow. Keep the centre uncluttered.",
-    size: "2400x1500",
-    alt: "A single traveller in a wide landscape",
-    tone: sky("#c6d3ea", "#8fa9d4", "#5372a8"),
-  },
+
   "route-opening": {
     kind: "image",
     section: "Giant BLR — NRT route code; the photo fades into white as you scroll",
@@ -200,10 +193,7 @@ export const homeCopy = {
     label: "One trip, one place",
     text: "A flight here, a hotel there, and nobody checking that they fit together. TripMind builds the whole holiday, checks every part against the rules, and keeps it right when you change something.",
   },
-  promise: {
-    label: "No AI, just rules you can check",
-    text: "Every package is built and checked by plain rules: the flight lands on your start date, the hotel has rooms every night, the airport transfer runs when you land, and attractions are open when you visit. If a change breaks a rule, TripMind says which one.",
-  },
+
   ways: {
     heading: "Ways to travel",
     items: [
@@ -278,12 +268,7 @@ export const homeCopy = {
       { slot: "dest-abudhabi", city: "Abu Dhabi", text: "A white marble mosque, museums and a calm corniche.", coords: "24° 27′ N, 54° 22′ E" },
     ],
   },
-  proof: {
-    label: "How it is built",
-    text: "No AI. Every rule checked.",
-    note: "Packages, prices and changes run on plain rules you can read, and every booking takes its seats and rooms in one safe step, so the last room is never sold twice.",
-    cta: "See how it works",
-  },
+
   route: {
     code: ["BLR", "NRT"],
     from: { coords: "13° 11′ 55″ N, 77° 42′ 24″ E", place: "Bengaluru" },
