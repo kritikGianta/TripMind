@@ -20,9 +20,9 @@ export function PlanModes() {
   const mode = params.get("mode") === "holiday" ? "holiday" : "trip";
   return (
     <Tabs value={mode} onValueChange={(value) => router.replace(value === "holiday" ? `${pathname}?mode=holiday` : pathname, { scroll: false })} className="grid gap-6">
-      <TabsList className="w-fit">
-        <TabsTrigger value="trip">Plan a trip · flight + stay</TabsTrigger>
-        <TabsTrigger value="holiday">Book my holiday · full package</TabsTrigger>
+      <TabsList className="h-11 w-fit bg-background/95 shadow-md backdrop-blur">
+        <TabsTrigger value="trip" className="px-4 font-semibold text-foreground/75 data-[state=active]:text-foreground">Plan a trip · flight + stay</TabsTrigger>
+        <TabsTrigger value="holiday" className="px-4 font-semibold text-foreground/75 data-[state=active]:text-foreground">Book my holiday · full package</TabsTrigger>
       </TabsList>
       <TabsContent value="trip" className="grid gap-8">
         <RequireAuth>

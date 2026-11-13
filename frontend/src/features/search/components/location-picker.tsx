@@ -30,6 +30,7 @@ export function LocationPicker({
   placeholder,
   icon = kind === "airport" ? PlaneTakeoff : Building2,
   invalid,
+  role = "any",
 }: {
   id: string;
   kind: LocationKind;
@@ -38,11 +39,13 @@ export function LocationPicker({
   placeholder: string;
   icon?: typeof MapPin;
   invalid?: boolean;
+  /** from: departure cities only; to: destinations only (every pair then has data). */
+  role?: "any" | "from" | "to";
 }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const q = useDebounced(text, 150);
-  const { data, isFetching } = useLocations(q, kind);
+  const { data, isFetching } = useLocations(q, kind, role);
   const Icon = icon;
 
   return (

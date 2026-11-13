@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import NotFound
-from app.modules.catalog.models import Airport, AirportServedCity, City
+from app.modules.catalog.models import Airport, AirportServedCity, City, Flight
 from app.modules.catalog.vocabulary import Vocabulary, normalize_text
 from app.modules.search.schemas import LocationOut
 
@@ -79,9 +79,35 @@ class LocationService:
             for c in cities
         ]
 
-    def search(self, query: str, kind: str, limit: int) -> list[LocationOut]:
+    def _allowed(self, kind: str, role: str) -> set[str] | None:
+        """Only places with data for every choice: 'from' = departure cities, 'to' = destinations.
+
+        A destination airport counts only if flights from the departure cities land there, so
+        every from/to pair the pickers offer has flights and hotels on every date.
+        """
+        if role == "any":
+            return None
+        departure = set(self._session.scalars(select(City.id).where(City.is_departure.is_(True))))
+        if kind == "city":
+            cities = self._session.scalars(select(City.id).where(City.is_active.is_(True)))
+            return {str(c) for c in cities if (c in departure) == (role == "from")}
+        if role == "from":
+            return set(
+                self._session.scalars(select(Airport.code).where(Airport.city_id.in_(departure)))
+            )
+        served = (
+            select(Flight.destination_airport_id)
+            .join(Airport, Airport.id == Flight.origin_airport_id)
+            .where(Airport.city_id.in_(departure), Flight.is_active.is_(True))
+            .distinct()
+        )
+        return set(self._session.scalars(select(Airport.code).where(Airport.id.in_(served))))
+
+    def search(self, query: str, kind: str, limit: int, role: str = "any") -> list[LocationOut]:
         q = _norm(query)
         candidates = self._airports() if kind == "airport" else self._cities()
+        if (allowed := self._allowed(kind, role)) is not None:
+            candidates = [c for c in candidates if c.location.value in allowed]
         if not q:
             return sorted((c.location for c in candidates), key=lambda loc: loc.label)[:limit]
         scored: list[tuple[int, str, LocationOut]] = []

@@ -12537,6 +12537,23 @@
             }
           },
           {
+            "description": "from: departure cities only; to: destinations only",
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "default": "any",
+              "description": "from: departure cities only; to: destinations only",
+              "enum": [
+                "any",
+                "from",
+                "to"
+              ],
+              "title": "Role",
+              "type": "string"
+            }
+          },
+          {
             "in": "query",
             "name": "limit",
             "required": false,

@@ -291,15 +291,15 @@ function Totals({ pkg }: { pkg: Package }) {
           <span>Total</span>
           <span>{inr(pkg.total_inr)}</span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between font-medium">
           <span>Budget</span>
           <span>{inr(pkg.budget_inr)}</span>
         </div>
-        <div className={`flex justify-between ${pkg.left_inr < 0 ? "text-destructive" : ""}`}>
+        <div className={`flex justify-between font-medium ${pkg.left_inr < 0 ? "text-destructive" : ""}`}>
           <span>{pkg.left_inr >= 0 ? "Left" : "Over budget by"}</span>
           <span>{inr(Math.abs(pkg.left_inr))}</span>
         </div>
-        <a className="mt-2 inline-flex items-center gap-1 text-sm underline" href={`${API_BASE}/holiday/packages/${pkg.id}/export`}>
+        <a className="mt-2 inline-flex items-center gap-1 text-sm font-medium underline" href={`${API_BASE}/holiday/packages/${pkg.id}/export`}>
           <Download className="size-4" /> Download JSON
         </a>
         {pkg.problems.length ? <p className="text-destructive">Broken rules: {pkg.problems.join(" ")}</p> : null}
@@ -481,7 +481,10 @@ export function ReservationView() {
       {found.data ? (
         <div className="grid gap-4 lg:grid-cols-[1fr_22rem]">
           <div className="grid content-start gap-3">
-            <h1>Reservation {found.data.reference}</h1>
+            <h1 className="flex flex-wrap items-baseline gap-x-4">
+              Reservation
+              <span className="font-sans text-xl font-semibold tracking-widest text-muted-foreground normal-case">{found.data.reference}</span>
+            </h1>
             <p className="text-muted-foreground">
               {String(found.data.request.country)} · {found.data.cities.map((c) => `${c.city as string} ${c.nights as number}n`).join(" → ")} · Confirmed
             </p>

@@ -28,11 +28,11 @@ export function toQuery(params: Record<string, string | number | boolean | strin
   return search.toString();
 }
 
-export function useLocations(q: string, kind: LocationKind) {
+export function useLocations(q: string, kind: LocationKind, role: "any" | "from" | "to" = "any") {
   return useQuery({
-    queryKey: ["locations", kind, q],
+    queryKey: ["locations", kind, role, q],
     queryFn: ({ signal }) =>
-      apiFetch<Schemas["LocationListOut"]>(`/locations?${toQuery({ q, kind, limit: 8 })}`, { signal }),
+      apiFetch<Schemas["LocationListOut"]>(`/locations?${toQuery({ q, kind, role, limit: 8 })}`, { signal }),
     placeholderData: keepPreviousData,
     staleTime: 5 * 60_000,
   });

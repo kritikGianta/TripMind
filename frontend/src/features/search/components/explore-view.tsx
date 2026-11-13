@@ -65,7 +65,7 @@ export function ExploreView() {
         <form onSubmit={submit} className="grid grid-cols-[minmax(0,1fr)] items-end gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]">
           <div className="grid gap-1.5">
             <Label htmlFor="explore-from">Leaving from</Label>
-            <LocationPicker id="explore-from" kind="airport" value={origin} onChange={setOrigin} placeholder="City or airport" />
+            <LocationPicker id="explore-from" kind="airport" role="from" value={origin} onChange={setOrigin} placeholder="City or airport" />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="explore-date">Leave on</Label>

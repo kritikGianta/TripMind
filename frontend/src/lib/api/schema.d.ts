@@ -7837,6 +7837,8 @@ export interface operations {
             query?: {
                 q?: string;
                 kind?: "airport" | "city";
+                /** @description from: departure cities only; to: destinations only */
+                role?: "any" | "from" | "to";
                 limit?: number;
             };
             header?: never;

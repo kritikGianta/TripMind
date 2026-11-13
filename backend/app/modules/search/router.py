@@ -100,12 +100,16 @@ def _hotels(
 def locations(
     q: Annotated[str, Query(max_length=80)] = "",
     kind: Literal["airport", "city"] = "airport",
+    role: Annotated[
+        Literal["any", "from", "to"],
+        Query(description="from: departure cities only; to: destinations only"),
+    ] = "any",
     limit: Annotated[int, Query(ge=1, le=50)] = 8,
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings_dep),
 ) -> LocationListOut:
     service = LocationService(session, load_vocabulary(settings.config_dir))
-    return LocationListOut(items=service.search(q, kind, limit))
+    return LocationListOut(items=service.search(q, kind, limit, role))
 
 
 @router.get(

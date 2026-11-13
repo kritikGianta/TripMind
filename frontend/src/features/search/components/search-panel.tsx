@@ -127,7 +127,7 @@ function FlightForm({ initial }: { initial?: Partial<FlightFormValues> }) {
 
       <div className="grid gap-3 md:grid-cols-2 md:items-end lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_10rem_10rem_auto]">
         <Field label="From" htmlFor="flight-from">
-          <LocationPicker id="flight-from" kind="airport" value={from} onChange={setFrom} placeholder="Leaving from" />
+          <LocationPicker id="flight-from" kind="airport" role="from" value={from} onChange={setFrom} placeholder="Leaving from" />
         </Field>
         <Button
           type="button"
@@ -143,7 +143,7 @@ function FlightForm({ initial }: { initial?: Partial<FlightFormValues> }) {
           <ArrowLeftRight />
         </Button>
         <Field label="To" htmlFor="flight-to">
-          <LocationPicker id="flight-to" kind="airport" value={to} onChange={setTo} placeholder="Going to" />
+          <LocationPicker id="flight-to" kind="airport" role="to" value={to} onChange={setTo} placeholder="Going to" />
         </Field>
         <Field label="Depart" htmlFor="flight-depart">
           <Input
@@ -210,7 +210,7 @@ function StayForm({ initial }: { initial?: Partial<StayFormValues> }) {
     <form onSubmit={submit} className="grid gap-4" noValidate>
       <div className="grid gap-3 md:grid-cols-2 md:items-end lg:grid-cols-[minmax(0,1fr)_10rem_10rem_8rem_8rem_auto]">
         <Field label="Destination" htmlFor="stay-city">
-          <LocationPicker id="stay-city" kind="city" value={city} onChange={setCity} placeholder="Where are you going?" />
+          <LocationPicker id="stay-city" kind="city" role="to" value={city} onChange={setCity} placeholder="Where are you going?" />
         </Field>
         <Field label="Check-in" htmlFor="stay-in">
           <Input

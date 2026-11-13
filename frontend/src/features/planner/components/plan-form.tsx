@@ -88,11 +88,11 @@ export function PlanForm() {
           <div className="grid gap-3 md:grid-cols-2">
             <div className="grid gap-1.5">
               <Label htmlFor="plan-from">Leaving from</Label>
-              <LocationPicker id="plan-from" kind="airport" value={from} onChange={setFrom} placeholder="City or airport" />
+              <LocationPicker id="plan-from" kind="airport" role="from" value={from} onChange={setFrom} placeholder="City or airport" />
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="plan-to">Going to</Label>
-              <LocationPicker id="plan-to" kind="city" value={to} onChange={setTo} placeholder="Destination city" />
+              <LocationPicker id="plan-to" kind="city" role="to" value={to} onChange={setTo} placeholder="Destination city" />
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
