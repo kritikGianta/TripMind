@@ -19,12 +19,17 @@ from app.modules.bookings.models import (
 )
 from app.modules.catalog.models import (
     Airport,
+    AirportServedCity,
+    Attraction,
     City,
+    CityLink,
+    Country,
     Flight,
     Hotel,
     HotelAmenity,
     HotelReview,
     RoomType,
+    Transfer,
 )
 from app.modules.groups.models import GroupMember, GroupVote, TripGroup
 from app.modules.ingestion.models import ImportReject, ImportRun
@@ -42,6 +47,8 @@ from app.modules.watchlist.models import PriceAlert, SavedHotel
 
 __all__ = [
     "Airport",
+    "AirportServedCity",
+    "Attraction",
     "AuditLog",
     "Base",
     "Booking",
@@ -50,6 +57,8 @@ __all__ = [
     "BookingItem",
     "BookingTraveller",
     "City",
+    "CityLink",
+    "Country",
     "Disruption",
     "Flight",
     "FlightInventory",
@@ -76,6 +85,7 @@ __all__ = [
     "StayReview",
     "SupportTicket",
     "TicketMessage",
+    "Transfer",
     "TravellerProfile",
     "Trip",
     "TripGroup",

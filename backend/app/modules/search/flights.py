@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import Airport, City, Flight
 from app.modules.catalog.repository import CatalogRepository
+from app.modules.inventory.service import seats_left
 from app.modules.operations.queries import cancelled_flights
 from app.modules.search.locations import LocationService
 from app.modules.search.pricing import Converter, LedgerLine, MoneyOut, SearchRules
@@ -200,7 +201,7 @@ class FlightSearchService:
         start = datetime.combine(day, datetime.min.time())
         common = (
             Flight.cabin_class == query.cabin_class,
-            Flight.seat_capacity >= query.adults,
+            seats_left() >= query.adults,
         )
         from_origin = self._flights(
             Flight.origin_airport_id.in_(origin_ids),
@@ -254,7 +255,7 @@ class FlightSearchService:
             Flight.departure_at >= earliest,
             Flight.departure_at <= latest,
             Flight.cabin_class == query.cabin_class,
-            Flight.seat_capacity >= query.adults,
+            seats_left() >= query.adults,
             Flight.fare_minor.is_not(None),
             Flight.stops == 0,
         )

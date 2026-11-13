@@ -16,7 +16,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import select, update
+from sqlalchemy import ColumnElement, func, select, update
 from sqlalchemy.dialects import postgresql, sqlite
 from sqlalchemy.orm import Session
 
@@ -47,6 +47,16 @@ def nights(check_in: date, check_out: date) -> list[date]:
     return [check_in + timedelta(days=i) for i in range((check_out - check_in).days)]
 
 
+def seats_left() -> ColumnElement[int]:
+    """SQL for a flight's free seats: its capacity minus what TripMind has reserved."""
+    reserved = (
+        select(FlightInventory.reserved)
+        .where(FlightInventory.flight_id == Flight.id)
+        .scalar_subquery()
+    )
+    return Flight.seat_capacity - func.coalesce(reserved, 0)
+
+
 class InventoryService:
     def __init__(self, session: Session) -> None:
         self._session = session
@@ -66,6 +76,30 @@ class InventoryService:
             ).all()
         )
         return {fid: cap - reserved.get(fid, 0) for fid, cap in capacity.items()}
+
+    def rooms_free(self, rooms: list[RoomType], stay: list[date]) -> dict[uuid.UUID, int]:
+        """Rooms of each type free on every night of a stay (the lowest night counts).
+
+        A night with no inventory row has the room type's `total_rooms` (none reserved yet); for
+        the finale data that is 0, so only the nights the data lists can be booked.
+        """
+        if not rooms or not stay:
+            return {room.id: 0 for room in rooms}
+        rows = self._session.execute(
+            select(
+                RoomNightInventory.room_type_id,
+                RoomNightInventory.night,
+                RoomNightInventory.capacity - RoomNightInventory.reserved,
+            ).where(
+                RoomNightInventory.room_type_id.in_([r.id for r in rooms]),
+                RoomNightInventory.night.in_(stay),
+            )
+        ).all()
+        free: dict[tuple[uuid.UUID, date], int] = {(r, n): left for r, n, left in rows}
+        return {
+            room.id: min(free.get((room.id, night), room.total_rooms) for night in stay)
+            for room in rooms
+        }
 
     def reserve_seats(self, item_id: uuid.UUID, flight: Flight, quantity: int) -> None:
         _insert_ignore(

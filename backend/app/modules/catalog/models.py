@@ -31,6 +31,7 @@ from sqlalchemy import (
     Uuid,
 )
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import JSON
 
 from app.db.base import Base, TimestampMixin
 
@@ -69,9 +70,13 @@ class City(CatalogRowMixin, Base):
 
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     country: Mapped[str | None] = mapped_column(String(64))
+    # ISO country code (IN, JP, AE) when the dataset gives one; links a city to `countries`.
+    country_code: Mapped[str | None] = mapped_column(String(2), index=True)
     latitude: Mapped[float | None] = mapped_column(Float)
     longitude: Mapped[float | None] = mapped_column(Float)
     timezone: Mapped[str] = mapped_column(String(64), nullable=False)
+    # A city a holiday can start from (destinations.json `departure_cities`).
+    is_departure: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 
 class Airport(CatalogRowMixin, Base):
@@ -167,6 +172,11 @@ class Hotel(CatalogRowMixin, Base):
     description: Mapped[str | None] = mapped_column(Text)
     check_in_time: Mapped[str | None] = mapped_column(String(5))
     check_out_time: Mapped[str | None] = mapped_column(String(5))
+    # Part of the city; it decides which airport transfers serve the hotel.
+    area: Mapped[str | None] = mapped_column(String(80))
+    family_friendly: Mapped[bool | None] = mapped_column(Boolean)
+    # Path of a photo inside the data pack (images/hotels/...), shown with its credit.
+    image: Mapped[str | None] = mapped_column(String(200))
 
 
 class HotelAmenity(Base):
@@ -196,6 +206,12 @@ class RoomType(CatalogRowMixin, Base):
     )
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     max_occupancy: Mapped[int] = mapped_column(Integer, nullable=False)
+    # Capacity of one room split by adults and children, when the dataset gives it. Holiday
+    # room-fit rule: k rooms fit when adults <= k * max_adults,
+    # adults + children <= k * (max_adults + max_children), and adults >= k.
+    max_adults: Mapped[int | None] = mapped_column(Integer)
+    max_children: Mapped[int | None] = mapped_column(Integer)
+    room_kind: Mapped[str | None] = mapped_column(String(24))  # TWIN, FAMILY, ...
     bed_type: Mapped[str | None] = mapped_column(String(64))
     board: Mapped[str | None] = mapped_column(String(32))
     refundable: Mapped[bool | None] = mapped_column(Boolean)
@@ -223,3 +239,117 @@ class HotelReview(CatalogRowMixin, Base):
     text: Mapped[str] = mapped_column(Text, nullable=False)
     traveller_type: Mapped[str | None] = mapped_column(String(32))
     reviewed_on: Mapped[date | None] = mapped_column(Date)
+
+
+# ── Holiday catalog: countries, how cities connect, ground transfers and attractions ──────────
+
+
+class Country(Base):
+    """A destination country (destinations.json `countries`)."""
+
+    __tablename__ = "countries"
+
+    code: Mapped[str] = mapped_column(String(2), primary_key=True)
+    name: Mapped[str] = mapped_column(String(80), nullable=False, unique=True)
+    timezone: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
+class AirportServedCity(Base):
+    """A city a traveller can reach from an airport (airports.json `serves_cities`)."""
+
+    __tablename__ = "airport_served_cities"
+
+    airport_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("airports.id", ondelete="CASCADE"), primary_key=True
+    )
+    city_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("cities.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+
+
+class Transfer(CatalogRowMixin, Base):
+    """One ground transfer service: airport taxi or bus, train or bus between cities, city taxi.
+
+    `source_key` is the dataset's `transfer_id`. Airport transfers set `airport_code`,
+    `city_name` and `area` (NULL area = every hotel in the city); transfers between cities set
+    `from_city_name` and `to_city_name`. Service times are local clock times ("06:00", "24:00").
+    """
+
+    __tablename__ = "transfers"
+    __table_args__ = (
+        CheckConstraint(_ORIGIN_CHECK, name="origin_valid"),
+        CheckConstraint("pricing IN ('PER_VEHICLE', 'PER_PERSON')", name="pricing_valid"),
+        CheckConstraint("price_minor >= 0", name="price_non_negative"),
+        CheckConstraint("max_passengers >= 1", name="passengers_positive"),
+    )
+
+    kind: Mapped[str] = mapped_column(String(24), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    airport_code: Mapped[str | None] = mapped_column(String(8), index=True)
+    city_name: Mapped[str | None] = mapped_column(String(120), index=True)
+    area: Mapped[str | None] = mapped_column(String(80))
+    from_city_name: Mapped[str | None] = mapped_column(String(120))
+    to_city_name: Mapped[str | None] = mapped_column(String(120))
+    from_point: Mapped[str | None] = mapped_column(String(160))
+    to_point: Mapped[str | None] = mapped_column(String(160))
+    door_to_door: Mapped[bool | None] = mapped_column(Boolean)
+    max_passengers: Mapped[int] = mapped_column(Integer, nullable=False)
+    service_from: Mapped[str] = mapped_column(String(5), nullable=False)
+    service_until: Mapped[str] = mapped_column(String(5), nullable=False)
+    frequency_minutes: Mapped[int | None] = mapped_column(Integer)
+    duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    pricing: Mapped[str] = mapped_column(String(12), nullable=False)
+    price_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    child_price_minor: Mapped[int | None] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+
+
+class CityLink(Base):
+    """A one-way connection between two cities and one transfer that makes it
+    (destinations.json `countries[].links`)."""
+
+    __tablename__ = "city_links"
+
+    from_city_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("cities.id", ondelete="CASCADE"), primary_key=True
+    )
+    to_city_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("cities.id", ondelete="CASCADE"), primary_key=True
+    )
+    transfer_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("transfers.id", ondelete="CASCADE"), primary_key=True
+    )
+
+
+class Attraction(CatalogRowMixin, Base):
+    """A sight with opening days and hours, closed dates, visit time and prices.
+
+    `source_key` is the dataset's `attraction_id`. `city_name` is kept as text because some
+    attractions are in a city with no hotels (Nara), so no package can include them.
+    """
+
+    __tablename__ = "attractions"
+    __table_args__ = (
+        CheckConstraint(_ORIGIN_CHECK, name="origin_valid"),
+        CheckConstraint("visit_minutes > 0", name="visit_positive"),
+        CheckConstraint("price_minor >= 0", name="price_non_negative"),
+    )
+
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    name_local: Mapped[str | None] = mapped_column(String(160))
+    city_name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    category: Mapped[str | None] = mapped_column(String(32))
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)
+    open_days: Mapped[list[str]] = mapped_column(JSON, nullable=False)  # ["MON", ...]
+    open_from: Mapped[str] = mapped_column(String(5), nullable=False)
+    open_until: Mapped[str] = mapped_column(String(5), nullable=False)
+    closed_dates: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    visit_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    aliases: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    child_friendly: Mapped[bool | None] = mapped_column(Boolean)
+    accessible: Mapped[bool | None] = mapped_column(Boolean)
+    price_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    child_price_minor: Mapped[int | None] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    image: Mapped[str | None] = mapped_column(String(200))

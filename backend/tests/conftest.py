@@ -133,3 +133,11 @@ def catalog(db_session: Session, settings: Settings, clock: FrozenClock, demo_zi
         dry_run=False,
         actor=Actor(user_id=None, via="cli", meta=RequestMeta(None, None)),
     )
+
+
+@pytest.fixture
+def holiday_pack(db_session: Session, settings: Settings, clock: FrozenClock) -> None:
+    """The official finale data pack, loaded the same way Docker loads it."""
+    from app.modules.holiday.pack import load_pack
+
+    load_pack(db_session, settings.holiday_data_dir, clock.now())

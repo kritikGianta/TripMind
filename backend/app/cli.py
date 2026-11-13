@@ -18,7 +18,7 @@ import json
 import secrets
 import sys
 import tempfile
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -212,6 +212,21 @@ def data_bootstrap() -> int:
         return data_import(archive, "synthetic-v1", dry_run=False)
 
 
+def holiday_load(pack_dir: Path | None) -> int:
+    """Load (or reload) the official finale data pack. Safe to run on every start-up."""
+    from app.modules.holiday.pack import load_pack
+
+    settings = get_settings()
+    with get_session_factory()() as session:
+        report = load_pack(session, pack_dir or settings.holiday_data_dir, datetime.now(UTC))
+    counts = ", ".join(f"{n} {name}" for name, n in report.counts.items())
+    print(f"holiday pack loaded: {counts}")
+    retired = {k: v for k, v in report.retired.items() if v}
+    if retired:
+        print(f"retired from earlier data: {retired}")
+    return 0
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -225,6 +240,13 @@ def _parser() -> argparse.ArgumentParser:
     admin.add_argument("--name", default="Administrator")
     openapi = sub.add_parser("openapi", help="Write the OpenAPI schema to a file")
     openapi.add_argument("path", type=Path)
+
+    holiday = sub.add_parser("holiday", help="The official finale data pack")
+    holiday_sub = holiday.add_subparsers(dest="holiday_command", required=True)
+    hload = holiday_sub.add_parser("load", help="Load or reload the data pack into the catalog")
+    hload.add_argument(
+        "--pack", type=Path, default=None, help="Data pack folder (default: setting)"
+    )
 
     data = sub.add_parser("data", help="Dataset generation, profiling and import")
     data_sub = data.add_subparsers(dest="data_command", required=True)
@@ -275,6 +297,8 @@ def main(argv: list[str] | None = None) -> int:
         return export_openapi(args.path)
     if args.command == "create-admin":
         return create_admin(args.email, args.name)
+    if args.command == "holiday":
+        return holiday_load(args.pack)
     if args.data_command == "generate":
         return data_generate(
             args.out,

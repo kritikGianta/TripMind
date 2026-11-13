@@ -13,6 +13,8 @@ x-api-env: &api-env
   DEMO_TRAVELER_EMAIL: ${DEMO_TRAVELER_EMAIL:-demo@tripmind.dev}
   DEMO_ADMIN_EMAIL: ${DEMO_ADMIN_EMAIL:-admin@tripmind.dev}
   CONFIG_DIR: /config
+  # The official finale data pack, mounted read-only (the files must never change).
+  HOLIDAY_DATA_DIR: /holiday-pack
   REDIS_URL: redis://redis:6379/0
   # Set to http://jaeger:4318 (with the obs profile) to send traces to Jaeger.
   OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
@@ -58,13 +60,12 @@ services:
       - sh
       - -c
       - >-
-        alembic upgrade head && python -m app.cli seed &&
-        if [ "$${BOOTSTRAP_DEMO_DATA:-true}" = "true" ]; then python -m app.cli data bootstrap; fi
+        alembic upgrade head && python -m app.cli seed && python -m app.cli holiday load
     environment:
       <<: *api-env
-      BOOTSTRAP_DEMO_DATA: ${BOOTSTRAP_DEMO_DATA:-true}
     volumes:
       - ./config:/config:ro
+      - ./hackathon-problem-1-holiday-package:/holiday-pack:ro
     depends_on:
       db:
         condition: service_healthy
@@ -78,6 +79,7 @@ services:
       BACKGROUND_JOBS: "false"  # the worker service runs scheduled jobs
     volumes:
       - ./config:/config:ro
+      - ./hackathon-problem-1-holiday-package:/holiday-pack:ro
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:

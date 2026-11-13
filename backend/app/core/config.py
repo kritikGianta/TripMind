@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     log_json: bool = True
     api_prefix: str = "/api/v1"
     config_dir: Path = _REPO_ROOT / "config"
+    # The official finale data pack (read-only): data/catalog/*.json and images/.
+    holiday_data_dir: Path = _REPO_ROOT / "hackathon-problem-1-holiday-package"
 
     # Database
     database_url: str = "postgresql+psycopg://tripmind:tripmind@127.0.0.1:5432/tripmind"

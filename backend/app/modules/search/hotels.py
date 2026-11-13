@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import City, Hotel, HotelAmenity, RoomType
+from app.modules.inventory.service import InventoryService, nights
 from app.modules.operations.queries import unavailable_rooms
 from app.modules.search.geo import distance_km as _distance_km
 from app.modules.search.locations import LocationService
@@ -101,6 +102,7 @@ class HotelSearchService:
         self._rules = rules
         self._today = today
         self._out_of_service: dict[tuple[date, date], set[uuid.UUID]] = {}
+        self._free: dict[tuple[date, date], dict[uuid.UUID, int]] = {}
 
     def validate(self, stay: Stay) -> None:
         if stay.check_in < self._today:
@@ -125,7 +127,7 @@ class HotelSearchService:
         )
         fits = stay is None or (
             room.max_occupancy >= stay.guests_per_room
-            and room.total_rooms >= stay.rooms
+            and self._rooms_free(room, stay) >= stay.rooms
             and room.id not in self._unavailable(stay)
         )
         price = None
@@ -163,6 +165,18 @@ class HotelSearchService:
             price=price,
             origin=room.origin,
         )
+
+    def _rooms_free(self, room: RoomType, stay: Stay) -> int:
+        """Rooms of this type free on every night of the stay (per-night inventory)."""
+        key = (stay.check_in, stay.check_out)
+        cached = self._free.setdefault(key, {})
+        if room.id not in cached:
+            cached.update(
+                InventoryService(self._session).rooms_free(
+                    [room], nights(stay.check_in, stay.check_out)
+                )
+            )
+        return cached[room.id]
 
     def _unavailable(self, stay: Stay) -> set[uuid.UUID]:
         key = (stay.check_in, stay.check_out)
