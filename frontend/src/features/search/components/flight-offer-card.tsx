@@ -27,12 +27,6 @@ function Airline({ offer }: { offer: FlightOffer }) {
   );
 }
 
-const FARE_LABELS = {
-  below_typical: "Below typical fare",
-  typical: "Typical fare",
-  above_typical: "Above typical fare",
-} as const;
-
 export function FlightOfferCard({
   offer,
   adults,
@@ -90,18 +84,6 @@ export function FlightOfferCard({
       <div className="flex flex-wrap items-center gap-2 border-t px-4 py-2">
         <Badge variant="outline">{CABIN_LABELS[first.cabin_class] ?? first.cabin_class}</Badge>
         {offer.self_transfer ? <Badge variant="outline">Different airlines</Badge> : null}
-        {offer.fare_insight ? (
-          <Badge
-            variant="outline"
-            className={cn(
-              offer.fare_insight.label === "below_typical" && "text-emerald-700 dark:text-emerald-400",
-              offer.fare_insight.label === "above_typical" && "text-amber-700 dark:text-amber-300",
-            )}
-            title={`Typical fare about ${formatMoney(offer.fare_insight.typical_per_adult)} per adult. Model ${offer.fare_insight.model_version}, trained on ${offer.fare_insight.basis}.`}
-          >
-            {FARE_LABELS[offer.fare_insight.label]}
-          </Badge>
-        ) : null}
         {(offer.notices ?? []).map((n) => (
           <span key={n} className="text-xs text-muted-foreground">
             {n}

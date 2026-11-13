@@ -13,15 +13,9 @@ x-api-env: &api-env
   DEMO_TRAVELER_EMAIL: ${DEMO_TRAVELER_EMAIL:-demo@tripmind.dev}
   DEMO_ADMIN_EMAIL: ${DEMO_ADMIN_EMAIL:-admin@tripmind.dev}
   CONFIG_DIR: /config
-  MODELS_DIR: /models
   REDIS_URL: redis://redis:6379/0
   # Set to http://jaeger:4318 (with the obs profile) to send traces to Jaeger.
   OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
-  # Optional hosted LLM keys; AI features fall back to rules without them.
-  GROQ_API_KEY: ${GROQ_API_KEY:-}
-  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-  LLM_PROVIDER_ORDER: ${LLM_PROVIDER_ORDER:-groq,gemini,openrouter}
 
 services:
   # Shared state for API replicas and the worker (rate limits, AI cache, job locks).
@@ -84,8 +78,6 @@ services:
       BACKGROUND_JOBS: "false"  # the worker service runs scheduled jobs
     volumes:
       - ./config:/config:ro
-      - ./docs/help:/docs/help:ro
-      - ./models:/models:ro
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -108,7 +100,6 @@ services:
       retries: 3
     volumes:
       - ./config:/config:ro
-      - ./models:/models:ro
     depends_on:
       migrate:
         condition: service_completed_successfully

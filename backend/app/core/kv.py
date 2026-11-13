@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import threading
 import time
+import uuid
 from typing import Any, Protocol
 
 import structlog
@@ -135,7 +136,7 @@ class RedisStore:
             first = oldest[0][1] if oldest else now
             return False, max(1, int(first + window_seconds - now) + 1)
         pipe = self._redis.pipeline()
-        pipe.zadd(name, {f"{now:.6f}:{id(pipe)}": now})
+        pipe.zadd(name, {f"{now:.6f}:{uuid.uuid4().hex}": now})  # unique even within one tick
         pipe.expire(name, window_seconds + 1)
         pipe.execute()
         return True, 0

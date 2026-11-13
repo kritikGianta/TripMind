@@ -1,6 +1,6 @@
 "use client";
 
-import { BellRing, BookmarkX, Download, History, KeyRound, LogOut, MessageSquareText, ShieldAlert, SlidersHorizontal, Star, Trash2 } from "lucide-react";
+import { BellRing, BookmarkX, Download, History, KeyRound, LogOut, MessageSquareText, ShieldAlert, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
@@ -26,10 +26,8 @@ import {
   useDeleteReview,
   useForgetSearch,
   useMyReviews,
-  usePreferences,
   usePriceAlerts,
   useRecentSearches,
-  useResetPreferences,
   useSavedHotels,
   useSignOutEverywhere,
   useToggleSaved,
@@ -269,40 +267,6 @@ function PasswordCard() {
   );
 }
 
-function PreferencesCard() {
-  const { data } = usePreferences();
-  const reset = useResetPreferences();
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <SlidersHorizontal className="size-4" aria-hidden /> What we learned about you
-        </CardTitle>
-        <CardDescription>{data?.how_it_works ?? "Recommendations use the stays you open, save and book."}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        {data?.personalized ? (
-          <ul className="flex flex-wrap gap-1.5">
-            {data.learned.map((item) => (
-              <li key={item.feature}>
-                <Badge variant="secondary">
-                  {item.direction === "negative" ? "Less: " : "More: "}
-                  {item.label}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted-foreground">Nothing yet. Rankings stay the same for you as for everyone else until you have some activity.</p>
-        )}
-        <Button variant="outline" size="sm" className="w-fit" disabled={reset.isPending} onClick={() => reset.mutate(undefined, { onSuccess: () => toast.success("Your preferences were reset.") })}>
-          Reset what you learned
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
 export function SecuritySection() {
   const router = useRouter();
   const everywhere = useSignOutEverywhere();
@@ -328,7 +292,6 @@ export function SecuritySection() {
           </Button>
         </CardContent>
       </Card>
-      <PreferencesCard />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

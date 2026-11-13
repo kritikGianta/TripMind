@@ -51,7 +51,7 @@ Service = Annotated[ReviewService, Depends(_service)]
     response_model=HotelReviewsOut,
     responses=_ERRORS,
     dependencies=[Depends(rate_limit("reviews", limit=120, window_seconds=60))],
-    summary="Guest reviews of a stay with a sentiment and aspect summary",
+    summary="Guest reviews of a stay with the average rating",
 )
 def hotel_reviews(
     hotel_id: uuid.UUID,

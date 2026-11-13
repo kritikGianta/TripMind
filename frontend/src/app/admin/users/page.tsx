@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequireAdmin } from "@/features/admin/components/require-admin";
-import { UsersView } from "@/features/admin/components/models-users-views";
+import { UsersView } from "@/features/admin/components/users-view";
 
 export const metadata: Metadata = { title: "Users" };
 

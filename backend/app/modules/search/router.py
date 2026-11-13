@@ -3,35 +3,26 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel, Field
-from sqlalchemy import func, select
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.deps import (
     get_clock,
-    get_feature_flags,
     get_settings_dep,
     rate_limit,
     require_feature,
 )
 from app.core.errors import ErrorEnvelope, NotFound, ValidationFailed
-from app.core.features import FeatureFlags
 from app.core.metrics import SEARCH_LATENCY, SEARCHES
 from app.db.session import get_session
 from app.modules.auth.dependencies import get_current_user, get_optional_user
 from app.modules.auth.models import User
 from app.modules.catalog.vocabulary import load_vocabulary
-from app.modules.ml.features import FARE_ESTIMATOR_FEATURES, HOTEL_RANKER_FEATURES
-from app.modules.ml.interactions import HotelInteraction, record_interaction
-from app.modules.ml.preferences import UserPreference, learned
-from app.modules.ml.registry import load_model
 from app.modules.search.discover import DiscoverService, ExploreOut, FareCalendarOut
 from app.modules.search.flights import FlightQuery, FlightSearchService
 from app.modules.search.history import (
@@ -42,7 +33,6 @@ from app.modules.search.history import (
 )
 from app.modules.search.hotels import HotelQuery, HotelSearchService, Stay
 from app.modules.search.locations import LocationService
-from app.modules.search.preferences import forget, load_preference_rules
 from app.modules.search.pricing import Converter, load_pricing_rules, load_search_rules
 from app.modules.search.schemas import (
     CabinClass,
@@ -79,19 +69,12 @@ def _flights(
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings_dep),
     clock: Clock = Depends(get_clock),
-    flags: FeatureFlags = Depends(get_feature_flags),
 ) -> FlightSearchService:
-    fare_model = (
-        load_model(settings.models_dir, "fare_estimator", FARE_ESTIMATOR_FEATURES)
-        if flags.enabled("ml_fare_insight")
-        else None
-    )
     return FlightSearchService(
         session,
         Converter(load_pricing_rules(settings.config_dir)),
         load_search_rules(settings.config_dir),
         _earliest_travel_date(clock),
-        fare_model=fare_model,
     )
 
 
@@ -99,27 +82,12 @@ def _hotels(
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings_dep),
     clock: Clock = Depends(get_clock),
-    flags: FeatureFlags = Depends(get_feature_flags),
-    viewer: Viewer = None,
 ) -> HotelSearchService:
-    ranker = (
-        load_model(settings.models_dir, "hotel_ranker", HOTEL_RANKER_FEATURES)
-        if flags.enabled("ml_hotel_ranker")
-        else None
-    )
-    preference = (
-        session.get(UserPreference, viewer.id)
-        if viewer is not None and flags.enabled("personalization")
-        else None
-    )
     return HotelSearchService(
         session,
         Converter(load_pricing_rules(settings.config_dir)),
         load_search_rules(settings.config_dir),
         _earliest_travel_date(clock),
-        ranker=ranker,
-        preference=preference,
-        preference_blend=load_preference_rules(settings).blend,
     )
 
 
@@ -291,23 +259,13 @@ def hotel_detail(
     guests: Annotated[int, Query(ge=1, le=16)] = 2,
     rooms: Annotated[int, Query(ge=1, le=8)] = 1,
     service: HotelSearchService = Depends(_hotels),
-    viewer: Viewer = None,
-    session: Session = Depends(get_session),
-    clock: Clock = Depends(get_clock),
 ) -> HotelDetailOut:
     stay = (
         Stay(check_in=check_in, check_out=check_out, guests=guests, rooms=rooms)
         if check_in and check_out
         else None
     )
-    detail = service.detail(hotel_id, stay)
-    if viewer is not None:  # a signal for the preference model; never blocks the page
-        try:
-            record_interaction(session, viewer.id, hotel_id, "view", clock.now())
-            session.commit()
-        except SQLAlchemyError:
-            session.rollback()
-    return detail
+    return service.detail(hotel_id, stay)
 
 
 @router.get(
@@ -347,62 +305,6 @@ def forget_search(
 ) -> None:
     if not forget_searches(session, user.id, search_id):
         raise NotFound("That search is not in your history.", code="SEARCH_NOT_FOUND")
-
-
-class LearnedPreferenceOut(BaseModel):
-    feature: str
-    label: str
-    weight: float
-    direction: str
-
-
-class PreferencesOut(BaseModel):
-    personalized: bool = Field(description="True once enough activity has been learned from")
-    trained_at: datetime | None
-    stays_learned_from: int
-    activity_count: int
-    learned: list[LearnedPreferenceOut]
-    how_it_works: str
-
-
-@router.get(
-    "/me/preferences",
-    response_model=PreferencesOut,
-    responses={401: {"model": ErrorEnvelope}},
-    summary="What TripMind has learned about the stays I like",
-)
-def my_preferences(
-    user: User = Depends(get_current_user), session: Session = Depends(get_session)
-) -> PreferencesOut:
-    pref = session.get(UserPreference, user.id)
-    activity = session.scalar(
-        select(func.count())
-        .select_from(HotelInteraction)
-        .where(HotelInteraction.user_id == user.id)
-    )
-    return PreferencesOut(
-        personalized=pref is not None,
-        trained_at=pref.trained_at if pref else None,
-        stays_learned_from=pref.positives if pref else 0,
-        activity_count=int(activity or 0),
-        learned=[LearnedPreferenceOut(**item) for item in learned(pref)] if pref else [],
-        how_it_works=(
-            "Stays you open, save and book teach a small model what you tend to choose. It only "
-            "adjusts the Recommended order and shows why. Reset it at any time."
-        ),
-    )
-
-
-@router.delete(
-    "/me/preferences",
-    status_code=204,
-    responses={401: {"model": ErrorEnvelope}},
-    summary="Reset personalisation: forget my stay activity and what was learned",
-)
-def reset_preferences(
-    user: User = Depends(get_current_user), session: Session = Depends(get_session)
-) -> None:
-    forget(session, user.id)
 
 
 def _discover(

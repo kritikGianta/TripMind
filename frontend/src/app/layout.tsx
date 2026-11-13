@@ -4,7 +4,6 @@ import { Suspense } from "react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { AssistantLauncher } from "@/features/ai/assistant-launcher";
 import { siteConfig } from "@/config/site";
 
 import { Providers } from "./providers";
@@ -43,9 +42,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <SiteFooter />
-          <Suspense fallback={null}>
-            <AssistantLauncher />
-          </Suspense>
         </Providers>
       </body>
     </html>

@@ -9,7 +9,6 @@ from app.core.config import Settings
 from app.core.features import load_feature_flags
 from app.modules.bookings.jobs import expire_holds_once
 from app.modules.privacy.module import purge_once
-from app.modules.search.preferences import load_preference_rules, train_preferences_once
 from app.modules.watchlist.jobs import check_price_alerts_once
 from app.modules.watchlist.service import alert_check_interval_seconds
 
@@ -26,7 +25,4 @@ def jobs(settings: Settings) -> list[Job]:
         selected.append(
             ("check_price_alerts", alert_check_interval_seconds(settings), check_price_alerts_once)
         )
-    if flags.enabled("personalization"):
-        minutes = load_preference_rules(settings).retrain_minutes
-        selected.append(("train_preferences", minutes * 60.0, train_preferences_once))
     return selected

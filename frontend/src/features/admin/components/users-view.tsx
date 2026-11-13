@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, CircleSlash, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -18,75 +18,6 @@ import { errorMessage } from "@/lib/api/errors";
 import { useQuery } from "@/lib/api/use-query";
 
 const day = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
-
-/** Which models are running, with the numbers each was accepted on. */
-export function ModelsView() {
-  const { data, error, isPending } = useQuery({
-    queryKey: ["admin", "models"],
-    queryFn: () => apiFetch<Schemas["ModelListOut"]>("/admin/models"),
-  });
-  if (isPending) return <Skeleton className="h-96 w-full" />;
-  if (error || !data) return <FormError error={error} />;
-  const live = data.models.filter((model) => model.in_use).length;
-  return (
-    <div className="grid gap-4">
-      <p className="text-muted-foreground">
-        {live} of {data.models.length} models are live. {data.travellers_with_preferences} traveller
-        {data.travellers_with_preferences === 1 ? " has" : "s have"} a personal preference model. Every model has plain rules underneath, so nothing stops if one is off.
-      </p>
-      <div className="grid gap-3 md:grid-cols-2">
-        {data.models.map((model) => (
-          <Card key={model.name}>
-            <CardHeader>
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="capitalize">{model.name.replace(/_/g, " ")}</CardTitle>
-                <Badge variant={model.in_use ? "default" : "outline"}>
-                  {model.in_use ? <CheckCircle2 /> : <CircleSlash />} {model.in_use ? "Live" : "Using fallback"}
-                </Badge>
-              </div>
-              <CardDescription>{model.purpose}</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-2 text-sm">
-              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-                <dt className="text-muted-foreground">Fallback</dt>
-                <dd>{model.fallback}</dd>
-                {model.dataset ? (
-                  <>
-                    <dt className="text-muted-foreground">Trained on</dt>
-                    <dd>{model.dataset}</dd>
-                  </>
-                ) : null}
-                {model.trained_at ? (
-                  <>
-                    <dt className="text-muted-foreground">Trained</dt>
-                    <dd>{day.format(new Date(model.trained_at))}</dd>
-                  </>
-                ) : null}
-                {model.version ? (
-                  <>
-                    <dt className="text-muted-foreground">Version</dt>
-                    <dd className="break-all">{model.version}</dd>
-                  </>
-                ) : null}
-              </dl>
-              {Object.keys(model.metrics).length ? (
-                <ul className="flex flex-wrap gap-1.5">
-                  {Object.entries(model.metrics).map(([name, value]) => (
-                    <li key={name}>
-                      <Badge variant="secondary">
-                        {name.replace(/_/g, " ")}: {typeof value === "number" ? Number(value.toFixed(3)) : String(value)}
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 const PAGE = 25;
 

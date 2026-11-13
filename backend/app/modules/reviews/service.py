@@ -1,16 +1,14 @@
-"""Hotel reviews: what guests said, scored for sentiment and summarised by aspect.
+"""Hotel reviews: what guests said, with the average rating.
 
 Two sources are shown together: reviews supplied with the dataset (catalog `hotel_reviews`) and
 reviews written in TripMind by travellers who checked out of a booked stay (`stay_reviews`,
-marked as verified stays). Sentiment comes from the review-sentiment model when trained, otherwise
-from word lists; the response says which (`scored_by`).
+marked as verified stays).
 """
 
 from __future__ import annotations
 
 import re
 import uuid
-from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from typing import Literal
@@ -26,7 +24,6 @@ from app.core.errors import Conflict, NotFound, ValidationFailed
 from app.modules.auth.models import User
 from app.modules.bookings.models import Booking, BookingItem, ItemStatus
 from app.modules.catalog.models import Hotel, HotelReview
-from app.modules.ml.sentiment import ASPECTS, SentimentScorer
 from app.modules.reviews.models import StayReview
 from app.modules.search.pricing import rules_section
 
@@ -61,23 +58,11 @@ class ReviewOut(BaseModel):
     text: str
     traveller_type: str | None
     date: date | None
-    sentiment: str
-    aspects: dict[str, str]
-
-
-class AspectOut(BaseModel):
-    aspect: str
-    mentions: int
-    positive: int
-    negative: int
 
 
 class ReviewSummaryOut(BaseModel):
     total: int
     average_rating: float | None = Field(description="0-10, over reviews that have a rating")
-    sentiment: dict[str, int]
-    aspects: list[AspectOut] = Field(description="Most mentioned first")
-    scored_by: str = Field(description="'model:<version>' or 'rules'")
     note: str | None
 
 
@@ -128,7 +113,6 @@ class ReviewService:
         self._session = session
         self._clock = clock
         self._rules = ReviewRules.model_validate(rules_section(settings.config_dir, "reviews"))
-        self._scorer = SentimentScorer(settings.models_dir)
 
     def _rows(self, hotel_id: uuid.UUID) -> list[_Row]:
         supplied = self._session.scalars(
@@ -179,8 +163,6 @@ class ReviewService:
             text=row.text,
             traveller_type=row.traveller_type,
             date=row.when,
-            sentiment=self._scorer.score(row.text).label,
-            aspects=dict(self._scorer.aspects(row.text)),
         )
 
     def hotel_reviews(
@@ -190,16 +172,6 @@ class ReviewService:
         if hotel is None or not hotel.is_active:
             raise NotFound("This stay is not available.", code="HOTEL_NOT_FOUND")
         rows = self._rows(hotel_id)
-        sentiment: Counter[str] = Counter()
-        mentions: Counter[str] = Counter()
-        positive: Counter[str] = Counter()
-        negative: Counter[str] = Counter()
-        for row in rows:
-            sentiment[self._scorer.score(row.text).label] += 1
-            for aspect, label in self._scorer.aspects(row.text).items():
-                mentions[aspect] += 1
-                positive[aspect] += label == "positive"
-                negative[aspect] += label == "negative"
         rated = [r.rating for r in rows if r.rating is not None]
         if sort == "recent":
             rows.sort(key=lambda r: r.when or date.min, reverse=True)
@@ -211,13 +183,6 @@ class ReviewService:
             summary=ReviewSummaryOut(
                 total=len(rows),
                 average_rating=round(sum(rated) / len(rated), 1) if rated else None,
-                sentiment={k: sentiment.get(k, 0) for k in ("positive", "neutral", "negative")},
-                aspects=[
-                    AspectOut(aspect=a, mentions=n, positive=positive[a], negative=negative[a])
-                    for a, n in sorted(mentions.items(), key=lambda kv: (-kv[1], kv[0]))
-                    if a in ASPECTS
-                ],
-                scored_by=self._scorer.source,
                 note="Supplied reviews in the demo dataset are generated text, not real guests."
                 if synthetic
                 else None,

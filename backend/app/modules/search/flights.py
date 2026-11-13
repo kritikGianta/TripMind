@@ -7,13 +7,11 @@ ledger, faceted for filters, then filtered and sorted.
 
 from __future__ import annotations
 
-import math
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from itertools import pairwise
-from typing import Literal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -21,8 +19,6 @@ from sqlalchemy.orm import Session
 from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import Airport, City, Flight
 from app.modules.catalog.repository import CatalogRepository
-from app.modules.ml.features import FARE_ESTIMATOR_MAX_KM, fare_row, haversine_km
-from app.modules.ml.registry import LoadedModel
 from app.modules.operations.queries import cancelled_flights
 from app.modules.search.locations import LocationService
 from app.modules.search.pricing import Converter, LedgerLine, MoneyOut, SearchRules
@@ -31,7 +27,6 @@ from app.modules.search.schemas import (
     CabinClass,
     DepartureWindow,
     FacetOption,
-    FareInsightOut,
     FlightFacets,
     FlightLegOut,
     FlightOfferOut,
@@ -42,8 +37,6 @@ from app.modules.search.schemas import (
     PriceRange,
     TravelWindowOut,
 )
-
-FareLabel = Literal["below_typical", "typical", "above_typical"]
 
 WINDOWS: dict[DepartureWindow, tuple[int, int, str]] = {
     "night": (0, 6, "Night (00-06)"),
@@ -79,13 +72,11 @@ class FlightSearchService:
         converter: Converter,
         rules: SearchRules,
         today: date,
-        fare_model: LoadedModel | None = None,
     ) -> None:
         self._session = session
         self._converter = converter
         self._rules = rules
         self._today = today
-        self._fare_model = fare_model
         self._locations = LocationService(session)
         self._airports: dict[uuid.UUID, AirportBrief] = {}
         self._coords: dict[str, tuple[float, float]] = {}
@@ -349,45 +340,6 @@ class FlightSearchService:
             bookable=all(leg.fare is not None for leg in legs),
             price=self._converter.ledger(lines),
             notices=notices,
-            fare_insight=self._fare_insight(legs, adults),
-        )
-
-    def _fare_insight(self, legs: list[FlightLegOut], adults: int) -> FareInsightOut | None:
-        """Compare the fare with a model of typical Indian domestic fares, where it applies."""
-        model = self._fare_model
-        first, last = legs[0], legs[-1]
-        if model is None or any(leg.fare is None or leg.fare.currency != "INR" for leg in legs):
-            return None
-        a, b = self._coords.get(first.origin.code), self._coords.get(last.destination.code)
-        if a is None or b is None:
-            return None
-        route_countries = {self._countries.get(leg.origin.code) for leg in legs}
-        route_countries.add(self._countries.get(last.destination.code))
-        if len(route_countries) != 1:
-            return None  # the model only learned domestic fares
-        distance = haversine_km(a, b)
-        if distance > FARE_ESTIMATOR_MAX_KM:
-            return None  # outside the routes the model was trained on
-        row = fare_row(
-            distance_km=distance,
-            duration_minutes=int((last.arrival_at - first.departure_at).total_seconds() // 60),
-            stops=len(legs) - 1 + sum(leg.stops for leg in legs),
-            days_left=(first.departure_local.date() - self._today).days,
-            departure_hour=first.departure_local.hour,
-            business=first.cabin_class == "business",
-        )
-        typical = math.exp(model.predict([row])[0])  # the model predicts log(fare in INR)
-        actual = sum(leg.fare.amount_minor for leg in legs if leg.fare) / 100
-        ratio = actual / typical if typical > 0 else 1.0
-        label: FareLabel = (
-            "below_typical" if ratio < 0.85 else "above_typical" if ratio > 1.15 else "typical"
-        )
-        return FareInsightOut(
-            label=label,
-            typical_per_adult=MoneyOut(amount_minor=round(typical * 100), currency="INR"),
-            ratio=round(ratio, 2),
-            model_version=model.card.version,
-            basis=model.card.dataset,
         )
 
     # ------------------------------------------------------------------ filters, facets, sort

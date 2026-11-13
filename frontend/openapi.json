@@ -17,26 +17,6 @@
         "title": "AcceptIn",
         "type": "object"
       },
-      "Action": {
-        "properties": {
-          "href": {
-            "maxLength": 200,
-            "title": "Href",
-            "type": "string"
-          },
-          "label": {
-            "maxLength": 60,
-            "title": "Label",
-            "type": "string"
-          }
-        },
-        "required": [
-          "label",
-          "href"
-        ],
-        "title": "Action",
-        "type": "object"
-      },
       "AdminUserOut": {
         "properties": {
           "bookings": {
@@ -275,99 +255,6 @@
           "note"
         ],
         "title": "AnalyticsOut",
-        "type": "object"
-      },
-      "AspectOut": {
-        "properties": {
-          "aspect": {
-            "title": "Aspect",
-            "type": "string"
-          },
-          "mentions": {
-            "title": "Mentions",
-            "type": "integer"
-          },
-          "negative": {
-            "title": "Negative",
-            "type": "integer"
-          },
-          "positive": {
-            "title": "Positive",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "aspect",
-          "mentions",
-          "positive",
-          "negative"
-        ],
-        "title": "AspectOut",
-        "type": "object"
-      },
-      "AssistantOut": {
-        "properties": {
-          "actions": {
-            "items": {
-              "$ref": "#/components/schemas/Action"
-            },
-            "title": "Actions",
-            "type": "array"
-          },
-          "answer": {
-            "title": "Answer",
-            "type": "string"
-          },
-          "citations": {
-            "items": {
-              "$ref": "#/components/schemas/Citation"
-            },
-            "title": "Citations",
-            "type": "array"
-          },
-          "source": {
-            "description": "'ai:<provider>' or 'rules'",
-            "title": "Source",
-            "type": "string"
-          },
-          "topic": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Support category of the question (request classifier)",
-            "title": "Topic"
-          }
-        },
-        "required": [
-          "answer",
-          "citations",
-          "actions",
-          "source"
-        ],
-        "title": "AssistantOut",
-        "type": "object"
-      },
-      "AssistantRequest": {
-        "properties": {
-          "messages": {
-            "items": {
-              "$ref": "#/components/schemas/ChatMessage"
-            },
-            "maxItems": 12,
-            "minItems": 1,
-            "title": "Messages",
-            "type": "array"
-          }
-        },
-        "required": [
-          "messages"
-        ],
-        "title": "AssistantRequest",
         "type": "object"
       },
       "AuditOut": {
@@ -1344,30 +1231,6 @@
         "title": "ChangeRequest",
         "type": "object"
       },
-      "ChatMessage": {
-        "properties": {
-          "content": {
-            "maxLength": 1000,
-            "minLength": 1,
-            "title": "Content",
-            "type": "string"
-          },
-          "role": {
-            "enum": [
-              "user",
-              "assistant"
-            ],
-            "title": "Role",
-            "type": "string"
-          }
-        },
-        "required": [
-          "role",
-          "content"
-        ],
-        "title": "ChatMessage",
-        "type": "object"
-      },
       "CheckOut": {
         "properties": {
           "message": {
@@ -1395,24 +1258,6 @@
           "message"
         ],
         "title": "CheckOut",
-        "type": "object"
-      },
-      "Citation": {
-        "properties": {
-          "source": {
-            "title": "Source",
-            "type": "string"
-          },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "title",
-          "source"
-        ],
-        "title": "Citation",
         "type": "object"
       },
       "CityOut": {
@@ -2589,44 +2434,6 @@
         "title": "FareCalendarOut",
         "type": "object"
       },
-      "FareInsightOut": {
-        "properties": {
-          "basis": {
-            "title": "Basis",
-            "type": "string"
-          },
-          "label": {
-            "enum": [
-              "below_typical",
-              "typical",
-              "above_typical"
-            ],
-            "title": "Label",
-            "type": "string"
-          },
-          "model_version": {
-            "title": "Model Version",
-            "type": "string"
-          },
-          "ratio": {
-            "description": "This fare divided by the model's typical fare",
-            "title": "Ratio",
-            "type": "number"
-          },
-          "typical_per_adult": {
-            "$ref": "#/components/schemas/MoneyOut"
-          }
-        },
-        "required": [
-          "label",
-          "typical_per_adult",
-          "ratio",
-          "model_version",
-          "basis"
-        ],
-        "title": "FareInsightOut",
-        "type": "object"
-      },
       "FeaturesOut": {
         "properties": {
           "features": {
@@ -2945,16 +2752,6 @@
           "duration_minutes": {
             "title": "Duration Minutes",
             "type": "integer"
-          },
-          "fare_insight": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/FareInsightOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "id": {
             "description": "Stable offer ID: the legs it is made of",
@@ -3556,13 +3353,6 @@
             "title": "Rooms",
             "type": "array"
           },
-          "similar": {
-            "items": {
-              "$ref": "#/components/schemas/SimilarHotelOut"
-            },
-            "title": "Similar",
-            "type": "array"
-          },
           "star_rating": {
             "anyOf": [
               {
@@ -3784,14 +3574,6 @@
             "title": "Name",
             "type": "string"
           },
-          "personal_reasons": {
-            "description": "Why this stay suits the signed-in traveller",
-            "items": {
-              "type": "string"
-            },
-            "title": "Personal Reasons",
-            "type": "array"
-          },
           "review_count": {
             "anyOf": [
               {
@@ -3907,18 +3689,6 @@
             },
             "title": "Notices",
             "type": "array"
-          },
-          "personalized": {
-            "default": false,
-            "description": "Adjusted to the traveller's taste",
-            "title": "Personalized",
-            "type": "boolean"
-          },
-          "ranked_by": {
-            "default": "rules",
-            "description": "'model:<version>' or 'rules', plus '+preferences'",
-            "title": "Ranked By",
-            "type": "string"
           },
           "results": {
             "items": {
@@ -4404,34 +4174,6 @@
         "title": "LayoverOut",
         "type": "object"
       },
-      "LearnedPreferenceOut": {
-        "properties": {
-          "direction": {
-            "title": "Direction",
-            "type": "string"
-          },
-          "feature": {
-            "title": "Feature",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "weight": {
-            "title": "Weight",
-            "type": "number"
-          }
-        },
-        "required": [
-          "feature",
-          "label",
-          "weight",
-          "direction"
-        ],
-        "title": "LearnedPreferenceOut",
-        "type": "object"
-      },
       "LedgerLine": {
         "properties": {
           "amount": {
@@ -4764,99 +4506,6 @@
         "title": "MessageOut",
         "type": "object"
       },
-      "ModelListOut": {
-        "properties": {
-          "models": {
-            "items": {
-              "$ref": "#/components/schemas/ModelStatusOut"
-            },
-            "title": "Models",
-            "type": "array"
-          },
-          "travellers_with_preferences": {
-            "title": "Travellers With Preferences",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "models",
-          "travellers_with_preferences"
-        ],
-        "title": "ModelListOut",
-        "type": "object"
-      },
-      "ModelStatusOut": {
-        "properties": {
-          "dataset": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Dataset"
-          },
-          "fallback": {
-            "title": "Fallback",
-            "type": "string"
-          },
-          "in_use": {
-            "title": "In Use",
-            "type": "boolean"
-          },
-          "metrics": {
-            "additionalProperties": {
-              "type": "number"
-            },
-            "title": "Metrics",
-            "type": "object"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "purpose": {
-            "title": "Purpose",
-            "type": "string"
-          },
-          "trained_at": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Trained At"
-          },
-          "version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Version"
-          }
-        },
-        "required": [
-          "name",
-          "purpose",
-          "in_use",
-          "fallback",
-          "version",
-          "trained_at",
-          "dataset",
-          "metrics"
-        ],
-        "title": "ModelStatusOut",
-        "type": "object"
-      },
       "MoneyOut": {
         "properties": {
           "amount_minor": {
@@ -4877,13 +4526,6 @@
       },
       "MyReviewOut": {
         "properties": {
-          "aspects": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Aspects",
-            "type": "object"
-          },
           "date": {
             "anyOf": [
               {
@@ -4921,10 +4563,6 @@
             ],
             "description": "0-10",
             "title": "Rating"
-          },
-          "sentiment": {
-            "title": "Sentiment",
-            "type": "string"
           },
           "source": {
             "enum": [
@@ -4974,8 +4612,6 @@
           "text",
           "traveller_type",
           "date",
-          "sentiment",
-          "aspects",
           "hotel_id",
           "hotel_name"
         ],
@@ -5128,167 +4764,6 @@
           "state"
         ],
         "title": "OptionStateIn",
-        "type": "object"
-      },
-      "ParseIn": {
-        "properties": {
-          "text": {
-            "maxLength": 300,
-            "minLength": 3,
-            "title": "Text",
-            "type": "string"
-          }
-        },
-        "required": [
-          "text"
-        ],
-        "title": "ParseIn",
-        "type": "object"
-      },
-      "ParsedSearchOut": {
-        "properties": {
-          "adults": {
-            "title": "Adults",
-            "type": "integer"
-          },
-          "cabin_class": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cabin Class"
-          },
-          "depart_date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Depart Date"
-          },
-          "destination": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PlaceOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "intent": {
-            "enum": [
-              "flights",
-              "stays",
-              "trip"
-            ],
-            "title": "Intent",
-            "type": "string"
-          },
-          "max_budget": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Budget"
-          },
-          "min_stars": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Min Stars"
-          },
-          "missing": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Missing",
-            "type": "array"
-          },
-          "origin": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PlaceOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "priority": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Priority"
-          },
-          "return_date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Return Date"
-          },
-          "source": {
-            "description": "'ai:<provider>' or 'rules'",
-            "title": "Source",
-            "type": "string"
-          },
-          "summary": {
-            "title": "Summary",
-            "type": "string"
-          },
-          "unknown_places": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Unknown Places",
-            "type": "array"
-          }
-        },
-        "required": [
-          "source",
-          "intent",
-          "origin",
-          "destination",
-          "depart_date",
-          "return_date",
-          "adults",
-          "cabin_class",
-          "priority",
-          "max_budget",
-          "min_stars",
-          "missing",
-          "unknown_places",
-          "summary"
-        ],
-        "title": "ParsedSearchOut",
         "type": "object"
       },
       "PassengerOut": {
@@ -5482,36 +4957,6 @@
           "cardholder_name"
         ],
         "title": "PaymentRequest",
-        "type": "object"
-      },
-      "PlaceOut": {
-        "properties": {
-          "airport_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Airport Code"
-          },
-          "city_id": {
-            "title": "City Id",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          }
-        },
-        "required": [
-          "city_id",
-          "label",
-          "airport_code"
-        ],
-        "title": "PlaceOut",
         "type": "object"
       },
       "PlanListOut": {
@@ -5717,56 +5162,6 @@
           "generated_at"
         ],
         "title": "PlanSummaryOut",
-        "type": "object"
-      },
-      "PreferencesOut": {
-        "properties": {
-          "activity_count": {
-            "title": "Activity Count",
-            "type": "integer"
-          },
-          "how_it_works": {
-            "title": "How It Works",
-            "type": "string"
-          },
-          "learned": {
-            "items": {
-              "$ref": "#/components/schemas/LearnedPreferenceOut"
-            },
-            "title": "Learned",
-            "type": "array"
-          },
-          "personalized": {
-            "description": "True once enough activity has been learned from",
-            "title": "Personalized",
-            "type": "boolean"
-          },
-          "stays_learned_from": {
-            "title": "Stays Learned From",
-            "type": "integer"
-          },
-          "trained_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Trained At"
-          }
-        },
-        "required": [
-          "personalized",
-          "trained_at",
-          "stays_learned_from",
-          "activity_count",
-          "learned",
-          "how_it_works"
-        ],
-        "title": "PreferencesOut",
         "type": "object"
       },
       "PriceAlertIn": {
@@ -6709,13 +6104,6 @@
       },
       "ReviewOut": {
         "properties": {
-          "aspects": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Aspects",
-            "type": "object"
-          },
           "date": {
             "anyOf": [
               {
@@ -6744,10 +6132,6 @@
             ],
             "description": "0-10",
             "title": "Rating"
-          },
-          "sentiment": {
-            "title": "Sentiment",
-            "type": "string"
           },
           "source": {
             "enum": [
@@ -6796,23 +6180,13 @@
           "title",
           "text",
           "traveller_type",
-          "date",
-          "sentiment",
-          "aspects"
+          "date"
         ],
         "title": "ReviewOut",
         "type": "object"
       },
       "ReviewSummaryOut": {
         "properties": {
-          "aspects": {
-            "description": "Most mentioned first",
-            "items": {
-              "$ref": "#/components/schemas/AspectOut"
-            },
-            "title": "Aspects",
-            "type": "array"
-          },
           "average_rating": {
             "anyOf": [
               {
@@ -6836,18 +6210,6 @@
             ],
             "title": "Note"
           },
-          "scored_by": {
-            "description": "'model:<version>' or 'rules'",
-            "title": "Scored By",
-            "type": "string"
-          },
-          "sentiment": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "title": "Sentiment",
-            "type": "object"
-          },
           "total": {
             "title": "Total",
             "type": "integer"
@@ -6856,9 +6218,6 @@
         "required": [
           "total",
           "average_rating",
-          "sentiment",
-          "aspects",
-          "scored_by",
           "note"
         ],
         "title": "ReviewSummaryOut",
@@ -7338,114 +6697,6 @@
           "access_expires_at"
         ],
         "title": "SessionOut",
-        "type": "object"
-      },
-      "SimilarHotelOut": {
-        "properties": {
-          "distance_km": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Distance Km"
-          },
-          "from_price": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/MoneyOut"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Cheapest nightly rate, display currency"
-          },
-          "guest_rating": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Guest Rating"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "shared_amenities": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Shared Amenities",
-            "type": "array"
-          },
-          "similarity": {
-            "title": "Similarity",
-            "type": "number"
-          },
-          "star_rating": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Star Rating"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "star_rating",
-          "guest_rating",
-          "distance_km",
-          "from_price",
-          "similarity",
-          "shared_amenities"
-        ],
-        "title": "SimilarHotelOut",
-        "type": "object"
-      },
-      "StatusOut": {
-        "properties": {
-          "active_provider": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Active Provider"
-          },
-          "providers": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Providers",
-            "type": "object"
-          }
-        },
-        "required": [
-          "providers",
-          "active_provider"
-        ],
-        "title": "StatusOut",
         "type": "object"
       },
       "StayOut": {
@@ -9126,47 +8377,6 @@
         ]
       }
     },
-    "/api/v1/admin/models": {
-      "get": {
-        "operationId": "model_status_api_v1_admin_models_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ModelListOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Forbidden"
-          }
-        },
-        "summary": "Which models are live, with metrics",
-        "tags": [
-          "admin: console"
-        ]
-      }
-    },
     "/api/v1/admin/operations/booked-flights": {
       "get": {
         "operationId": "booked_flights_api_v1_admin_operations_booked_flights_get",
@@ -10001,149 +9211,6 @@
         "summary": "Disable or re-enable an account (audited; disabling ends its sessions)",
         "tags": [
           "admin: console"
-        ]
-      }
-    },
-    "/api/v1/ai/assistant": {
-      "post": {
-        "operationId": "assistant_api_v1_ai_assistant_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssistantRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssistantOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Too Many Requests"
-          }
-        },
-        "summary": "Ask the help assistant (grounded in TripMind help and your trips)",
-        "tags": [
-          "ai"
-        ]
-      }
-    },
-    "/api/v1/ai/parse-search": {
-      "post": {
-        "operationId": "parse_search_api_v1_ai_parse_search_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ParseIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ParsedSearchOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Too Many Requests"
-          }
-        },
-        "summary": "Turn a sentence into search criteria (LLM, or rules as fallback)",
-        "tags": [
-          "ai"
-        ]
-      }
-    },
-    "/api/v1/ai/status": {
-      "get": {
-        "operationId": "status_api_v1_ai_status_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StatusOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Which AI providers are configured",
-        "tags": [
-          "ai"
         ]
       }
     },
@@ -13793,7 +12860,7 @@
             "description": "Too Many Requests"
           }
         },
-        "summary": "Guest reviews of a stay with a sentiment and aspect summary",
+        "summary": "Guest reviews of a stay with the average rating",
         "tags": [
           "reviews"
         ]
@@ -14014,59 +13081,6 @@
         "summary": "My loyalty points and tier",
         "tags": [
           "account"
-        ]
-      }
-    },
-    "/api/v1/me/preferences": {
-      "delete": {
-        "operationId": "reset_preferences_api_v1_me_preferences_delete",
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          }
-        },
-        "summary": "Reset personalisation: forget my stay activity and what was learned",
-        "tags": [
-          "search"
-        ]
-      },
-      "get": {
-        "operationId": "my_preferences_api_v1_me_preferences_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PreferencesOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          }
-        },
-        "summary": "What TripMind has learned about the stays I like",
-        "tags": [
-          "search"
         ]
       }
     },

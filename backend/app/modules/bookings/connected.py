@@ -1,7 +1,7 @@
 """The connected trip after booking: what is still missing, and the trip in your calendar.
 
 Suggestions look at what a trip already holds. A flight with no stay gets stays at the destination
-for those dates (personalised when the traveller has a preference model). A one-way flight with
+for those dates. A one-way flight with
 an end date gets return flights. A stay with no flight gets a search link for getting there. Each
 suggestion carries the item to send to checkout with this `trip_id`, so it joins the same trip.
 """
@@ -20,7 +20,6 @@ from app.modules.auth.models import User
 from app.modules.bookings.models import Booking, BookingItem, ItemStatus, Trip
 from app.modules.bookings.service import BookingService, _aware
 from app.modules.catalog.models import Airport
-from app.modules.ml.preferences import UserPreference
 from app.modules.search.flights import FlightQuery
 from app.modules.search.hotels import HotelQuery, HotelSearchService, Stay
 from app.modules.search.pricing import MoneyOut, load_search_rules
@@ -73,7 +72,6 @@ class ConnectedTripService(BookingService):
             self._converter,
             load_search_rules(self._settings.config_dir),
             today,
-            preference=self._session.get(UserPreference, user.id),
         )
         result = hotels.search(
             HotelQuery(city=str(city), stay=Stay(check_in=start, check_out=end, guests=2, rooms=1))
@@ -87,7 +85,7 @@ class ConnectedTripService(BookingService):
                     title=hotel.name,
                     subtitle=f"{room.name}, {start:%d %b} to {end:%d %b}",
                     price=room.price.display_total if room.price else None,
-                    reasons=hotel.personal_reasons,
+                    reasons=[],
                     checkout_item={
                         "kind": "hotel",
                         "room_type_id": str(room.room_type_id),

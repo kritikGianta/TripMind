@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, BellRing, Bookmark, Bot, CloudLightning, DatabaseZap, LifeBuoy, LogOut, ScrollText, ShieldCheck, UserRound, Users } from "lucide-react";
+import { BarChart3, BellRing, Bookmark, CloudLightning, DatabaseZap, LifeBuoy, LogOut, ScrollText, ShieldCheck, UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -112,13 +112,6 @@ export function UserMenu() {
           <DropdownMenuItem asChild>
             <Link href="/admin/support">
               <LifeBuoy /> Support queue
-            </Link>
-          </DropdownMenuItem>
-        ) : null}
-        {user.role === "admin" ? (
-          <DropdownMenuItem asChild>
-            <Link href="/admin/models">
-              <Bot /> Models
             </Link>
           </DropdownMenuItem>
         ) : null}

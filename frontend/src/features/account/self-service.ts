@@ -135,23 +135,6 @@ export function useWriteReview(bookingId: string, itemId: string) {
   });
 }
 
-export function usePreferences() {
-  const enabled = useSignedIn();
-  return useQuery({
-    queryKey: ["me", "preferences"],
-    queryFn: () => apiFetch<Schemas["PreferencesOut"]>("/me/preferences"),
-    enabled,
-  });
-}
-
-export function useResetPreferences() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: () => apiFetch<void>("/me/preferences", { method: "DELETE" }),
-    onSettled: () => void client.invalidateQueries({ queryKey: ["me", "preferences"] }),
-  });
-}
-
 export function useChangePassword() {
   return useMutation({
     mutationFn: (body: Schemas["PasswordChange"]) =>

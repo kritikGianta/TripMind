@@ -1,4 +1,4 @@
-"""Hotel reviews: imported reviews with a sentiment summary, and verified-stay reviews."""
+"""Hotel reviews: imported reviews with the average rating, and verified-stay reviews."""
 
 from __future__ import annotations
 
@@ -64,9 +64,7 @@ def test_supplied_reviews_are_summarised(signed_in: TestClient) -> None:  # noqa
     body = client.get(f"{API}/hotels/{hotel_id}/reviews", params={"limit": 50}).json()
     summary = body["summary"]
     assert summary["total"] >= 3 and len(body["items"]) == summary["total"]
-    assert sum(summary["sentiment"].values()) == summary["total"]
-    assert summary["scored_by"] == "rules" and "generated text" in summary["note"]
-    assert summary["aspects"] and all(a["mentions"] >= a["positive"] for a in summary["aspects"])
+    assert "generated text" in summary["note"]
     assert 0 < summary["average_rating"] <= 10
     assert all(i["source"] == "supplied" and not i["verified_stay"] for i in body["items"])
     dates = [i["date"] for i in body["items"]]
@@ -96,8 +94,7 @@ def test_traveller_reviews_a_completed_stay(
     written = client.post(review_url(booking), json=REVIEW)
     assert written.status_code == 201, written.text
     review = written.json()
-    assert review["verified_stay"] and review["sentiment"] == "positive"
-    assert review["aspects"]["staff"] == "positive"
+    assert review["verified_stay"] and review["rating"] == REVIEW["rating"]
     again = client.post(review_url(booking), json=REVIEW)
     assert again.status_code == 409 and code(again) == "REVIEW_EXISTS"
 

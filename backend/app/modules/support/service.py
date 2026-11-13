@@ -1,9 +1,9 @@
-"""Support tickets: travellers write in, the request classifier files the ticket, agents reply.
+"""Support tickets: travellers write in, keyword rules file the ticket, agents reply.
 
-Category comes from the request classifier (model when trained, keyword rules otherwise; the
-ticket records which). A ticket is high priority when the traveller asks for a person or when the
-linked booking starts within `support.urgent_within_hours`. Agents can re-file a ticket; that is
-audited and the source becomes `admin`.
+Category comes from the keyword rules in `categories.py` (no model, no AI). A ticket is high
+priority when the traveller asks for a person or when the linked booking starts within
+`support.urgent_within_hours`. Agents can re-file a ticket; that is audited and the source
+becomes `admin`.
 """
 
 from __future__ import annotations
@@ -25,9 +25,9 @@ from app.core.request_context import RequestMeta
 from app.modules.audit.service import AuditService
 from app.modules.auth.models import User
 from app.modules.bookings.models import Booking, BookingItem, ItemStatus
-from app.modules.ml.request_classifier import CATEGORIES, LABELS, RequestClassifier
 from app.modules.notifications.service import NotificationService
 from app.modules.search.pricing import rules_section
+from app.modules.support.categories import CATEGORIES, LABELS, classify
 from app.modules.support.models import SupportTicket, TicketMessage
 
 Status = Literal["open", "waiting_on_traveller", "resolved", "closed"]
@@ -130,7 +130,6 @@ class SupportService:
         self._session = session
         self._clock = clock
         self._rules = SupportRules.model_validate(rules_section(settings.config_dir, "support"))
-        self._classifier = RequestClassifier(settings.models_dir)
         self._notifications = NotificationService(session)
         self._audit = AuditService(session)
 
@@ -254,7 +253,7 @@ class SupportService:
             booking = self._session.get(Booking, request.booking_id)
             if booking is None or booking.user_id != user.id:
                 raise NotFound("Booking not found.", code="BOOKING_NOT_FOUND")
-        result = self._classifier.classify(f"{request.subject}. {request.message}")
+        result = classify(f"{request.subject}. {request.message}")
         urgent = result.category == "human_agent" or self._urgent_booking(booking)
         now = self._clock.now()
         ticket = SupportTicket(
@@ -264,7 +263,7 @@ class SupportService:
             subject=request.subject,
             category=result.category,
             category_source=result.source,
-            confidence=result.confidence,
+            confidence=0.0,
             priority="high" if urgent else "normal",
             status="open",
             created_at=now,

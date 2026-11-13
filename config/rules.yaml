@@ -93,22 +93,11 @@ support:
   urgent_within_hours: 72
   max_open_tickets: 10
 
-preferences:
-  # A traveller's preference model is fitted once they have touched this many different stays.
-  min_positive_hotels: 3
-  negatives_per_positive: 4
-  # Share of the preference in the Recommended order (the rest is the normal ranking).
-  blend: 0.3
-  retrain_minutes: 60
-  # Negatives are sampled from the traveller's cities plus this many other cities.
-  extra_cities: 20
-
 retention:
   # Days kept after which the worker deletes the data (daily). Bookings and payments are kept.
   refresh_token_days: 30
   notification_days: 180
   search_history_days: 180
-  interaction_days: 365
   audit_days: 730
 
 recovery:

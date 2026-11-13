@@ -37,7 +37,6 @@ from app.modules.bookings.schemas import (
     TravellerIn,
 )
 from app.modules.bookings.service import BookingService
-from app.modules.ml.interactions import record_interaction
 from app.modules.recovery.schemas import DisruptionIn
 from app.modules.recovery.service import RecoveryService
 from app.modules.reviews.service import ReviewIn, ReviewService
@@ -45,7 +44,6 @@ from app.modules.search.flights import FlightQuery, FlightSearchService
 from app.modules.search.history import remember_search
 from app.modules.search.hotels import HotelQuery, HotelSearchService, Stay
 from app.modules.search.locations import LocationService
-from app.modules.search.preferences import load_preference_rules, train_due
 from app.modules.search.pricing import Converter, load_pricing_rules, load_search_rules
 from app.modules.support.service import AgentReplyIn, SupportService, TicketIn
 from app.modules.watchlist.service import FlightWatch, PriceAlertIn, WatchlistService
@@ -228,11 +226,10 @@ def run(settings: Settings, *, fresh: bool = False) -> str:
                     ),
                 )
 
-        # 4. Saved stays, an alert, recent searches, and enough activity to personalise results.
+        # 4. Saved stays, an alert and recent searches.
         watchlist = WatchlistService(session, settings, demo.clock)
         for result in goa[:3]:
             watchlist.save(user, result.id)
-            record_interaction(session, user.id, result.id, "view", now)
         session.commit()
         watchlist.create_alert(
             user,
@@ -258,7 +255,6 @@ def run(settings: Settings, *, fresh: bool = False) -> str:
             at=now,
             keep=30,
         )
-        train_due(session, demo.converter, load_preference_rules(settings), now)
 
         # 5. Support: one answered request and one waiting in the admin queue.
         support = SupportService(session, settings, demo.clock)

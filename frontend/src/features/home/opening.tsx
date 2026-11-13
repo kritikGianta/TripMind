@@ -7,7 +7,6 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { homeCopy } from "@/content/home";
 import { siteConfig } from "@/config/site";
-import { AiSearch } from "@/features/ai/ai-search";
 import { SearchPanel } from "@/features/search/components/search-panel";
 
 import { Letters, Media, Rise, Scribble, useHome } from "./media";
@@ -44,9 +43,6 @@ export function Hero() {
         </h1>
         <div className="tm-hero__mid">
           <p className="tm-italic tm-hero__tagline">{siteConfig.tagline}</p>
-          <div className="tm-hero__dock">
-            <AiSearch />
-          </div>
           <div className="tm-hero__actions">
             {media["hero-film"] ? (
               <button

@@ -101,8 +101,6 @@ export function WatchPriceButton({ watch, label = "Watch price" }: { watch: Watc
   );
 }
 
-const SENTIMENT: Record<string, string> = { positive: "Positive", neutral: "Mixed", negative: "Negative" };
-
 export function HotelReviews({ hotelId }: { hotelId: string }) {
   const [sort, setSort] = useState<"recent" | "highest" | "lowest">("recent");
   const [limit, setLimit] = useState(5);
@@ -121,7 +119,6 @@ export function HotelReviews({ hotelId }: { hotelId: string }) {
     );
   }
   const { summary } = data;
-  const positive = summary.sentiment.positive ?? 0;
   return (
     <Card className="grid gap-4 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -144,26 +141,10 @@ export function HotelReviews({ hotelId }: { hotelId: string }) {
         <div>
           {summary.average_rating !== null ? <p className="tm-serif-score">{summary.average_rating.toFixed(1)}/10</p> : null}
           <p className="text-sm text-muted-foreground">
-            {summary.total} review{summary.total === 1 ? "" : "s"} · {Math.round((positive / summary.total) * 100)}% positive
+            {summary.total} review{summary.total === 1 ? "" : "s"}
           </p>
           {summary.note ? <p className="mt-1 text-xs text-muted-foreground">{summary.note}</p> : null}
         </div>
-        <ul className="grid content-start gap-2 sm:grid-cols-2">
-          {summary.aspects.map((aspect) => {
-            const share = aspect.mentions ? Math.round((aspect.positive / aspect.mentions) * 100) : 0;
-            return (
-              <li key={aspect.aspect} className="grid gap-1 text-sm">
-                <span className="flex justify-between gap-2 capitalize">
-                  {aspect.aspect.replace(/_/g, " ")}
-                  <span className="text-muted-foreground">{share}% good</span>
-                </span>
-                <span className="block h-1 overflow-hidden rounded-full bg-muted">
-                  <span className="block h-full bg-primary" style={{ width: `${share}%` }} />
-                </span>
-              </li>
-            );
-          })}
-        </ul>
       </div>
 
       <ul className="grid gap-3">
@@ -177,7 +158,6 @@ export function HotelReviews({ hotelId }: { hotelId: string }) {
               ) : null}
               {review.title ? <span className="font-medium">{review.title}</span> : null}
               {review.verified_stay ? <Badge variant="secondary">Verified stay</Badge> : null}
-              <Badge variant="outline">{SENTIMENT[review.sentiment] ?? review.sentiment}</Badge>
             </div>
             <p className="text-sm text-muted-foreground">{review.text}</p>
             <p className="text-xs text-muted-foreground">
@@ -192,7 +172,6 @@ export function HotelReviews({ hotelId }: { hotelId: string }) {
           Show more
         </Button>
       ) : null}
-      <p className="text-xs text-muted-foreground">Summaries are worked out by {summary.scored_by.replace(/_/g, " ")}.</p>
     </Card>
   );
 }

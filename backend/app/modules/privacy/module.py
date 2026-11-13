@@ -41,8 +41,6 @@ from app.modules.bookings.models import (
     Refund,
 )
 from app.modules.loyalty.module import LoyaltyEntry
-from app.modules.ml.interactions import HotelInteraction
-from app.modules.ml.preferences import UserPreference
 from app.modules.notifications.models import Notification
 from app.modules.profiles.module import TravellerProfile
 from app.modules.reviews.models import StayReview
@@ -66,7 +64,6 @@ class RetentionRules(BaseModel):
     refresh_token_days: int = Field(default=30, ge=1)
     notification_days: int = Field(default=180, ge=1)
     search_history_days: int = Field(default=180, ge=1)
-    interaction_days: int = Field(default=365, ge=1)
     audit_days: int = Field(default=730, ge=30)
 
 
@@ -117,8 +114,6 @@ def export_my_data(
         "reviews": _rows(session, StayReview, StayReview.user_id == uid),
         "support_tickets": _rows(session, SupportTicket, SupportTicket.user_id == uid),
         "support_messages": _rows(session, TicketMessage, TicketMessage.ticket_id.in_(tickets)),
-        "stay_activity": _rows(session, HotelInteraction, HotelInteraction.user_id == uid),
-        "learned_preferences": _rows(session, UserPreference, UserPreference.user_id == uid),
     }
     AuditService(session).record(
         action="privacy.export", outcome="success", meta=meta, actor_user_id=uid
@@ -182,8 +177,6 @@ def delete_my_account(
         SavedHotel,
         PriceAlert,
         SupportTicket,
-        HotelInteraction,
-        UserPreference,
         PasswordResetToken,
     ):
         session.execute(delete(model).where(model.user_id == uid))
@@ -219,11 +212,6 @@ def purge_expired(session: Session, rules: RetentionRules, now: datetime) -> dic
             "search_history",
             SearchHistory,
             SearchHistory.searched_at < older(rules.search_history_days),
-        ),
-        (
-            "stay_activity",
-            HotelInteraction,
-            HotelInteraction.occurred_at < older(rules.interaction_days),
         ),
         ("audit_log", AuditLog, AuditLog.occurred_at < older(rules.audit_days)),
     )

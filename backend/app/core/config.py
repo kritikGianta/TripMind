@@ -33,7 +33,6 @@ class Settings(BaseSettings):
     log_json: bool = True
     api_prefix: str = "/api/v1"
     config_dir: Path = _REPO_ROOT / "config"
-    models_dir: Path = _REPO_ROOT / "models"
 
     # Database
     database_url: str = "postgresql+psycopg://tripmind:tripmind@127.0.0.1:5432/tripmind"
@@ -64,12 +63,6 @@ class Settings(BaseSettings):
     # Tracing is off unless an OTLP endpoint is configured (Compose `obs` profile sets it).
     otel_exporter_otlp_endpoint: str | None = None
     otel_service_name: str = "tripmind-api"
-
-    # Hosted LLM keys (optional; config/ai.yaml lists the providers and models).
-    groq_api_key: SecretStr | None = None
-    gemini_api_key: SecretStr | None = None
-    openrouter_api_key: SecretStr | None = None
-    llm_provider_order: str | None = None
 
     # CORS is only needed for cross-origin callers; the web app uses a same-origin proxy.
     cors_origins: list[str] = Field(default_factory=list)

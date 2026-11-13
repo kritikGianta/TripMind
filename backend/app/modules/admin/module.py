@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import uuid
 from datetime import date, datetime, timedelta
 from typing import Annotated, Any
@@ -13,8 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
-from app.core.config import Settings
-from app.core.deps import get_clock, get_request_meta, get_settings_dep
+from app.core.deps import get_clock, get_request_meta
 from app.core.errors import Conflict, ErrorEnvelope, NotFound
 from app.core.request_context import RequestMeta
 from app.db.session import get_session
@@ -25,12 +23,6 @@ from app.modules.auth.models import User, UserRole
 from app.modules.auth.repository import RefreshTokenRepository
 from app.modules.bookings.models import Booking, BookingItem, BookingStatus, Refund, Trip
 from app.modules.catalog.models import City
-from app.modules.ml.features import FARE_ESTIMATOR_FEATURES, HOTEL_RANKER_FEATURES
-from app.modules.ml.preferences import UserPreference
-from app.modules.ml.registry import load_model
-from app.modules.ml.request_classifier import MODEL_CATEGORIES
-from app.modules.ml.sentiment import CLASSES as SENTIMENT_CLASSES
-from app.modules.ml.text import load_text_model
 from app.modules.planner.models import TripPlan
 from app.modules.recovery.models import RecoveryCase
 from app.modules.search.pricing import MoneyOut
@@ -242,73 +234,6 @@ def audit(
         total=int(session.scalar(count) or 0),
         actions=actions,
     )
-
-
-# ------------------------------------------------------------------------------ models
-
-_MODELS = (
-    ("hotel_ranker", "Orders Recommended stays", "Weighted score: rating, value, stars"),
-    ("fare_estimator", "Labels fares below, at or above typical", "No fare label shown"),
-    ("review_sentiment", "Review sentiment and aspect highlights", "Word lists with negation"),
-    ("request_classifier", "Files support requests by category", "Keyword rules"),
-    ("preference_model", "Personalises Recommended per traveller", "Normal Recommended order"),
-    ("price_anomaly", "Flags suspicious fares in import reports", "No warning shown"),
-    ("similar_hotels", "Similar stays on the hotel page", "Section hidden"),
-)
-
-
-class ModelStatusOut(BaseModel):
-    name: str
-    purpose: str
-    in_use: bool
-    fallback: str
-    version: str | None
-    trained_at: str | None
-    dataset: str | None
-    metrics: dict[str, float]
-
-
-class ModelListOut(BaseModel):
-    models: list[ModelStatusOut]
-    travellers_with_preferences: int
-
-
-def _model_in_use(name: str, settings: Settings, has_card: bool) -> bool:
-    if name == "hotel_ranker":
-        return load_model(settings.models_dir, name, HOTEL_RANKER_FEATURES) is not None
-    if name == "fare_estimator":
-        return load_model(settings.models_dir, name, FARE_ESTIMATOR_FEATURES) is not None
-    if name == "review_sentiment":
-        return load_text_model(settings.models_dir, name, SENTIMENT_CLASSES) is not None
-    if name == "request_classifier":
-        return load_text_model(settings.models_dir, name, MODEL_CATEGORIES) is not None
-    return has_card  # fitted per import, on demand or per user: live once evaluated
-
-
-@router.get("/models", response_model=ModelListOut, summary="Which models are live, with metrics")
-def model_status(
-    _: Admin,
-    session: Session = Depends(get_session),
-    settings: Settings = Depends(get_settings_dep),
-) -> ModelListOut:
-    out = []
-    for name, purpose, fallback in _MODELS:
-        path = settings.models_dir / name / "artifacts" / "model_card.json"
-        card = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        out.append(
-            ModelStatusOut(
-                name=name,
-                purpose=purpose,
-                in_use=_model_in_use(name, settings, bool(card)),
-                fallback=fallback,
-                version=card.get("version"),
-                trained_at=card.get("trained_at"),
-                dataset=card.get("dataset"),
-                metrics=card.get("metrics", {}),
-            )
-        )
-    count = session.scalar(select(func.count()).select_from(UserPreference))
-    return ModelListOut(models=out, travellers_with_preferences=int(count or 0))
 
 
 # ------------------------------------------------------------------------------ users

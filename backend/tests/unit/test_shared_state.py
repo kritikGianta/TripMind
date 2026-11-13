@@ -8,7 +8,6 @@ import pytest
 from app.core.config import Settings
 from app.core.kv import FailOpenStore, InMemoryStore, KeyValueStore, RedisStore
 from app.core.rate_limit import StoreRateLimiter
-from app.modules.ai.llm import AIConfig, LLMClient, LLMResult, ProviderConfig
 from app.worker import Job, Worker
 
 
@@ -53,30 +52,6 @@ def test_redis_outage_fails_open_for_limits_and_closed_for_locks() -> None:
     assert store.window_hit("ip", limit=1, window_seconds=60) == (True, 0)  # keep serving
     assert store.get("x") is None and not store.ping()
     assert store.set_if_absent("job:x", "1", 60) is False  # never run a job twice
-
-
-def test_ai_cache_and_cooldowns_are_shared_through_the_store() -> None:
-    shared = RedisStore("redis://unused", client=fakeredis.FakeRedis(decode_responses=True))
-    config = AIConfig(
-        order=["p"],
-        providers={"p": ProviderConfig(base_url="https://p.test/v1", model="m", key_env="X")},
-    )
-    calls: list[str] = []
-
-    class Counting(LLMClient):
-        def _call(self, name: str, *args: object) -> LLMResult | None:  # type: ignore[override]
-            calls.append(name)
-            return LLMResult(text="answer", provider=name)
-
-    first = Counting(config, keys={"p": "k"}, store=shared)
-    second = Counting(config, keys={"p": "k"}, store=shared)  # another API replica
-    msg = [{"role": "user", "content": "q"}]
-    assert first.complete(feature="f", system="s", messages=msg) is not None
-    cached = second.complete(feature="f", system="s", messages=msg)
-    assert cached is not None and cached.cached and calls == ["p"]
-
-    first._cool_down("p", "f", "rate_limited")
-    assert second.status()["p"] == "cooling_down"
 
 
 def test_worker_runs_each_job_once_across_workers() -> None:

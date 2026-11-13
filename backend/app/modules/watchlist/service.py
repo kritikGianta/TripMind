@@ -25,7 +25,6 @@ from app.core.errors import Conflict, DomainError, NotFound, ValidationFailed
 from app.core.metrics import PRICE_ALERTS
 from app.modules.auth.models import User
 from app.modules.catalog.models import Hotel
-from app.modules.ml.interactions import record_interaction
 from app.modules.notifications.service import NotificationService
 from app.modules.search.flights import FlightQuery, FlightSearchService
 from app.modules.search.hotels import HotelSearchService, Stay
@@ -190,7 +189,6 @@ class WatchlistService:
                 )
             try:
                 self._session.add(SavedHotel(user_id=user.id, hotel_id=hotel_id))
-                record_interaction(self._session, user.id, hotel_id, "save", self._clock.now())
                 self._session.commit()
             except IntegrityError:  # saved twice at once: the first one stands
                 self._session.rollback()

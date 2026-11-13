@@ -124,23 +124,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/models": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Which models are live, with metrics */
-        get: operations["model_status_api_v1_admin_models_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/operations/booked-flights": {
         parameters: {
             query?: never;
@@ -256,57 +239,6 @@ export interface paths {
         put?: never;
         /** Disable or re-enable an account (audited; disabling ends its sessions) */
         post: operations["set_user_status_api_v1_admin_users__user_id__status_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/assistant": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Ask the help assistant (grounded in TripMind help and your trips) */
-        post: operations["assistant_api_v1_ai_assistant_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/parse-search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Turn a sentence into search criteria (LLM, or rules as fallback) */
-        post: operations["parse_search_api_v1_ai_parse_search_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Which AI providers are configured */
-        get: operations["status_api_v1_ai_status_get"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -918,7 +850,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Guest reviews of a stay with a sentiment and aspect summary */
+        /** Guest reviews of a stay with the average rating */
         get: operations["hotel_reviews_api_v1_hotels__hotel_id__reviews_get"];
         put?: never;
         post?: never;
@@ -991,24 +923,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/me/preferences": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** What TripMind has learned about the stays I like */
-        get: operations["my_preferences_api_v1_me_preferences_get"];
-        put?: never;
-        post?: never;
-        /** Reset personalisation: forget my stay activity and what was learned */
-        delete: operations["reset_preferences_api_v1_me_preferences_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1522,13 +1436,6 @@ export interface components {
             /** Option Id */
             option_id: string;
         };
-        /** Action */
-        Action: {
-            /** Href */
-            href: string;
-            /** Label */
-            label: string;
-        };
         /** AdminUserOut */
         AdminUserOut: {
             /** Bookings */
@@ -1611,41 +1518,6 @@ export interface components {
             top_destinations: components["schemas"]["CountOut"][];
             /** Travellers */
             travellers: number;
-        };
-        /** AspectOut */
-        AspectOut: {
-            /** Aspect */
-            aspect: string;
-            /** Mentions */
-            mentions: number;
-            /** Negative */
-            negative: number;
-            /** Positive */
-            positive: number;
-        };
-        /** AssistantOut */
-        AssistantOut: {
-            /** Actions */
-            actions: components["schemas"]["Action"][];
-            /** Answer */
-            answer: string;
-            /** Citations */
-            citations: components["schemas"]["Citation"][];
-            /**
-             * Source
-             * @description 'ai:<provider>' or 'rules'
-             */
-            source: string;
-            /**
-             * Topic
-             * @description Support category of the question (request classifier)
-             */
-            topic?: string | null;
-        };
-        /** AssistantRequest */
-        AssistantRequest: {
-            /** Messages */
-            messages: components["schemas"]["ChatMessage"][];
         };
         /** AuditOut */
         AuditOut: {
@@ -1997,16 +1869,6 @@ export interface components {
             /** Flight Offer Id */
             flight_offer_id?: string | null;
         };
-        /** ChatMessage */
-        ChatMessage: {
-            /** Content */
-            content: string;
-            /**
-             * Role
-             * @enum {string}
-             */
-            role: "user" | "assistant";
-        };
         /** CheckOut */
         CheckOut: {
             /** Message */
@@ -2018,13 +1880,6 @@ export interface components {
              * @enum {string}
              */
             status: "ok" | "info" | "warn" | "risk";
-        };
-        /** Citation */
-        Citation: {
-            /** Source */
-            source: string;
-            /** Title */
-            title: string;
         };
         /** CityOut */
         CityOut: {
@@ -2483,24 +2338,6 @@ export interface components {
             /** Origin */
             origin: string;
         };
-        /** FareInsightOut */
-        FareInsightOut: {
-            /** Basis */
-            basis: string;
-            /**
-             * Label
-             * @enum {string}
-             */
-            label: "below_typical" | "typical" | "above_typical";
-            /** Model Version */
-            model_version: string;
-            /**
-             * Ratio
-             * @description This fare divided by the model's typical fare
-             */
-            ratio: number;
-            typical_per_adult: components["schemas"]["MoneyOut"];
-        };
         /** FeaturesOut */
         FeaturesOut: {
             /** Features */
@@ -2627,7 +2464,6 @@ export interface components {
             bookable: boolean;
             /** Duration Minutes */
             duration_minutes: number;
-            fare_insight?: components["schemas"]["FareInsightOut"] | null;
             /**
              * Id
              * @description Stable offer ID: the legs it is made of
@@ -2845,8 +2681,6 @@ export interface components {
             review_count: number | null;
             /** Rooms */
             rooms: components["schemas"]["RoomOfferOut"][];
-            /** Similar */
-            similar?: components["schemas"]["SimilarHotelOut"][];
             /** Star Rating */
             star_rating: number | null;
             stay: components["schemas"]["StayOut"] | null;
@@ -2926,11 +2760,6 @@ export interface components {
             longitude: number | null;
             /** Name */
             name: string;
-            /**
-             * Personal Reasons
-             * @description Why this stay suits the signed-in traveller
-             */
-            personal_reasons?: string[];
             /** Review Count */
             review_count: number | null;
             /** Star Rating */
@@ -2973,18 +2802,6 @@ export interface components {
             nights: number;
             /** Notices */
             notices: string[];
-            /**
-             * Personalized
-             * @description Adjusted to the traveller's taste
-             * @default false
-             */
-            personalized: boolean;
-            /**
-             * Ranked By
-             * @description 'model:<version>' or 'rules', plus '+preferences'
-             * @default rules
-             */
-            ranked_by: string;
             /** Results */
             results: components["schemas"]["HotelResultOut"][];
             /** Rooms */
@@ -3197,17 +3014,6 @@ export interface components {
             /** Minutes */
             minutes: number;
         };
-        /** LearnedPreferenceOut */
-        LearnedPreferenceOut: {
-            /** Direction */
-            direction: string;
-            /** Feature */
-            feature: string;
-            /** Label */
-            label: string;
-            /** Weight */
-            weight: number;
-        };
         /** LedgerLine */
         LedgerLine: {
             /** @description None when the data does not contain the amount */
@@ -3332,34 +3138,6 @@ export interface components {
              */
             id: string;
         };
-        /** ModelListOut */
-        ModelListOut: {
-            /** Models */
-            models: components["schemas"]["ModelStatusOut"][];
-            /** Travellers With Preferences */
-            travellers_with_preferences: number;
-        };
-        /** ModelStatusOut */
-        ModelStatusOut: {
-            /** Dataset */
-            dataset: string | null;
-            /** Fallback */
-            fallback: string;
-            /** In Use */
-            in_use: boolean;
-            /** Metrics */
-            metrics: {
-                [key: string]: number;
-            };
-            /** Name */
-            name: string;
-            /** Purpose */
-            purpose: string;
-            /** Trained At */
-            trained_at: string | null;
-            /** Version */
-            version: string | null;
-        };
         /** MoneyOut */
         MoneyOut: {
             /** Amount Minor */
@@ -3369,10 +3147,6 @@ export interface components {
         };
         /** MyReviewOut */
         MyReviewOut: {
-            /** Aspects */
-            aspects: {
-                [key: string]: string;
-            };
             /** Date */
             date: string | null;
             /**
@@ -3392,8 +3166,6 @@ export interface components {
              * @description 0-10
              */
             rating: number | null;
-            /** Sentiment */
-            sentiment: string;
             /**
              * Source
              * @enum {string}
@@ -3464,46 +3236,6 @@ export interface components {
              * @enum {string}
              */
             state: "saved" | "dismissed" | "none";
-        };
-        /** ParseIn */
-        ParseIn: {
-            /** Text */
-            text: string;
-        };
-        /** ParsedSearchOut */
-        ParsedSearchOut: {
-            /** Adults */
-            adults: number;
-            /** Cabin Class */
-            cabin_class: string | null;
-            /** Depart Date */
-            depart_date: string | null;
-            destination: components["schemas"]["PlaceOut"] | null;
-            /**
-             * Intent
-             * @enum {string}
-             */
-            intent: "flights" | "stays" | "trip";
-            /** Max Budget */
-            max_budget: number | null;
-            /** Min Stars */
-            min_stars: number | null;
-            /** Missing */
-            missing: string[];
-            origin: components["schemas"]["PlaceOut"] | null;
-            /** Priority */
-            priority: string | null;
-            /** Return Date */
-            return_date: string | null;
-            /**
-             * Source
-             * @description 'ai:<provider>' or 'rules'
-             */
-            source: string;
-            /** Summary */
-            summary: string;
-            /** Unknown Places */
-            unknown_places: string[];
         };
         /** PassengerOut */
         PassengerOut: {
@@ -3576,15 +3308,6 @@ export interface components {
             expiry_month: number;
             /** Expiry Year */
             expiry_year: number;
-        };
-        /** PlaceOut */
-        PlaceOut: {
-            /** Airport Code */
-            airport_code: string | null;
-            /** City Id */
-            city_id: string;
-            /** Label */
-            label: string;
         };
         /** PlanListOut */
         PlanListOut: {
@@ -3688,24 +3411,6 @@ export interface components {
             saved: number;
             /** Title */
             title: string;
-        };
-        /** PreferencesOut */
-        PreferencesOut: {
-            /** Activity Count */
-            activity_count: number;
-            /** How It Works */
-            how_it_works: string;
-            /** Learned */
-            learned: components["schemas"]["LearnedPreferenceOut"][];
-            /**
-             * Personalized
-             * @description True once enough activity has been learned from
-             */
-            personalized: boolean;
-            /** Stays Learned From */
-            stays_learned_from: number;
-            /** Trained At */
-            trained_at: string | null;
         };
         /** PriceAlertIn */
         PriceAlertIn: {
@@ -4022,10 +3727,6 @@ export interface components {
         };
         /** ReviewOut */
         ReviewOut: {
-            /** Aspects */
-            aspects: {
-                [key: string]: string;
-            };
             /** Date */
             date: string | null;
             /**
@@ -4038,8 +3739,6 @@ export interface components {
              * @description 0-10
              */
             rating: number | null;
-            /** Sentiment */
-            sentiment: string;
             /**
              * Source
              * @enum {string}
@@ -4057,26 +3756,12 @@ export interface components {
         /** ReviewSummaryOut */
         ReviewSummaryOut: {
             /**
-             * Aspects
-             * @description Most mentioned first
-             */
-            aspects: components["schemas"]["AspectOut"][];
-            /**
              * Average Rating
              * @description 0-10, over reviews that have a rating
              */
             average_rating: number | null;
             /** Note */
             note: string | null;
-            /**
-             * Scored By
-             * @description 'model:<version>' or 'rules'
-             */
-            scored_by: string;
-            /** Sentiment */
-            sentiment: {
-                [key: string]: number;
-            };
             /** Total */
             total: number;
         };
@@ -4272,37 +3957,6 @@ export interface components {
              */
             access_expires_at: string;
             user: components["schemas"]["UserOut"];
-        };
-        /** SimilarHotelOut */
-        SimilarHotelOut: {
-            /** Distance Km */
-            distance_km: number | null;
-            /** @description Cheapest nightly rate, display currency */
-            from_price: components["schemas"]["MoneyOut"] | null;
-            /** Guest Rating */
-            guest_rating: number | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Name */
-            name: string;
-            /** Shared Amenities */
-            shared_amenities: string[];
-            /** Similarity */
-            similarity: number;
-            /** Star Rating */
-            star_rating: number | null;
-        };
-        /** StatusOut */
-        StatusOut: {
-            /** Active Provider */
-            active_provider: string | null;
-            /** Providers */
-            providers: {
-                [key: string]: string;
-            };
         };
         /** StayOut */
         StayOut: {
@@ -5192,44 +4846,6 @@ export interface operations {
             };
         };
     };
-    model_status_api_v1_admin_models_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ModelListOut"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
     booked_flights_api_v1_admin_operations_booked_flights_get: {
         parameters: {
             query?: never;
@@ -5860,128 +5476,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    assistant_api_v1_ai_assistant_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AssistantRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AssistantOut"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    parse_search_api_v1_ai_parse_search_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ParseIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ParsedSearchOut"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    status_api_v1_ai_status_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
         };
@@ -8629,62 +8123,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LoyaltyOut"];
                 };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    my_preferences_api_v1_me_preferences_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PreferencesOut"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    reset_preferences_api_v1_me_preferences_delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description Unauthorized */
             401: {

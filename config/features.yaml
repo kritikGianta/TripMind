@@ -19,20 +19,11 @@ features:
   trip_planner: true
   # Disruptions (operators) and recovery cases with rebooking or refund (travellers).
   recovery: true
-  # Natural-language search box (hosted LLM when a key is set, rules otherwise).
-  ai_search: true
-  # Help assistant grounded in TripMind help and the traveller's trips.
-  ai_assistant: true
-  # Trained models (used only when their artifacts exist in models/<name>/artifacts).
-  ml_hotel_ranker: true
-  ml_fare_insight: true
   # Share a plan with friends: members vote, consensus is computed, the owner decides.
   group_planning: true
   # Saved stays and price alerts (checked by the worker).
   watchlist: true
-  # Hotel reviews with sentiment and aspect summaries; travellers review completed stays.
+  # Hotel reviews with the average rating; travellers review completed stays.
   reviews: true
-  # Support requests filed by the request classifier, with an admin queue.
+  # Support requests filed by keyword rules, with an admin queue.
   support: true
-  # Learn which stays a signed-in traveller likes and blend it into the Recommended order.
-  personalization: true

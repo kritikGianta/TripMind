@@ -30,8 +30,6 @@ from app.modules.groups.models import GroupMember, GroupVote, TripGroup
 from app.modules.ingestion.models import ImportReject, ImportRun
 from app.modules.inventory.models import FlightInventory, InventoryClaim, RoomNightInventory
 from app.modules.loyalty.module import LoyaltyEntry
-from app.modules.ml.interactions import HotelInteraction
-from app.modules.ml.preferences import UserPreference
 from app.modules.notifications.models import Notification
 from app.modules.operations.models import Disruption
 from app.modules.planner.models import TripPlan
@@ -59,7 +57,6 @@ __all__ = [
     "GroupVote",
     "Hotel",
     "HotelAmenity",
-    "HotelInteraction",
     "HotelReview",
     "ImportReject",
     "ImportRun",
@@ -84,5 +81,4 @@ __all__ = [
     "TripGroup",
     "TripPlan",
     "User",
-    "UserPreference",
 ]

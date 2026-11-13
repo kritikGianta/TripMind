@@ -172,33 +172,6 @@ export function HotelDetailView({ id }: { id: string }) {
           </Card>
         ))}
       </section>
-      {data.similar?.length ? (
-        <section className="grid gap-3">
-          <h2 className="text-xl font-semibold">Similar stays in {data.city.name}</h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            {(data.similar ?? []).map((s) => (
-              <Link key={s.id} href={`/stays/${s.id}?${toQuery({ checkIn, checkOut, guests, rooms, trip })}`}>
-                <Card className="grid gap-1 p-4 text-sm transition-colors hover:border-primary/40">
-                  <div className="flex items-center gap-2 font-medium">
-                    {s.name} <Stars count={s.star_rating} />
-                  </div>
-                  <p className="text-muted-foreground">
-                    {s.guest_rating ? `${s.guest_rating.toFixed(1)}/10 · ` : ""}
-                    {s.distance_km !== null && s.distance_km !== undefined ? `${s.distance_km} km from centre · ` : ""}
-                    {s.from_price ? `from ${formatMoney(s.from_price)} a night` : "no rate in data"}
-                  </p>
-                  {s.shared_amenities.length ? (
-                    <p className="text-xs text-muted-foreground">
-                      Also has {s.shared_amenities.slice(0, 4).map((a) => AMENITY_LABELS[a] ?? a.replace(/_/g, " ")).join(", ")}
-                    </p>
-                  ) : null}
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
       <HotelReviews hotelId={data.id} />
     </div>
   );

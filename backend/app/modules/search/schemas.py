@@ -70,14 +70,6 @@ class LayoverOut(BaseModel):
     minutes: int
 
 
-class FareInsightOut(BaseModel):
-    label: Literal["below_typical", "typical", "above_typical"]
-    typical_per_adult: MoneyOut
-    ratio: float = Field(description="This fare divided by the model's typical fare")
-    model_version: str
-    basis: str
-
-
 class FlightOfferOut(BaseModel):
     id: str = Field(description="Stable offer ID: the legs it is made of")
     legs: list[FlightLegOut]
@@ -88,7 +80,6 @@ class FlightOfferOut(BaseModel):
     bookable: bool = Field(description="False when a leg has no price in the data")
     price: PriceLedger
     notices: list[str] = Field(default_factory=list)
-    fare_insight: FareInsightOut | None = None
 
 
 class FacetOption(BaseModel):
@@ -169,9 +160,6 @@ class HotelResultOut(BaseModel):
     bookable: bool
     free_cancellation: bool
     breakfast_available: bool
-    personal_reasons: list[str] = Field(
-        default_factory=list, description="Why this stay suits the signed-in traveller"
-    )
 
 
 class HotelFacets(BaseModel):
@@ -193,10 +181,6 @@ class HotelSearchOut(BaseModel):
     facets: HotelFacets
     display_currency: str
     notices: list[str]
-    ranked_by: str = Field(
-        default="rules", description="'model:<version>' or 'rules', plus '+preferences'"
-    )
-    personalized: bool = Field(default=False, description="Adjusted to the traveller's taste")
 
 
 class HotelDetailOut(BaseModel):
@@ -218,18 +202,6 @@ class HotelDetailOut(BaseModel):
     stay: StayOut | None
     rooms: list[RoomOfferOut]
     display_currency: str
-    similar: list[SimilarHotelOut] = Field(default_factory=list)
-
-
-class SimilarHotelOut(BaseModel):
-    id: uuid.UUID
-    name: str
-    star_rating: float | None
-    guest_rating: float | None
-    distance_km: float | None
-    from_price: MoneyOut | None = Field(description="Cheapest nightly rate, display currency")
-    similarity: float
-    shared_amenities: list[str]
 
 
 class StayOut(BaseModel):

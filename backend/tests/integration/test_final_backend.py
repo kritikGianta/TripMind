@@ -287,16 +287,13 @@ def test_stay_only_trip_suggests_getting_there(signed_in: TestClient) -> None:  
 # ── Admin console ─────────────────────────────────────────────────────────────
 
 
-def test_admin_models_and_users(client: TestClient, catalog: None, settings: Settings) -> None:
+def test_admin_users(client: TestClient, catalog: None, settings: Settings) -> None:
     email = register(client)
     assert client.get(f"{API}/admin/users").status_code == 403
     from app.cli import seed
 
     seed()
     assert client.post(f"{API}/auth/demo-login", json={"role": "admin"}).status_code == 200
-    models = client.get(f"{API}/admin/models").json()
-    assert {m["name"] for m in models["models"]} >= {"hotel_ranker", "request_classifier"}
-    assert all(not m["in_use"] for m in models["models"])  # tests use an empty models folder
 
     found = client.get(f"{API}/admin/users", params={"q": email[:8]}).json()
     assert found["total"] == 1 and found["items"][0]["email"] == email

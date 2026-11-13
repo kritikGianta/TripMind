@@ -1,4 +1,4 @@
-"""Saved stays, search history, the interaction log and price alerts."""
+"""Saved stays, search history and price alerts."""
 
 from __future__ import annotations
 
@@ -12,16 +12,13 @@ from sqlalchemy.orm import Session
 
 from app.core.clock import FrozenClock
 from app.core.config import Settings
-from app.models import Flight, HotelInteraction, Notification
+from app.models import Flight, Notification
 from app.modules.watchlist.service import WatchlistService
 from app.worker_jobs import jobs
 from tests.integration.test_bookings import (
     API,
-    GOOD_CARD,
     code,
-    hold,
     hotel_room,
-    pay,
     signed_in,  # noqa: F401  (fixture)
 )
 
@@ -54,10 +51,6 @@ def test_save_and_unsave_a_stay(signed_in: TestClient, db_session: Session) -> N
     assert first.status_code == 200, first.text
     again = client.put(f"{API}/me/saved-hotels/{hotel}").json()
     assert [h["hotel_id"] for h in again["items"]] == [hotel] and again["items"][0]["available"]
-    saves = db_session.scalars(
-        select(HotelInteraction).where(HotelInteraction.kind == "save")
-    ).all()
-    assert len(saves) == 1  # saving twice is one signal
     assert client.delete(f"{API}/me/saved-hotels/{hotel}").json()["items"] == []
     missing = client.put(f"{API}/me/saved-hotels/{uuid.uuid4()}")
     assert missing.status_code == 404 and code(missing) == "HOTEL_NOT_FOUND"
@@ -69,7 +62,7 @@ def test_watchlist_needs_sign_in(client: TestClient, catalog: None) -> None:
     assert client.get(f"{API}/me/searches").status_code == 401
 
 
-# ── Search history and interactions ───────────────────────────────────────────
+# ── Search history ───────────────────────────────────────────────────────────
 
 
 def test_search_history_is_kept_for_signed_in_travellers(
@@ -101,18 +94,6 @@ def test_search_history_is_kept_for_signed_in_travellers(
     assert gone.status_code == 404 and code(gone) == "SEARCH_NOT_FOUND"
     assert signed_in.delete(f"{API}/me/searches").status_code == 204
     assert signed_in.get(f"{API}/me/searches").json()["items"] == []
-
-
-def test_views_and_bookings_feed_the_interaction_log(
-    signed_in: TestClient,  # noqa: F811
-    db_session: Session,
-) -> None:
-    client = signed_in
-    room = hotel_room(client)
-    created = hold(client, [room])
-    assert pay(client, created.json()["id"], GOOD_CARD).status_code == 200
-    kinds = {i.kind for i in db_session.scalars(select(HotelInteraction))}
-    assert kinds == {"view", "book"}  # hotel_room() opened detail pages, then one was booked
 
 
 # ── Price alerts ──────────────────────────────────────────────────────────────
@@ -213,6 +194,5 @@ def test_worker_runs_the_alert_job(settings: Settings) -> None:
     assert names == {
         "expire_holds": 30,
         "check_price_alerts": 30 * 60,
-        "train_preferences": 3600,
         "purge_expired_data": 86400,
     }

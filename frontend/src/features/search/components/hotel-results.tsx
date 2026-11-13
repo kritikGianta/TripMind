@@ -245,11 +245,7 @@ export function HotelResultsView() {
                 <p className="text-sm text-muted-foreground">
                   {formatDay(data.check_in)} – {formatDay(data.check_out)} · {data.nights} night{data.nights > 1 ? "s" : ""} ·{" "}
                   {data.guests} guest{data.guests > 1 ? "s" : ""} · {data.total} of {data.unfiltered_total} properties
-                  {sort === "recommended"
-                    ? data.ranked_by.startsWith("model:")
-                      ? ` · ordered by TripMind's ranking model (${data.ranked_by.slice(6)})`
-                      : " · ordered by rating, value and stars"
-                    : ""}
+                  {sort === "recommended" ? " · ordered by rating, value and stars" : ""}
                 </p>
               ) : null}
             </div>

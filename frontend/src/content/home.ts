@@ -222,7 +222,7 @@ export const homeCopy = {
         title: ["Book", "a stay"],
         tag: "On its own",
         meta: "Whole-stay price",
-        text: "Find hotels by city, dates and guests. The price for the whole stay is shown upfront, with similar stays on every hotel page.",
+        text: "Find hotels by city, dates and guests. The price for the whole stay is shown upfront.",
         cta: "Search stays",
         href: "/stays",
       },

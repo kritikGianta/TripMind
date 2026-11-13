@@ -83,7 +83,6 @@ from app.modules.bookings.schemas import (
 from app.modules.catalog.models import Airport, City, Flight, RoomType
 from app.modules.inventory.service import InventoryService, SoldOut
 from app.modules.loyalty.module import LoyaltyService, load_loyalty_rules
-from app.modules.ml.interactions import record_interaction
 from app.modules.notifications.service import NotificationService
 from app.modules.search.flights import FlightSearchService
 from app.modules.search.hotels import HotelSearchService, Stay
@@ -660,10 +659,6 @@ class BookingService:
             booking.confirmed_at = self._clock.now()
             for item in self._items(booking):
                 item.status = ItemStatus.CONFIRMED
-                if item.hotel_id is not None:
-                    record_interaction(
-                        self._session, user.id, item.hotel_id, "book", self._clock.now()
-                    )
             self._event(
                 booking,
                 "confirmed",
