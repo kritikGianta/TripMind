@@ -144,6 +144,72 @@
         "title": "AirportBrief",
         "type": "object"
       },
+      "AlternativeOut": {
+        "properties": {
+          "catalog_id": {
+            "title": "Catalog Id",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "difference_inr": {
+            "description": "Against the current choice (G2)",
+            "title": "Difference Inr",
+            "type": "integer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "price_inr": {
+            "title": "Price Inr",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "room_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Id"
+          },
+          "valid": {
+            "title": "Valid",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "catalog_id",
+          "name",
+          "detail",
+          "price_inr",
+          "difference_inr",
+          "valid"
+        ],
+        "title": "AlternativeOut",
+        "type": "object"
+      },
       "AnalyticsOut": {
         "properties": {
           "average_booking_value": {
@@ -821,6 +887,67 @@
         "title": "BudgetIn",
         "type": "object"
       },
+      "BuildOut": {
+        "properties": {
+          "cheapest_total_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cheapest Total Inr"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/PackageOut"
+            },
+            "title": "Packages",
+            "type": "array"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "suggestion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggestion"
+          }
+        },
+        "required": [
+          "ok",
+          "packages"
+        ],
+        "title": "BuildOut",
+        "type": "object"
+      },
       "BundleOut": {
         "properties": {
           "complete": {
@@ -1072,6 +1199,121 @@
           "expected_amount_due_minor"
         ],
         "title": "ChangeConfirm",
+        "type": "object"
+      },
+      "ChangeIn": {
+        "properties": {
+          "action": {
+            "enum": [
+              "hotel",
+              "flight",
+              "add_attraction",
+              "remove_attraction"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "attraction_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attraction Id"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "hotel: the city whose hotel changes",
+            "title": "City"
+          },
+          "day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "add_attraction: the visit day",
+            "title": "Day"
+          },
+          "flight_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flight Id"
+          },
+          "hotel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hotel Id"
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "remove_attraction: the item",
+            "title": "Item Id"
+          },
+          "leg": {
+            "anyOf": [
+              {
+                "enum": [
+                  "arrival",
+                  "return"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leg"
+          },
+          "room_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Id"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "ChangeIn",
         "type": "object"
       },
       "ChangeQuoteOut": {
@@ -3218,6 +3460,64 @@
         "title": "HealthOut",
         "type": "object"
       },
+      "HolidayRequestIn": {
+        "properties": {
+          "adults": {
+            "maximum": 9.0,
+            "minimum": 0.0,
+            "title": "Adults",
+            "type": "integer"
+          },
+          "budget_inr": {
+            "minimum": 0.0,
+            "title": "Budget Inr",
+            "type": "integer"
+          },
+          "child_ages": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 8,
+            "title": "Child Ages",
+            "type": "array"
+          },
+          "country": {
+            "maxLength": 80,
+            "minLength": 2,
+            "title": "Country",
+            "type": "string"
+          },
+          "departure_airport": {
+            "description": "BLR, DEL, BOM or MAA",
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Departure Airport",
+            "type": "string"
+          },
+          "nights": {
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Nights",
+            "type": "integer"
+          },
+          "start_date": {
+            "description": "The day the arrival flight lands",
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "departure_airport",
+          "country",
+          "start_date",
+          "nights",
+          "adults",
+          "budget_inr"
+        ],
+        "title": "HolidayRequestIn",
+        "type": "object"
+      },
       "HotelDetailOut": {
         "properties": {
           "address": {
@@ -4764,6 +5064,151 @@
           "state"
         ],
         "title": "OptionStateIn",
+        "type": "object"
+      },
+      "OptionsOut": {
+        "properties": {
+          "countries": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Countries",
+            "type": "array"
+          },
+          "departure_cities": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Departure Cities",
+            "type": "array"
+          },
+          "first_night": {
+            "format": "date",
+            "title": "First Night",
+            "type": "string"
+          },
+          "last_departure": {
+            "format": "date",
+            "title": "Last Departure",
+            "type": "string"
+          },
+          "max_nights": {
+            "title": "Max Nights",
+            "type": "integer"
+          },
+          "min_nights": {
+            "title": "Min Nights",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "departure_cities",
+          "countries",
+          "first_night",
+          "last_departure",
+          "min_nights",
+          "max_nights"
+        ],
+        "title": "OptionsOut",
+        "type": "object"
+      },
+      "PackageOut": {
+        "properties": {
+          "average_stars": {
+            "title": "Average Stars",
+            "type": "number"
+          },
+          "budget_inr": {
+            "title": "Budget Inr",
+            "type": "integer"
+          },
+          "cities": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Cities",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "left_inr": {
+            "description": "Budget minus total; negative = over budget",
+            "title": "Left Inr",
+            "type": "integer"
+          },
+          "problems": {
+            "description": "Broken rules; empty for a correct package",
+            "items": {
+              "type": "string"
+            },
+            "title": "Problems",
+            "type": "array"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "request": {
+            "additionalProperties": true,
+            "title": "Request",
+            "type": "object"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "total_inr": {
+            "title": "Total Inr",
+            "type": "integer"
+          },
+          "travel_minutes": {
+            "title": "Travel Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "status",
+          "reference",
+          "request",
+          "items",
+          "total_inr",
+          "budget_inr",
+          "left_inr",
+          "travel_minutes",
+          "average_stars",
+          "cities",
+          "problems"
+        ],
+        "title": "PackageOut",
         "type": "object"
       },
       "PassengerOut": {
@@ -12494,6 +12939,367 @@
         "summary": "Liveness: the process is serving",
         "tags": [
           "meta"
+        ]
+      }
+    },
+    "/api/v1/holiday/options": {
+      "get": {
+        "operationId": "options_api_v1_holiday_options_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptionsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Departure cities and countries (M1)",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
+    "/api/v1/holiday/packages": {
+      "post": {
+        "operationId": "build_api_v1_holiday_packages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HolidayRequestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Build the cheapest, fastest and best-rated packages for a request (M2, G4, M8)",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
+    "/api/v1/holiday/packages/{package_id}": {
+      "get": {
+        "operationId": "get_package_api_v1_holiday_packages__package_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "package_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Package Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One package",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
+    "/api/v1/holiday/packages/{package_id}/alternatives": {
+      "get": {
+        "operationId": "alternatives_api_v1_holiday_packages__package_id__alternatives_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "package_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Package Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "enum": [
+                "hotel",
+                "flight",
+                "attraction"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlternativeOut"
+                  },
+                  "title": "Response Alternatives Api V1 Holiday Packages  Package Id  Alternatives Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change options with the price difference (G2)",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
+    "/api/v1/holiday/packages/{package_id}/changes": {
+      "post": {
+        "operationId": "change_api_v1_holiday_packages__package_id__changes_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "package_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Package Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change a hotel or flight, add or remove an attraction; every rule is checked (M6)",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
+    "/api/v1/holiday/packages/{package_id}/confirm": {
+      "post": {
+        "operationId": "confirm_api_v1_holiday_packages__package_id__confirm_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "package_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Package Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Confirm: reserve the seats and rooms and get a 10-digit reservation number (M7, S2)",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
+    "/api/v1/holiday/packages/{package_id}/export": {
+      "get": {
+        "operationId": "export_api_v1_holiday_packages__package_id__export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "package_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Package Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download as JSON, shared trip format (M5)",
+        "tags": [
+          "holiday"
+        ]
+      }
+    },
+    "/api/v1/holiday/reservations/{reference}": {
+      "get": {
+        "operationId": "reservation_api_v1_holiday_reservations__reference__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reference",
+            "required": true,
+            "schema": {
+              "title": "Reference",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Open a reservation by its number (M7)",
+        "tags": [
+          "holiday"
         ]
       }
     },

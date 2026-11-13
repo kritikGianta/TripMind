@@ -826,6 +826,142 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/holiday/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Departure cities and countries (M1) */
+        get: operations["options_api_v1_holiday_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/holiday/packages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build the cheapest, fastest and best-rated packages for a request (M2, G4, M8) */
+        post: operations["build_api_v1_holiday_packages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/holiday/packages/{package_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One package */
+        get: operations["get_package_api_v1_holiday_packages__package_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/holiday/packages/{package_id}/alternatives": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change options with the price difference (G2) */
+        get: operations["alternatives_api_v1_holiday_packages__package_id__alternatives_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/holiday/packages/{package_id}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change a hotel or flight, add or remove an attraction; every rule is checked (M6) */
+        post: operations["change_api_v1_holiday_packages__package_id__changes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/holiday/packages/{package_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm: reserve the seats and rooms and get a 10-digit reservation number (M7, S2) */
+        post: operations["confirm_api_v1_holiday_packages__package_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/holiday/packages/{package_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download as JSON, shared trip format (M5) */
+        get: operations["export_api_v1_holiday_packages__package_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/holiday/reservations/{reference}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Open a reservation by its number (M7) */
+        get: operations["reservation_api_v1_holiday_reservations__reference__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/hotels/search": {
         parameters: {
             query?: never;
@@ -1505,6 +1641,30 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** AlternativeOut */
+        AlternativeOut: {
+            /** Catalog Id */
+            catalog_id: string;
+            /** Detail */
+            detail: string;
+            /**
+             * Difference Inr
+             * @description Against the current choice (G2)
+             */
+            difference_inr: number;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Price Inr */
+            price_inr: number;
+            /** Reason */
+            reason?: string | null;
+            /** Room Id */
+            room_id?: string | null;
+            /** Valid */
+            valid: boolean;
+        };
         /** AnalyticsOut */
         AnalyticsOut: {
             average_booking_value: components["schemas"]["MoneyOut"] | null;
@@ -1763,6 +1923,21 @@ export interface components {
             /** Max Budget Per Person */
             max_budget_per_person?: number | null;
         };
+        /** BuildOut */
+        BuildOut: {
+            /** Cheapest Total Inr */
+            cheapest_total_inr?: number | null;
+            /** Message */
+            message?: string | null;
+            /** Ok */
+            ok: boolean;
+            /** Packages */
+            packages: components["schemas"]["PackageOut"][];
+            /** Reasons */
+            reasons?: string[];
+            /** Suggestion */
+            suggestion?: string | null;
+        };
         /** BundleOut */
         BundleOut: {
             /** Complete */
@@ -1846,6 +2021,39 @@ export interface components {
             flight_offer_id?: string | null;
             /** @description Needed when money is due */
             payment?: components["schemas"]["PaymentRequest"] | null;
+        };
+        /** ChangeIn */
+        ChangeIn: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "hotel" | "flight" | "add_attraction" | "remove_attraction";
+            /** Attraction Id */
+            attraction_id?: string | null;
+            /**
+             * City
+             * @description hotel: the city whose hotel changes
+             */
+            city?: string | null;
+            /**
+             * Day
+             * @description add_attraction: the visit day
+             */
+            day?: string | null;
+            /** Flight Id */
+            flight_id?: string | null;
+            /** Hotel Id */
+            hotel_id?: string | null;
+            /**
+             * Item Id
+             * @description remove_attraction: the item
+             */
+            item_id?: string | null;
+            /** Leg */
+            leg?: ("arrival" | "return") | null;
+            /** Room Id */
+            room_id?: string | null;
         };
         /** ChangeQuoteOut */
         ChangeQuoteOut: {
@@ -2662,6 +2870,30 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** HolidayRequestIn */
+        HolidayRequestIn: {
+            /** Adults */
+            adults: number;
+            /** Budget Inr */
+            budget_inr: number;
+            /** Child Ages */
+            child_ages?: number[];
+            /** Country */
+            country: string;
+            /**
+             * Departure Airport
+             * @description BLR, DEL, BOM or MAA
+             */
+            departure_airport: string;
+            /** Nights */
+            nights: number;
+            /**
+             * Start Date
+             * Format: date
+             * @description The day the arrival flight lands
+             */
+            start_date: string;
+        };
         /** HotelDetailOut */
         HotelDetailOut: {
             /** Address */
@@ -3253,6 +3485,75 @@ export interface components {
              * @enum {string}
              */
             state: "saved" | "dismissed" | "none";
+        };
+        /** OptionsOut */
+        OptionsOut: {
+            /** Countries */
+            countries: {
+                [key: string]: unknown;
+            }[];
+            /** Departure Cities */
+            departure_cities: {
+                [key: string]: string;
+            }[];
+            /**
+             * First Night
+             * Format: date
+             */
+            first_night: string;
+            /**
+             * Last Departure
+             * Format: date
+             */
+            last_departure: string;
+            /** Max Nights */
+            max_nights: number;
+            /** Min Nights */
+            min_nights: number;
+        };
+        /** PackageOut */
+        PackageOut: {
+            /** Average Stars */
+            average_stars: number;
+            /** Budget Inr */
+            budget_inr: number;
+            /** Cities */
+            cities: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Items */
+            items: {
+                [key: string]: unknown;
+            }[];
+            /** Label */
+            label: string;
+            /**
+             * Left Inr
+             * @description Budget minus total; negative = over budget
+             */
+            left_inr: number;
+            /**
+             * Problems
+             * @description Broken rules; empty for a correct package
+             */
+            problems: string[];
+            /** Reference */
+            reference: string | null;
+            /** Request */
+            request: {
+                [key: string]: unknown;
+            };
+            /** Status */
+            status: string;
+            /** Total Inr */
+            total_inr: number;
+            /** Travel Minutes */
+            travel_minutes: number;
         };
         /** PassengerOut */
         PassengerOut: {
@@ -7857,6 +8158,252 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthOut"];
+                };
+            };
+        };
+    };
+    options_api_v1_holiday_options_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptionsOut"];
+                };
+            };
+        };
+    };
+    build_api_v1_holiday_packages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HolidayRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuildOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_package_api_v1_holiday_packages__package_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                package_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    alternatives_api_v1_holiday_packages__package_id__alternatives_get: {
+        parameters: {
+            query: {
+                kind: "hotel" | "flight" | "attraction";
+                key?: string | null;
+            };
+            header?: never;
+            path: {
+                package_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlternativeOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_api_v1_holiday_packages__package_id__changes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                package_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_api_v1_holiday_packages__package_id__confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                package_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_api_v1_holiday_packages__package_id__export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                package_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reservation_api_v1_holiday_reservations__reference__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
