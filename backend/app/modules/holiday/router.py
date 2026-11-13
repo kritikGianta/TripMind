@@ -46,6 +46,7 @@ class QuickOut(BaseModel):
     fields: dict[str, Any] = Field(description="Form fields read from the sentence")
     understood: list[str]
     missing: list[str]
+    notes: list[str] = Field(default_factory=list, description="Places or dates we could not use")
 
 
 @router.post(
@@ -54,7 +55,7 @@ class QuickOut(BaseModel):
     summary="Quick request: read a sentence with rules (no AI) and fill the form (S1)",
 )
 def parse_request(body: QuickIn, service: HolidayService = Depends(_service)) -> QuickOut:
-    return QuickOut(**parse(body.text, service.cat))
+    return QuickOut(**parse(body.text, service.cat, service.today))
 
 
 class TravelWindowOut(BaseModel):

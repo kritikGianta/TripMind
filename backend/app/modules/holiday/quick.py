@@ -10,8 +10,9 @@ form, and the answer says what was understood and what is still missing.
 
 from __future__ import annotations
 
+import difflib
 import re
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 from app.modules.holiday.engine import Catalog
@@ -32,7 +33,7 @@ MONTHS = {
     for m in names
 }  # fmt: skip
 NUM = r"(\d+|" + "|".join(WORDS) + r")"
-ALIASES = {"bangalore": "Bengaluru", "bombay": "Mumbai", "madras": "Chennai", "uae": "United Arab Emirates", "uk": "United Kingdom", "england": "United Kingdom"}  # fmt: skip
+ALIASES = {"bangalore": "Bengaluru", "banglore": "Bengaluru", "bangalor": "Bengaluru", "bengalore": "Bengaluru", "bangaluru": "Bengaluru", "blore": "Bengaluru", "new delhi": "Delhi", "dilli": "Delhi", "chenai": "Chennai", "mumabi": "Mumbai","bombay": "Mumbai", "madras": "Chennai", "uae": "United Arab Emirates", "uk": "United Kingdom", "england": "United Kingdom"}  # fmt: skip
 
 
 def _num(token: str) -> int:
@@ -64,13 +65,77 @@ def _date(text: str, after: date) -> date | None:
         return None
 
 
-def parse(text: str, cat: Catalog) -> dict[str, Any]:
-    raw = text.strip()
-    t = " " + re.sub(r"\s+", " ", raw.lower()) + " "
+WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+PEOPLE = r"(?:friends?|wife|husband|partner|brother|sister|mom|mum|mother|dad|father|colleagues?|cousins?|girlfriend|boyfriend|fiancee?)"
+# Common words that must never be "corrected" into a place name.
+STOP = {"from", "with", "going", "trip", "nights", "night", "days", "budget", "under", "friend", "friends", "family", "tomorrow", "today", "holiday", "week", "weekend", "there", "where", "next", "this"}  # fmt: skip
+
+
+def _relative(t: str, today: date) -> date | None:
+    """today, tomorrow, day after tomorrow, in 5 days, next week, this weekend, next friday."""
+    if re.search(r"\bday after tomorrow\b", t):
+        return today + timedelta(days=2)
+    if re.search(r"\b(tomorrow|tmrw|tmr)\b", t):
+        return today + timedelta(days=1)
+    if re.search(r"\b(today|tonight)\b", t):
+        return today
+    if m := re.search(rf"\bin\s+{NUM}\s+(days?|weeks?)\b", t):
+        return today + timedelta(days=_num(m[1]) * (7 if m[2].startswith("week") else 1))
+    if re.search(r"\bnext week\b", t):
+        return today + timedelta(days=7 - today.weekday())  # next Monday
+    if m := re.search(r"\b(this |next )?weekend\b", t):
+        ahead = (5 - today.weekday()) % 7 or 7
+        return today + timedelta(days=ahead + (7 if m[1] == "next " else 0))
+    if m := re.search(rf"\b(?:on|this|next)\s+({'|'.join(WEEKDAYS)})\b", t):
+        ahead = (WEEKDAYS.index(m[1]) - today.weekday()) % 7 or 7
+        return today + timedelta(days=ahead)
+    return None
+
+
+def _fix_spelling(t: str, names: list[str]) -> str:
+    """Bring close misspellings of known places to the right name (banglore -> bengaluru)."""
+    known = {n for n in names if " " not in n}
+    out = []
+    for w in t.split(" "):
+        if len(w) >= 4 and w not in known and w not in STOP:
+            close = difflib.get_close_matches(w, known, n=1, cutoff=0.75)
+            w = close[0] if close else w
+        out.append(w)
+    return " ".join(out)
+
+
+def _people(t: str) -> int | None:
+    """2 adults, we are 3, 3 of us, group of 4, me and my friend, with 2 friends, couple, solo."""
+    if m := re.search(rf"\b{NUM}\s+(adults?|grown-?ups?|people|persons|of us|travell?ers)\b", t):
+        return _num(m[1])
+    if m := re.search(rf"\b(?:we are|we're|group of|party of)\s+{NUM}\b", t):
+        return _num(m[1])
+    if m := re.search(rf"\b(?:me|i)\s+(?:and|with|&)\s+(?:my\s+)?{NUM}\s+{PEOPLE}\b", t):
+        return _num(m[1]) + 1
+    if m := re.search(rf"\bwith\s+(?:my\s+)?{NUM}\s+{PEOPLE}\b", t):
+        return _num(m[1]) + 1
+    if re.search(
+        rf"\b(couple|honeymoon|(?:me|i)\s+(?:and|&)\s+(?:my|a)\s+{PEOPLE}|(?:my|a)\s+{PEOPLE}\s+and\s+(?:i|me)|with\s+(?:my|a)\s+{PEOPLE})\b",
+        t,
+    ):
+        return 2
+    if re.search(r"\b(solo|alone|just me|by myself)\b", t):
+        return 1
+    return None
+
+
+def parse(text: str, cat: Catalog, today: date | None = None) -> dict[str, Any]:
+    today = today or date.today()
+    t = re.sub(r"[^\w\s,./&₹-]", " ", text.strip().lower())
+    t = " " + re.sub(r"\s+", " ", t).strip() + " "
     for word, name in ALIASES.items():
         t = re.sub(rf"\b{word}\b", name.lower(), t)
+    places = [c.lower() for c in cat.departures.values()]
+    places += [n.lower() for country, cities in cat.countries.items() for n in (country, *cities)]
+    t = _fix_spelling(t, places)
     fields: dict[str, Any] = {}
     understood: list[str] = []
+    notes: list[str] = []
 
     # Departure city: "from Bengaluru" or an airport code (BLR).
     for code, city in cat.departures.items():
@@ -85,8 +150,18 @@ def parse(text: str, cat: Catalog) -> dict[str, Any]:
             fields["country"] = country
             understood.append(f"to {country}")
             break
-    # Start date.
-    if start := _date(t, cat.first_night):
+    else:
+        # A destination we do not have: say so instead of guessing.
+        m = re.search(r"\b(?:to|visit|visiting)\s+([a-z]+(?: [a-z]+)?)", t)
+        place = m[1].split(" ")[0] if m else ""
+        if place and place not in STOP and place not in WORDS and place not in places:
+            notes.append(
+                f"{place.title()} is not in our holiday data. Holidays go to "
+                + ", ".join(sorted(cat.countries))
+                + "."
+            )
+    # Start date: "10 April", "10/04/2027", or "tomorrow", "next friday", "in 2 weeks".
+    if start := _date(t, max(today, cat.first_night)) or _relative(t, today):
         fields["start_date"] = start.isoformat()
         understood.append(f"landing {start:%d %b %Y}")
     # Nights: "6 nights", "7 days" (6 nights), "a week".
@@ -98,13 +173,9 @@ def parse(text: str, cat: Catalog) -> dict[str, Any]:
         fields["nights"] = 7
     if "nights" in fields:
         understood.append(f"{fields['nights']} nights")
-    # Adults: "2 adults", "couple", "two of us", "solo".
-    if m := re.search(rf"\b{NUM}\s+(adults?|grown-?ups?|people|persons|of us)\b", t):
-        fields["adults"] = _num(m[1])
-    elif re.search(r"\b(couple|my (wife|husband|partner) and (i|me))\b", t):
-        fields["adults"] = 2
-    elif re.search(r"\b(solo|alone|just me)\b", t):
-        fields["adults"] = 1
+    # Adults: "2 adults", "we are 3", "me and my friend", "couple", "solo".
+    if (adults := _people(t)) is not None:
+        fields["adults"] = adults
     if "adults" in fields:
         understood.append(f"{fields['adults']} adults")
     # Children: "a 6 year old", "kids aged 6 and 9", "child 4".
@@ -137,4 +208,8 @@ def parse(text: str, cat: Catalog) -> dict[str, Any]:
               "start_date": "start date", "nights": "nights", "adults": "adults",
               "budget_inr": "budget"}  # fmt: skip
     missing = [label for key, label in labels.items() if key not in fields]
-    return {"fields": fields, "understood": understood, "missing": missing}
+    if start:
+        first, last = cat.first_night, cat.last_departure
+        if not first <= start <= last:
+            notes.append(f"Holidays can start from {first:%d %b %Y} to {last:%d %b %Y}.")
+    return {"fields": fields, "understood": understood, "missing": missing, "notes": notes}

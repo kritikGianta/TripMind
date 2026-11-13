@@ -3499,6 +3499,11 @@ export interface components {
             };
             /** Missing */
             missing: string[];
+            /**
+             * Notes
+             * @description Places or dates we could not use
+             */
+            notes?: string[];
             /** Understood */
             understood: string[];
         };

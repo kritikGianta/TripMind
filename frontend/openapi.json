@@ -5302,6 +5302,14 @@
             "title": "Missing",
             "type": "array"
           },
+          "notes": {
+            "description": "Places or dates we could not use",
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
           "understood": {
             "items": {
               "type": "string"

@@ -120,6 +120,9 @@ export function HolidayPlanner() {
                 {quick.data.missing.length ? ` Please check: ${quick.data.missing.join(", ")}.` : ""}
               </p>
             ) : null}
+            {quick.data?.notes?.length ? (
+              <p className="text-sm text-amber-700 dark:text-amber-300">{quick.data.notes.join(" ")}</p>
+            ) : null}
             <FormError error={quick.error} />
           </form>
           <form onSubmit={submit} className="grid gap-4 md:grid-cols-4" noValidate>

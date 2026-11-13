@@ -137,6 +137,10 @@ class HolidayService:
         self._cat: e.Catalog | None = None
 
     @property
+    def today(self) -> date:
+        return self._clock.now().date()
+
+    @property
     def cat(self) -> e.Catalog:
         if self._cat is None:
             self._cat = e.load_catalog(self._session)
