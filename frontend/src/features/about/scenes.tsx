@@ -482,7 +482,7 @@ function AiBoundaries() {
         <StatusMark status={status} />
         <div className="ab-split__panels">
           <div className="ab-split__panel ab-split__panel--may">
-            <h3 className="ab-display">AI may</h3>
+            <h3 className="ab-display">Every package must</h3>
             <ul>
               {allowed.map((item) => (
                 <li key={item}>
@@ -493,7 +493,7 @@ function AiBoundaries() {
             </ul>
           </div>
           <div className="ab-split__panel ab-split__panel--not">
-            <h3 className="ab-display">AI may not</h3>
+            <h3 className="ab-display">TripMind never</h3>
             <ul>
               {notAllowed.map((item) => (
                 <li key={item}>
