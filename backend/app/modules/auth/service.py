@@ -172,9 +172,7 @@ class AuthService:
         )
         self._users.add(user)
         issued = self._start_session(user, meta)
-        self._audit.record(
-            action="auth.guest", outcome="success", meta=meta, actor_user_id=user.id
-        )
+        self._audit.record(action="auth.guest", outcome="success", meta=meta, actor_user_id=user.id)
         self._session.commit()
         AUTH_EVENTS.labels(event="guest", outcome="success").inc()
         return issued
