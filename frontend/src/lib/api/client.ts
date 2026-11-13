@@ -6,6 +6,8 @@
  * - Errors are normalised into `ApiError` from the backend's error envelope.
  * - An expired access token is refreshed once, transparently, and the request retried.
  *   Concurrent requests share one in-flight refresh.
+ * - With no session at all, a private guest session is started once and the request retried,
+ *   so nobody ever has to sign up or sign in.
  */
 import { ApiError } from "./errors";
 import type { components } from "./schema";
@@ -15,7 +17,7 @@ export type Schemas = components["schemas"];
 export const API_BASE = "/api/v1";
 
 const REFRESHABLE = new Set(["TOKEN_EXPIRED", "AUTH_REQUIRED", "TOKEN_INVALID"]);
-const NO_REFRESH_PATHS = new Set(["/auth/login", "/auth/register", "/auth/refresh", "/auth/logout", "/auth/demo-login"]);
+const NO_REFRESH_PATHS = new Set(["/auth/login", "/auth/register", "/auth/refresh", "/auth/logout", "/auth/demo-login", "/auth/guest"]);
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -27,6 +29,18 @@ export type RequestOptions = {
 };
 
 let refreshInFlight: Promise<boolean> | null = null;
+let guestInFlight: Promise<boolean> | null = null;
+
+/** Start a private guest session (no sign-up, no password). Concurrent callers share one. */
+async function startGuestSession(): Promise<boolean> {
+  guestInFlight ??= fetch(`${API_BASE}/auth/guest`, { method: "POST", credentials: "same-origin" })
+    .then((response) => response.ok)
+    .catch(() => false)
+    .finally(() => {
+      guestInFlight = null;
+    });
+  return guestInFlight;
+}
 
 async function refreshSession(): Promise<boolean> {
   refreshInFlight ??= fetch(`${API_BASE}/auth/refresh`, {
@@ -97,7 +111,7 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
 
   if (response.status === 401 && !NO_REFRESH_PATHS.has(path)) {
     const error = await toApiError(response.clone());
-    if (REFRESHABLE.has(error.code) && (await refreshSession())) {
+    if (REFRESHABLE.has(error.code) && ((await refreshSession()) || (await startGuestSession()))) {
       response = await send(path, options);
     }
   }

@@ -4918,44 +4918,73 @@
       },
       "PaymentRequest": {
         "additionalProperties": false,
+        "description": "Card details are optional: an empty body confirms the booking without a card (the\nprototype has no payment step). When a card is given, all its fields are required.",
         "properties": {
           "card_number": {
-            "maxLength": 23,
-            "minLength": 12,
-            "title": "Card Number",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 23,
+                "minLength": 12,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Number"
           },
           "cardholder_name": {
-            "maxLength": 80,
-            "minLength": 1,
-            "title": "Cardholder Name",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cardholder Name"
           },
           "cvc": {
-            "pattern": "^\\d{3,4}$",
-            "title": "Cvc",
-            "type": "string"
+            "anyOf": [
+              {
+                "pattern": "^\\d{3,4}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cvc"
           },
           "expiry_month": {
-            "maximum": 12.0,
-            "minimum": 1.0,
-            "title": "Expiry Month",
-            "type": "integer"
+            "anyOf": [
+              {
+                "maximum": 12.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Month"
           },
           "expiry_year": {
-            "maximum": 2100.0,
-            "minimum": 2000.0,
-            "title": "Expiry Year",
-            "type": "integer"
+            "anyOf": [
+              {
+                "maximum": 2100.0,
+                "minimum": 2000.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Year"
           }
         },
-        "required": [
-          "card_number",
-          "expiry_month",
-          "expiry_year",
-          "cvc",
-          "cardholder_name"
-        ],
         "title": "PaymentRequest",
         "type": "object"
       },
@@ -7484,6 +7513,11 @@
             "title": "Id",
             "type": "string"
           },
+          "is_guest": {
+            "default": false,
+            "title": "Is Guest",
+            "type": "boolean"
+          },
           "role": {
             "enum": [
               "traveler",
@@ -9280,6 +9314,67 @@
           }
         },
         "summary": "Sign in as a seeded demo account (disabled in production)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/guest": {
+      "post": {
+        "operationId": "guest_login_api_v1_auth_guest_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Start a private guest session: no sign-up, no password",
         "tags": [
           "auth"
         ]

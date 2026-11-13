@@ -24,7 +24,10 @@ function initials(name: string): string {
   return (parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : (parts[0] ?? "?").slice(0, 2)).toUpperCase();
 }
 
-/** Navbar session area: sign-in / sign-up when signed out, account menu when signed in. */
+/**
+ * Navbar session area. Every visitor gets a private guest session automatically, so there is no
+ * sign-up or sign-in step; staff (admins) sign in from the small link to reach the console.
+ */
 export function UserMenu() {
   const { user, status } = useSession();
   const signOut = useSignOut();
@@ -34,14 +37,9 @@ export function UserMenu() {
 
   if (!user) {
     return (
-      <div className="flex items-center gap-2">
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/sign-in">Sign in</Link>
-        </Button>
-        <Button asChild size="sm">
-          <Link href="/sign-up">Sign up</Link>
-        </Button>
-      </div>
+      <Button asChild variant="ghost" size="sm">
+        <Link href="/sign-in">Staff sign-in</Link>
+      </Button>
     );
   }
 
@@ -58,7 +56,9 @@ export function UserMenu() {
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel className="grid gap-0.5">
           <span className="truncate">{user.full_name}</span>
-          <span className="truncate text-xs font-normal text-muted-foreground">{user.email}</span>
+          <span className="truncate text-xs font-normal text-muted-foreground">
+            {user.is_guest ? "Your trips are saved on this browser" : user.email}
+          </span>
           {user.role === "admin" ? <Badge className="mt-1 w-fit">Admin</Badge> : null}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -129,12 +129,20 @@ export function UserMenu() {
             </Link>
           </DropdownMenuItem>
         ) : null}
-        <DropdownMenuItem
-          disabled={signOut.isPending}
-          onSelect={() => signOut.mutate(undefined, { onSettled: () => router.replace("/") })}
-        >
-          <LogOut /> Sign out
-        </DropdownMenuItem>
+        {user.is_guest ? (
+          <DropdownMenuItem asChild>
+            <Link href="/sign-in">
+              <ShieldCheck /> Staff sign-in
+            </Link>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            disabled={signOut.isPending}
+            onSelect={() => signOut.mutate(undefined, { onSettled: () => router.replace("/") })}
+          >
+            <LogOut /> Sign out
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

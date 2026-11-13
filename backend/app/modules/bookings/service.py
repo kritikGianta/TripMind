@@ -662,7 +662,9 @@ class BookingService:
             self._event(
                 booking,
                 "confirmed",
-                f"Paid with {result.brand} ending {result.last4}. Booking confirmed.",
+                "Booking confirmed."
+                if result.brand == payments.NO_CARD_BRAND
+                else f"Paid with {result.brand} ending {result.last4}. Booking confirmed.",
             )
             points = self._loyalty.earn(
                 user.id, booking.id, booking.total_minor, booking.reference, self._clock.now()

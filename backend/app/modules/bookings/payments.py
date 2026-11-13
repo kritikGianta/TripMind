@@ -60,7 +60,26 @@ def _brand(number: str) -> str:
     return "card"
 
 
-def charge(card_number: str, expiry_month: int, expiry_year: int, today: date) -> PaymentResult:
+# Brand and last digits recorded when a booking is confirmed without a card (the prototype has no
+# payment step; a confirmation is still recorded so retries and refunds work the same way).
+NO_CARD_BRAND = "none"
+NO_CARD_LAST4 = "----"
+
+
+def charge(
+    card_number: str | None, expiry_month: int | None, expiry_year: int | None, today: date
+) -> PaymentResult:
+    """Simulate a card charge, or confirm without a card when no card number is given."""
+    if card_number is None:
+        return PaymentResult(
+            succeeded=True,
+            brand=NO_CARD_BRAND,
+            last4=NO_CARD_LAST4,
+            failure_code=None,
+            reference=f"confirm_{secrets.token_hex(10)}",
+        )
+    if expiry_month is None or expiry_year is None:
+        raise ValidationFailed("Enter the card's expiry date.", code="CARD_INVALID")
     number = "".join(ch for ch in card_number if ch.isdigit())
     if len(number) < 12 or not _luhn_ok(number):
         raise ValidationFailed("The card number is not valid.", code="CARD_INVALID")

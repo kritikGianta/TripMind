@@ -22,45 +22,16 @@ import { useChangeQuote, useConfirmChange, type ChangeQuote, type PaymentInput }
 export type CardState = { number: string; month: string; year: string; cvc: string; name: string };
 export const EMPTY_CARD: CardState = { number: "", month: "", year: "", cvc: "", name: "" };
 
-export function cardPayload(card: CardState): PaymentInput {
-  return {
-    // Cards are written with spaces, as printed; the API takes digits only.
-    card_number: card.number.replace(/\s/g, ""),
-    expiry_month: Number(card.month),
-    expiry_year: Number(card.year.length === 2 ? `20${card.year}` : card.year),
-    cvc: card.cvc,
-    cardholder_name: card.name,
-  };
+/** TripMind has no payment step: confirming sends no card, and the API records the confirmation. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function cardPayload(_card: CardState): PaymentInput {
+  return {};
 }
 
-export function CardFields({ card, onChange, idPrefix = "pay" }: { card: CardState; onChange: (card: CardState) => void; idPrefix?: string }) {
-  return (
-    <div className="grid gap-3 rounded-sm border p-3">
-      <div className="grid gap-1.5">
-        <Label htmlFor={`${idPrefix}-number`}>Card number</Label>
-        <Input id={`${idPrefix}-number`} inputMode="numeric" autoComplete="cc-number" placeholder="4242 4242 4242 4242" value={card.number} onChange={(e) => onChange({ ...card, number: e.target.value })} />
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <div className="grid gap-1.5">
-          <Label htmlFor={`${idPrefix}-month`}>Month</Label>
-          <Input id={`${idPrefix}-month`} inputMode="numeric" placeholder="12" value={card.month} onChange={(e) => onChange({ ...card, month: e.target.value })} />
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor={`${idPrefix}-year`}>Year</Label>
-          <Input id={`${idPrefix}-year`} inputMode="numeric" placeholder="2030" value={card.year} onChange={(e) => onChange({ ...card, year: e.target.value })} />
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor={`${idPrefix}-cvc`}>CVC</Label>
-          <Input id={`${idPrefix}-cvc`} inputMode="numeric" autoComplete="cc-csc" placeholder="123" value={card.cvc} onChange={(e) => onChange({ ...card, cvc: e.target.value })} />
-        </div>
-      </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor={`${idPrefix}-name`}>Name on card</Label>
-        <Input id={`${idPrefix}-name`} autoComplete="cc-name" value={card.name} onChange={(e) => onChange({ ...card, name: e.target.value })} />
-      </div>
-      <p className="text-xs text-muted-foreground">Payments are simulated; no money moves. Test card: 4242 4242 4242 4242.</p>
-    </div>
-  );
+/** Where a card form used to be: one line saying nothing has to be paid here. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function CardFields(_props: { card: CardState; onChange: (card: CardState) => void; idPrefix?: string }) {
+  return <p className="rounded-sm border p-3 text-sm text-muted-foreground">No payment needed: confirming updates your booking straight away.</p>;
 }
 
 function QuoteLines({ quote }: { quote: ChangeQuote }) {

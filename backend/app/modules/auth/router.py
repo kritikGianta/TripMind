@@ -120,6 +120,27 @@ def login(
 
 
 @router.post(
+    "/guest",
+    response_model=SessionOut,
+    responses=_ERRORS,
+    dependencies=[
+        Depends(require_feature("guest_access")),
+        Depends(rate_limit("guest", limit=30, window_seconds=60)),
+    ],
+    summary="Start a private guest session: no sign-up, no password",
+)
+def guest_login(
+    response: Response,
+    service: AuthService = Depends(get_auth_service),
+    meta: RequestMeta = Depends(get_request_meta),
+    settings: Settings = Depends(get_settings_dep),
+    clock: Clock = Depends(get_clock),
+) -> SessionOut:
+    issued = service.guest_login(meta=meta)
+    return _session_response(response, issued, settings, clock)
+
+
+@router.post(
     "/demo-login",
     response_model=SessionOut,
     responses=_ERRORS,

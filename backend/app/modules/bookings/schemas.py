@@ -6,7 +6,14 @@ import uuid
 from datetime import date, datetime
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    StringConstraints,
+    model_validator,
+)
 
 from app.modules.search.pricing import MoneyOut, PriceLedger
 
@@ -74,17 +81,28 @@ class CreateBookingRequest(BaseModel):
 
 
 class PaymentRequest(BaseModel):
+    """Card details are optional: an empty body confirms the booking without a card (the
+    prototype has no payment step). When a card is given, all its fields are required."""
+
     model_config = ConfigDict(extra="forbid")
 
-    card_number: Annotated[
-        str, StringConstraints(strip_whitespace=True, min_length=12, max_length=23)
-    ]
-    expiry_month: Annotated[int, Field(ge=1, le=12)]
-    expiry_year: Annotated[int, Field(ge=2000, le=2100)]
-    cvc: Annotated[str, StringConstraints(pattern=r"^\d{3,4}$")]
-    cardholder_name: Annotated[
-        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)
-    ]
+    card_number: (
+        Annotated[str, StringConstraints(strip_whitespace=True, min_length=12, max_length=23)]
+        | None
+    ) = None
+    expiry_month: Annotated[int, Field(ge=1, le=12)] | None = None
+    expiry_year: Annotated[int, Field(ge=2000, le=2100)] | None = None
+    cvc: Annotated[str, StringConstraints(pattern=r"^\d{3,4}$")] | None = None
+    cardholder_name: (
+        Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)] | None
+    ) = None
+
+    @model_validator(mode="after")
+    def _card_complete(self) -> PaymentRequest:
+        fields = (self.card_number, self.expiry_month, self.expiry_year, self.cvc)
+        if any(f is not None for f in fields) and any(f is None for f in fields):
+            raise ValueError("Give the card number, expiry month, expiry year and CVC together.")
+        return self
 
 
 class CancelRequest(BaseModel):

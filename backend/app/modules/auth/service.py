@@ -38,7 +38,13 @@ from app.core.security import (
     verify_password,
 )
 from app.modules.audit.service import AuditService
-from app.modules.auth.models import PasswordResetToken, RefreshToken, User, UserRole
+from app.modules.auth.models import (
+    GUEST_EMAIL_DOMAIN,
+    PasswordResetToken,
+    RefreshToken,
+    User,
+    UserRole,
+)
 from app.modules.auth.repository import RefreshTokenRepository, UserRepository
 
 
@@ -149,6 +155,28 @@ class AuthService:
         self._audit.record(action="auth.login", outcome="success", meta=meta, actor_user_id=user.id)
         self._session.commit()
         AUTH_EVENTS.labels(event="login", outcome="success").inc()
+        return issued
+
+    def guest_login(self, *, meta: RequestMeta) -> IssuedSession:
+        """Start a session for a new, private guest traveller.
+
+        The website calls this on a first visit, so nobody has to sign up or sign in. A guest has
+        an unusable random password (it can never be signed into by password), and everything it
+        does (bookings, reservations, groups, alerts) belongs to it alone.
+        """
+        user = User(
+            email=f"guest-{secrets.token_hex(8)}{GUEST_EMAIL_DOMAIN}",
+            full_name="Guest traveller",
+            password_hash=hash_password(secrets.token_urlsafe(32)),
+            role=UserRole.TRAVELER,
+        )
+        self._users.add(user)
+        issued = self._start_session(user, meta)
+        self._audit.record(
+            action="auth.guest", outcome="success", meta=meta, actor_user_id=user.id
+        )
+        self._session.commit()
+        AUTH_EVENTS.labels(event="guest", outcome="success").inc()
         return issued
 
     def demo_login(self, *, role: UserRole, meta: RequestMeta) -> IssuedSession:

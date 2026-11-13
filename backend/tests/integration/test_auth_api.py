@@ -248,3 +248,19 @@ def test_metrics_endpoint_exposes_auth_counters(client: TestClient) -> None:
     body = client.get("/metrics").text
     assert 'auth_events_total{event="register",outcome="success"}' in body
     assert "http_request_duration_seconds" in body
+
+
+def test_guest_session_needs_no_sign_up_and_is_private(client: TestClient) -> None:
+    first = client.post(f"{API}/auth/guest")
+    assert first.status_code == 200, first.text
+    me = client.get(f"{API}/auth/me").json()
+    assert me["is_guest"] and me["role"] == "traveler"
+    assert me["email"].endswith("@guest.example.com")
+
+    client.cookies.clear()
+    other = client.post(f"{API}/auth/guest").json()
+    assert other["user"]["id"] != me["id"]  # every visitor gets their own guest
+
+    # A guest's password is random and unknown, so nobody can sign in as one.
+    login = client.post(f"{API}/auth/login", json={"email": me["email"], "password": "guessing!"})
+    assert login.status_code == 401

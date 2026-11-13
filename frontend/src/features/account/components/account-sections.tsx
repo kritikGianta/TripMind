@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormError } from "@/features/auth/components/form-error";
+import { useSession } from "@/features/auth/hooks";
 import { formatMoney } from "@/features/search/format";
 import { errorMessage } from "@/lib/api/errors";
 
@@ -274,24 +275,29 @@ export function SecuritySection() {
   const [confirming, setConfirming] = useState(false);
   const [password, setPassword] = useState("");
   const [exporting, setExporting] = useState(false);
+  // A guest has no password anyone knows, so password, session and account-deletion controls
+  // do not apply; downloading their data still does.
+  const guest = useSession().user?.is_guest ?? false;
 
   return (
     <div className="grid gap-4">
-      <PasswordCard />
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LogOut className="size-4" aria-hidden /> Sessions
-          </CardTitle>
-          <CardDescription>Signs you out on every device, including this one.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-2">
-          {everywhere.error ? <FormError error={everywhere.error} /> : null}
-          <Button variant="outline" className="w-fit" disabled={everywhere.isPending} onClick={() => everywhere.mutate(undefined, { onSuccess: () => router.replace("/sign-in") })}>
-            Sign out everywhere
-          </Button>
-        </CardContent>
-      </Card>
+      {guest ? null : <PasswordCard />}
+      {guest ? null : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <LogOut className="size-4" aria-hidden /> Sessions
+            </CardTitle>
+            <CardDescription>Signs you out on every device, including this one.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-2">
+            {everywhere.error ? <FormError error={everywhere.error} /> : null}
+            <Button variant="outline" className="w-fit" disabled={everywhere.isPending} onClick={() => everywhere.mutate(undefined, { onSuccess: () => router.replace("/sign-in") })}>
+              Sign out everywhere
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -314,19 +320,21 @@ export function SecuritySection() {
           </Button>
         </CardContent>
       </Card>
-      <Card className="border-destructive/40">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <ShieldAlert className="size-4" aria-hidden /> Delete account
-          </CardTitle>
-          <CardDescription>Removes your personal details for good. Records of past bookings are kept without your name, as the law requires.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="destructive" onClick={() => setConfirming(true)}>
-            Delete my account
-          </Button>
-        </CardContent>
-      </Card>
+      {guest ? null : (
+        <Card className="border-destructive/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="size-4" aria-hidden /> Delete account
+            </CardTitle>
+            <CardDescription>Removes your personal details for good. Records of past bookings are kept without your name, as the law requires.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="destructive" onClick={() => setConfirming(true)}>
+              Delete my account
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent>
           <DialogHeader>

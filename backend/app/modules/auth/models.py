@@ -24,6 +24,10 @@ class UserRole(enum.StrEnum):
     ADMIN = "admin"
 
 
+# Guest travellers get an address on this reserved domain (RFC 2606), so it can never reach anyone.
+GUEST_EMAIL_DOMAIN = "@guest.example.com"
+
+
 class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "users"
     __table_args__ = (
@@ -37,6 +41,11 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     role: Mapped[str] = mapped_column(String(20), nullable=False, default=UserRole.TRAVELER)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    @property
+    def is_guest(self) -> bool:
+        """A private guest started on a first visit (no password anyone knows)."""
+        return self.email.endswith(GUEST_EMAIL_DOMAIN)
 
 
 class RefreshToken(UUIDPrimaryKeyMixin, Base):

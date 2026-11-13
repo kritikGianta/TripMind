@@ -262,6 +262,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/guest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start a private guest session: no sign-up, no password */
+        post: operations["guest_login_api_v1_auth_guest_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -3296,18 +3313,22 @@ export interface components {
             /** Status */
             status: string;
         };
-        /** PaymentRequest */
+        /**
+         * PaymentRequest
+         * @description Card details are optional: an empty body confirms the booking without a card (the
+         *     prototype has no payment step). When a card is given, all its fields are required.
+         */
         PaymentRequest: {
             /** Card Number */
-            card_number: string;
+            card_number?: string | null;
             /** Cardholder Name */
-            cardholder_name: string;
+            cardholder_name?: string | null;
             /** Cvc */
-            cvc: string;
+            cvc?: string | null;
             /** Expiry Month */
-            expiry_month: number;
+            expiry_month?: number | null;
             /** Expiry Year */
-            expiry_year: number;
+            expiry_year?: number | null;
         };
         /** PlanListOut */
         PlanListOut: {
@@ -4247,6 +4268,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Is Guest
+             * @default false
+             */
+            is_guest: boolean;
             /**
              * Role
              * @enum {string}
@@ -5492,6 +5518,62 @@ export interface operations {
                 "application/json": components["schemas"]["DemoLoginRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    guest_login_api_v1_auth_guest_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

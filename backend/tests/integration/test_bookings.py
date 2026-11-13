@@ -342,3 +342,14 @@ def test_twenty_buyers_one_seat_real_threads(
     for t in threads:
         t.join()
     assert results.count("won") == 1 and results.count("sold_out") == 19
+
+
+def test_confirm_without_a_card(signed_in: TestClient) -> None:
+    client = signed_in
+    booking = hold(client, [{"kind": "flight", "offer_id": flight_offer(client)}]).json()
+    confirmed = pay(client, booking["id"], {}, key="confirm-1").json()
+    assert confirmed["status"] == "confirmed"
+    again = pay(client, booking["id"], {}, key="confirm-1").json()
+    assert len(again["payments"]) == len(confirmed["payments"]) == 1  # recorded once
+    half = pay(client, booking["id"], {"card_number": "4242 4242 4242 4242"})
+    assert half.status_code == 422  # a card, when given, must be complete

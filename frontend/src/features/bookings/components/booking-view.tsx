@@ -3,7 +3,7 @@
 import { Armchair, AlertCircle, BedDouble, CalendarClock, CheckCircle2, Clock, CreditCard, LifeBuoy, Plane, Star, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -11,8 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney } from "@/features/search/format";
 import { RecoveryBanner } from "@/features/recovery/components/recovery-view";
@@ -61,75 +59,34 @@ function Countdown({ until, onExpire }: { until: string; onExpire: () => void })
 
 function PaymentCard({ booking, onExpire }: { booking: Booking; onExpire: () => void }) {
   const pay = usePay(booking.id);
-  const [card, setCard] = useState({ number: "", month: "", year: "", cvc: "", name: "" });
-
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    pay.mutate(
-      {
-        key: crypto.randomUUID(),
-        input: {
-          // Cards are written with spaces, as printed; the API takes digits only.
-          card_number: card.number.replace(/\s/g, ""),
-          expiry_month: Number(card.month),
-          expiry_year: Number(card.year.length === 2 ? `20${card.year}` : card.year),
-          cvc: card.cvc,
-          cardholder_name: card.name,
-        },
-      },
-      { onSuccess: () => toast.success("Payment received. Your booking is confirmed.") },
-    );
-  }
+  // One key per page visit: a double click or a retry confirms once (the API is idempotent).
+  const [key] = useState(() => crypto.randomUUID());
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <CreditCard className="size-4" /> Pay {formatMoney(booking.total)}
+          <CreditCard className="size-4" /> Confirm {formatMoney(booking.total)}
         </CardTitle>
         <CardDescription className="flex items-center gap-1">
           <Clock className="size-3.5" /> Held for you for <Countdown until={booking.hold_expires_at} onExpire={onExpire} />
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={submit} className="grid gap-3" noValidate>
-          <div className="grid gap-1.5">
-            <Label htmlFor="card-number">Card number</Label>
-            <Input id="card-number" inputMode="numeric" autoComplete="cc-number" placeholder="4242 4242 4242 4242"
-              value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="card-month">Month</Label>
-              <Input id="card-month" inputMode="numeric" placeholder="12" value={card.month} onChange={(e) => setCard({ ...card, month: e.target.value })} />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="card-year">Year</Label>
-              <Input id="card-year" inputMode="numeric" placeholder="2030" value={card.year} onChange={(e) => setCard({ ...card, year: e.target.value })} />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="card-cvc">CVC</Label>
-              <Input id="card-cvc" inputMode="numeric" autoComplete="cc-csc" placeholder="123" value={card.cvc} onChange={(e) => setCard({ ...card, cvc: e.target.value })} />
-            </div>
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="card-name">Name on card</Label>
-            <Input id="card-name" autoComplete="cc-name" value={card.name} onChange={(e) => setCard({ ...card, name: e.target.value })} />
-          </div>
-          {pay.error ? (
-            <Alert variant="destructive">
-              <AlertCircle />
-              <AlertDescription>{errorMessage(pay.error)}</AlertDescription>
-            </Alert>
-          ) : null}
-          <Button type="submit" size="lg" disabled={pay.isPending}>
-            {pay.isPending ? "Processing…" : `Pay ${formatMoney(booking.total)}`}
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            Payments are simulated; no money moves. Test cards: 4242 4242 4242 4242 succeeds, 4000 0000 0000 0002 is
-            declined. Only the last four digits are stored.
-          </p>
-        </form>
+      <CardContent className="grid gap-3">
+        {pay.error ? (
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertDescription>{errorMessage(pay.error)}</AlertDescription>
+          </Alert>
+        ) : null}
+        <Button
+          size="lg"
+          disabled={pay.isPending}
+          onClick={() => pay.mutate({ key, input: {} }, { onSuccess: () => toast.success("Your booking is confirmed.") })}
+        >
+          {pay.isPending ? "Confirming…" : "Confirm booking"}
+        </Button>
+        <p className="text-xs text-muted-foreground">No payment is taken: confirming books the seats and rooms held for you.</p>
       </CardContent>
     </Card>
   );

@@ -40,6 +40,7 @@ class UserOut(BaseModel):
     email: str
     full_name: str
     role: Literal["traveler", "admin"]
+    is_guest: bool = False
     created_at: datetime
 
 

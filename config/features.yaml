@@ -5,6 +5,8 @@
 features:
   # One-click sign-in as a seeded demo account. Refused at start-up in production.
   demo_login: true
+  # Private guest sessions started automatically on a first visit: no sign-up or sign-in needed.
+  guest_access: true
   # Public self-service sign-up.
   registration: true
   # Admin dataset import: upload, profile, dry run, publish, import reports and quarantine.
