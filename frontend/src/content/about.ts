@@ -59,14 +59,7 @@ export const scenes = [
     heading: "One trip, from the first click to the way home",
     lead: "Keep scrolling: each step lights up the part of TripMind doing the work.",
   },
-  {
-    id: "under-the-hood",
-    title: "Under the hood",
-    heading: "How a request travels through TripMind",
-    lead: "Keep scrolling: each call lights up the parts it passes through, hop by hop.",
-  },
   { id: "implementation", title: "Built with", heading: "What it is built with, and why" },
-  { id: "ai", title: "Rules, not AI", heading: "Every package is checked. Nothing is guessed." },
   { id: "edge-cases", title: "Edge cases being solved", heading: "What happens when things go wrong" },
   { id: "proof", title: "Live demo and proof", heading: "Measured, not claimed" },
   { id: "business", title: "Business model", heading: "Who pays, and for what" },
@@ -309,121 +302,6 @@ export const workflow = {
   note: "Everything here runs on plain rules. There is no AI inside the app.",
 };
 
-// ── 9 · Under the hood: the real calls, and every part each one passes through ─────────────────
-
-export const requestFlow = {
-  calls: [
-    {
-      title: "Loading the data",
-      call: "python -m app.cli holiday load, on every start",
-      hops: ["Official JSON pack", "Our extension, same schema", "PostgreSQL"],
-      detail:
-        "A one-shot step reads the official data pack and our extra data in the same schema, and loads them into one catalog in one transaction. IDs are stable, so loading twice changes nothing, and reservations already made are kept.",
-    },
-    {
-      title: "A page opens",
-      call: "GET /plan, a page",
-      hops: ["Browser", "Next.js server", "Finished HTML"],
-      detail:
-        "Next.js renders the page on the server and sends finished HTML. The page then fetches its data from /api on the same address.",
-    },
-    {
-      title: "Every call passes the same checks",
-      call: "Any /api/v1/… request",
-      hops: ["Browser", "Next.js /api proxy", "FastAPI checks", "Redis"],
-      detail:
-        "The proxy forwards the call to the API inside Docker. The API gives each call a request ID, adds security headers and refuses oversized bodies. A guest session is read from an httpOnly cookie, and rate limits are counted in Redis.",
-    },
-    {
-      title: "Type a sentence",
-      call: "POST /api/v1/holiday/parse",
-      hops: ["Holiday module", "Rules", "Catalog places"],
-      detail:
-        "Regular-expression rules read the departure city, country, date, nights, travellers, children's ages and budget. Places are matched against the data, so a place we do not have is never invented. The answer only fills the form.",
-    },
-    {
-      title: "Build the packages",
-      call: "POST /api/v1/holiday/packages",
-      hops: ["Holiday engine", "PostgreSQL catalog", "Rule checker", "Saved packages"],
-      detail:
-        "The engine loads the catalog once, tries every city plan, fills in flights, hotels, transfers and attractions, and keeps only packages that pass every rule. The cheapest, fastest and best-rated are saved, so they survive a restart.",
-    },
-    {
-      title: "Change a package",
-      call: "POST /api/v1/holiday/packages/{id}/changes",
-      hops: ["Holiday service", "Rule checker", "PostgreSQL"],
-      detail:
-        "A new hotel or flight also moves the airport transfers. The whole package is checked again; a change that breaks a rule is refused with the reason, and nothing is saved.",
-    },
-    {
-      title: "Confirm",
-      call: "POST /api/v1/holiday/packages/{id}/confirm",
-      hops: ["Holiday service", "One PostgreSQL transaction", "10-digit number"],
-      detail:
-        "Seats and rooms are taken with a conditional update, “reserved + wanted ≤ capacity”, so the last room is never sold twice. A secure random 10-digit number is stored with a unique rule, and confirming twice returns the same number.",
-    },
-    {
-      title: "Open a reservation",
-      call: "GET /api/v1/holiday/reservations/{number}",
-      hops: ["Holiday service", "Indexed lookup", "Summary"],
-      detail:
-        "One query on an indexed, unique column finds the reservation; a wrong number gets “not found”. My Trips lists the traveller's own holidays the same way.",
-    },
-    {
-      title: "Meanwhile, the worker",
-      call: "python -m app.worker, with no web traffic",
-      hops: ["Worker", "Redis lock", "PostgreSQL"],
-      detail:
-        "A separate process frees unpaid holds every 30 seconds, re-checks price alerts and deletes data past its retention date, each job under a Redis lock so it runs once.",
-    },
-  ],
-  tiers: [
-    {
-      name: "Browser",
-      nodes: [{ label: "Website", steps: [1, 2, 3, 4, 5, 6, 7] }],
-    },
-    {
-      name: "Next.js server",
-      nodes: [
-        { label: "Page rendering", steps: [1] },
-        { label: "/api proxy", steps: [2, 3, 4, 5, 6, 7] },
-      ],
-    },
-    {
-      name: "API (FastAPI)",
-      nodes: [
-        { label: "Request ID, limits, session", steps: [2] },
-        { label: "Quick request rules", steps: [3] },
-        { label: "Holiday engine", steps: [4, 5] },
-        { label: "Rule checker", steps: [4, 5, 6] },
-        { label: "Reservations", steps: [6, 7] },
-      ],
-    },
-    {
-      name: "Stores",
-      nodes: [
-        { label: "PostgreSQL", steps: [0, 3, 4, 5, 6, 7, 8] },
-        { label: "Redis", steps: [2, 8] },
-      ],
-    },
-    {
-      name: "Data",
-      nodes: [
-        { label: "Official data pack", steps: [0] },
-        { label: "Extension, same schema", steps: [0] },
-      ],
-    },
-    {
-      name: "Alongside",
-      nodes: [
-        { label: "Data loader", steps: [0] },
-        { label: "Worker", steps: [8] },
-      ],
-    },
-  ] satisfies Array<{ name: string; nodes: FlowNode[] }>,
-  note: "Lit parts are the ones the current call touches. Redis and monitoring are optional: without them, TripMind still works.",
-};
-
 // ── 10 · Built with: each choice and the reason for it ───────────────────────────────────────
 
 export const techStack: StackItem[] = [
@@ -440,22 +318,10 @@ export const techStack: StackItem[] = [
     insteadOf: "Bootstrap or Material UI are harder to reshape into our own look.",
   },
   {
-    area: "Data fetching",
-    choice: "TanStack Query",
-    why: "Caching, retries and loading states for every API call; the website's types are generated from the API, so both always agree.",
-    insteadOf: "Hand-written fetch calls in every component repeat the same mistakes.",
-  },
-  {
     area: "API",
     choice: "Python 3.12 and FastAPI",
     why: "Requests are checked from type hints before our code runs, and the API describes itself, which generates the website's types.",
     insteadOf: "Django is heavier for a pure API.",
-  },
-  {
-    area: "Holiday engine",
-    choice: "Plain Python rules",
-    why: "One rule checker holds every travel rule from the problem statement, so each rule reads like the handout and can be changed in one line.",
-    insteadOf: "An AI or a trained model, which the rules forbid and which nobody could check line by line.",
   },
   {
     area: "Database access",
@@ -470,12 +336,6 @@ export const techStack: StackItem[] = [
     insteadOf: "MySQL has no partial indexes and commits schema changes implicitly; MongoDB suits loose documents better than tightly linked bookings and seats.",
   },
   {
-    area: "Data",
-    choice: "The official pack, plus our extension in the same schema",
-    why: "The official files are loaded as they are; our seeded generator adds more dates and five more countries with exactly the same fields.",
-    insteadOf: "Changing the official files, which the rules forbid.",
-  },
-  {
     area: "Shared state",
     choice: "Redis 7.4",
     why: "Fast shared memory for rate limits, sign-in lockouts and job locks, so several copies of the API agree. It is optional: limits fail open and locks fail closed.",
@@ -488,89 +348,12 @@ export const techStack: StackItem[] = [
     insteadOf: "Celery and a message broker add moving parts for three jobs.",
   },
   {
-    area: "Security",
-    choice: "Guest sessions, Argon2id, short-lived tokens in httpOnly cookies",
-    why: "No sign-up needed, yet every trip belongs to someone; sessions that page scripts cannot read, and memory-hard password hashing for staff.",
-    insteadOf: "Tokens kept in browser storage, where any injected script can read them.",
-  },
-  {
-    area: "Monitoring",
-    choice: "Prometheus, Grafana, OpenTelemetry, Jaeger",
-    why: "Open standards, with metrics, dashboards, alert rules and traces kept as code. All of it is optional.",
-    insteadOf: "A paid hosted monitoring service.",
-  },
-  {
     area: "Running it",
     choice: "Docker Compose",
     why: "The whole stack, data included, starts with one command on any machine.",
     insteadOf: "Kubernetes is more than one machine needs.",
   },
-  {
-    area: "Quality",
-    choice: "pytest, ruff, mypy, import-linter, GitHub Actions",
-    why: "Tests through the real API on two databases, type checks, and a rule that fails the build when code crosses its layers.",
-  },
 ];
-
-export const capabilityGroups: Group[] = [
-  {
-    name: "Book my holiday",
-    items: ["Request form", "Cities chosen by the app", "Every rule checked", "Day-by-day plan", "Total and budget", "JSON export", "Change hotel, flight, attractions", "10-digit reservation", "Budget too small", "Cheapest, fastest, best rated", "Quick request"],
-    summary: "Every must-have, good-to-have and stretch feature of the problem: a complete package that passes every rule, changes that are checked again, and a reservation number that survives a restart.",
-    status: "live",
-  },
-  {
-    name: "Booking, for real",
-    items: ["Flight and stay search", "Itemised prices", "Holds", "Confirm without payment", "Changes and cancellations", "Seats, bags and meals", "Promo codes"],
-    summary: "Search flights and stays, see every price line by line, hold and confirm, then change or cancel a single item.",
-    status: "live",
-  },
-  {
-    name: "Plan and explore",
-    items: ["Plan a trip", "Journey Confidence Report", "What the trip is missing", "Plan with friends", "Fare calendar", "Explore by budget", "Saved stays and price alerts"],
-    summary: "Ranked flight and stay plans with reasons, group voting with budgets, and ways to find the cheapest day or where a budget can take you.",
-    status: "live",
-  },
-  {
-    name: "After booking",
-    items: ["My Trips", "Disruption recovery", "Notifications", "Reviews", "Support requests", "Loyalty points", "Invoice"],
-    summary: "Every trip and holiday in one place; when an airline cancels, the traveller chooses the fix.",
-    status: "live",
-  },
-  {
-    name: "Data",
-    items: ["Official data pack", "Seven countries, eighteen cities", "Dates to May 2027", "Same schema throughout", "Loaded on every start"],
-    summary: "The official pack, untouched, plus our extension with more dates and countries in exactly the same format, all in one catalog.",
-    status: "live",
-  },
-  {
-    name: "Accounts, safety and running it",
-    items: ["Guest sessions", "Secure cookies", "Data export", "Audit trail", "Admin consoles", "Health checks", "Feature flags", "One-command start"],
-    summary: "No sign-up for travellers, protected sessions, admin tools for disruptions and support, and every feature can be switched on or off.",
-    status: "live",
-  },
-];
-
-// ── 10 · Rules, not AI ────────────────────────────────────────────────────────────────────────
-
-export const aiBoundaries = {
-  allowed: [
-    "Land on the start date at an airport that serves the first city",
-    "Have a pickup at least 60 minutes after landing, inside service hours",
-    "Fit the family in the rooms, with rooms free on every night",
-    "Visit attractions in that night's city, open, with no overlaps",
-    "Reach the airport at least 3 hours before the flight home",
-  ],
-  notAllowed: [
-    "Call an AI or language model, in the cloud or on the laptop",
-    "Invent a price, a seat, a room or a place",
-    "Save a change that breaks a rule",
-    "Sell the last seat or room twice",
-  ],
-  fallback:
-    "A typed sentence is read by plain rules that match places against the data. Whatever they cannot read stays as it was in the form, and the traveller is told what is missing.",
-  status: "live" as Status,
-};
 
 // ── 11 · Edge cases, in five families ──────────────────────────────────────────────────────
 
@@ -613,7 +396,6 @@ export const proof = {
   measured: [
     { value: "20 → 1", label: "buyers racing for one seat on PostgreSQL (real threads): one booked, 19 told it sold out", measuredOn: "9 Nov 2026" },
     { value: "910 / 0", label: "synthetic requests from 8 virtual users in 46 s / server errors; search p95 0.47 s on a laptop in Docker", measuredOn: "7 Nov 2026" },
-    { value: "3 / 0", label: "packages built for the handout's Menon family request / rules broken by any of them", measuredOn: "13 Nov 2026" },
     { value: "212", label: "automated backend tests passing on both SQLite and PostgreSQL", measuredOn: "9 Nov 2026" },
   ],
   demoScript: [

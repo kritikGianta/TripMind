@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, CircleDashed, X } from "lucide-react";
+import { Check, CircleDashed } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { type CSSProperties, type ReactNode } from "react";
@@ -340,76 +340,6 @@ function HowItWorks() {
   );
 }
 
-/**
- * Under the hood: the real API calls, one at a time while the scene is pinned. Each caption names
- * the call and reveals its hops in order; on the right, every part that call passes through glows.
- * A part can serve several calls, so each step gets a glow value (--k0, --k1, …) worked out from
- * the scroll position, and a part takes the brightest of the steps it belongs to.
- */
-function UnderTheHood() {
-  const ref = useScrollProgress<HTMLElement>("pin");
-  const scene = sceneOf("under-the-hood");
-  const { calls, tiers, note } = about.requestFlow;
-  const last = calls.length - 1;
-  const glow: Style = { "--n": last };
-  calls.forEach((_, index) => {
-    glow[`--k${index}`] =
-      `clamp(0, calc(1.15 - max(var(--p, 0) * ${last} - ${index}, ${index} - var(--p, 0) * ${last}) * 2.4), 1)`;
-  });
-  return (
-    <div id="under-the-hood" data-scene data-stops={calls.length} role="region" aria-label={scene.title}>
-      <section ref={ref} className="ab-how ab-hood" style={glow}>
-        <div className="ab-how__stage">
-          <div className="ab-how__head">
-            <Eyebrow id="under-the-hood" />
-            <Heading id="under-the-hood" />
-            <p className="ab-lead">{scene.lead}</p>
-          </div>
-          <div className="ab-how__body">
-            <ol className="ab-how__steps">
-              {calls.map((call, index) => (
-                <li key={call.title} style={{ "--i": index } as Style}>
-                  <span className="ab-row__mark">{String(index + 1).padStart(2, "0")}</span>
-                  <h3 className="ab-display">{call.title}</h3>
-                  <code className="ab-hood__call">{call.call}</code>
-                  <ol className="ab-hood__hops" aria-label="Hops">
-                    {call.hops.map((hop, hopIndex) => (
-                      <li key={hop} style={{ "--j": hopIndex } as Style}>
-                        {hop}
-                      </li>
-                    ))}
-                  </ol>
-                  <p>{call.detail}</p>
-                </li>
-              ))}
-            </ol>
-            <div className="ab-how__map ab-hood__map">
-              {tiers.map((tier) => (
-                <div key={tier.name} className="ab-hood__tier">
-                  <p className="ab-how__lane-name">{tier.name}</p>
-                  <ul>
-                    {tier.nodes.map((node: about.FlowNode) => (
-                      <li
-                        key={node.label}
-                        className="ab-hood__node"
-                        style={{ "--hot": `max(${node.steps.map((s) => `var(--k${s})`).join(", ")})` } as Style}
-                      >
-                        {node.label}
-                        {node.tag ? <span className="ab-how__tag">{node.tag}</span> : null}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-              <p className="ab-small ab-soft">{note}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
 /** Several related capabilities or cases as one card: their names, then one summary. */
 function GroupCard({ group, index }: { group: Group; index: number }) {
   return (
@@ -429,9 +359,6 @@ function GroupCard({ group, index }: { group: Group; index: number }) {
 }
 
 function Implementation() {
-  const groups = about.capabilityGroups;
-  const live = groups.filter((group) => group.status === "live").length;
-  const features = groups.reduce((sum, group) => sum + group.items.length, 0);
   return (
     <section id="implementation" data-scene className="ab-plain" aria-label={sceneOf("implementation").title}>
       <Eyebrow id="implementation" />
@@ -452,60 +379,6 @@ function Implementation() {
           </li>
         ))}
       </ul>
-
-      <div className="ab-groups__head">
-        <h3 className="ab-label">Build status</h3>
-        <p className="ab-small ab-soft">
-          {features} features in {groups.length} groups · {live} of {groups.length} groups live
-        </p>
-      </div>
-      <ul className="ab-groups">
-        {groups.map((group, index) => (
-          <GroupCard key={group.name} group={group} index={index} />
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function AiBoundaries() {
-  const ref = useScrollProgress<HTMLElement>("pass");
-  const { allowed, notAllowed, fallback, status } = about.aiBoundaries;
-  return (
-    <section ref={ref} id="ai" data-scene className="ab-split" aria-label={sceneOf("ai").title}>
-      <div className="ab-split__sky">
-        <Art name="sierra" sizes="100vw" />
-      </div>
-      <div className="ab-split__inner">
-        <Eyebrow id="ai" />
-        <Heading id="ai" />
-        <StatusMark status={status} />
-        <div className="ab-split__panels">
-          <div className="ab-split__panel ab-split__panel--may">
-            <h3 className="ab-display">Every package must</h3>
-            <ul>
-              {allowed.map((item) => (
-                <li key={item}>
-                  <Check aria-hidden />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="ab-split__panel ab-split__panel--not">
-            <h3 className="ab-display">TripMind never</h3>
-            <ul>
-              {notAllowed.map((item) => (
-                <li key={item}>
-                  <X aria-hidden />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <p className="ab-lead">{fallback}</p>
-      </div>
     </section>
   );
 }
@@ -727,9 +600,7 @@ export function Scenes() {
       <Solution />
       <Difference />
       <HowItWorks />
-      <UnderTheHood />
       <Implementation />
-      <AiBoundaries />
       <EdgeCases />
       <Proof />
       <Business />
