@@ -56,7 +56,6 @@ export const scenes = [
     id: "workflow",
     title: "How it works",
     heading: "One trip, from the first click to the way home",
-    lead: "Keep scrolling: each step lights up the part of TripMind doing the work.",
   },
   { id: "implementation", title: "Built with", heading: "What it is built with, and why" },
   { id: "edge-cases", title: "Edge cases being solved", heading: "What happens when things go wrong" },
@@ -154,7 +153,6 @@ export const caseStudies: CaseStudy[] = [
 // ── 3 · Problem statement ──────────────────────────────────────────────────────────────────────
 
 export const problemStatement = {
-  label: "Working problem statement · replaced by the official statement on 13 November",
   text:
     "Travellers make two kinds of decisions: quickly book one thing, a flight or a hotel, or coordinate several into one journey. When they plan across products, they piece together flights, stays, prices and policies across separate searches. Comparisons get lost, the true total cost is hard to judge, and the work continues after booking. TripMind takes that effort away with plain rules that build and check the whole trip, while the traveller still makes every decision.",
   pains: [

@@ -152,7 +152,6 @@ function Problem() {
         <div className="ab-read__stage">
           <Eyebrow id="problem" />
           <Heading id="problem" />
-          <p className="ab-chip">{about.problemStatement.label}</p>
           <p className="ab-read__text">
             <Words text={about.problemStatement.text} from={0.08} />
           </p>
@@ -270,7 +269,6 @@ function HowItWorks() {
           <div className="ab-how__head">
             <Eyebrow id="workflow" />
             <Heading id="workflow" />
-            <p className="ab-lead">{scene.lead}</p>
           </div>
           <div className="ab-how__body">
             <ol className="ab-how__steps">
@@ -353,9 +351,6 @@ function EdgeCases() {
       <div className="ab-edge__list">
         <Eyebrow id="edge-cases" />
         <Heading id="edge-cases" />
-        <p className="ab-lead">
-          The {about.edgeCaseGroups.length} most important ways a trip can go wrong, and what TripMind does.
-        </p>
         <ul className="ab-groups ab-groups--single">
           {about.edgeCaseGroups.map((group, index) => (
             <GroupCard key={group.name} group={group} index={index} />
