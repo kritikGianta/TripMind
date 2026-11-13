@@ -45,7 +45,7 @@ export const scenes = [
   { id: "case-studies", title: "Case studies", heading: "What the research says about how people book travel" },
   { id: "problem", title: "Problem statement", heading: "Planning a trip is still a puzzle the traveller assembles by hand" },
   { id: "title", title: "Project" },
-  { id: "objectives", title: "Objectives", heading: "What TripMind must do" },
+  { id: "objectives", title: "Objectives and features", heading: "Objectives and features" },
   {
     id: "solution",
     title: "The solution",
@@ -183,11 +183,10 @@ export const objectives: string[] = [
   "Book a flight on its own, or a stay on its own.",
   "Plan a trip: a flight and a stay, ranked together with reasons.",
   "Build a whole holiday: the app chooses the cities and adds flights, hotels, transfers and attractions.",
-  "Make every package pass every travel rule, and check it again after each change.",
-  "Show the total against the budget, and say what to change when nothing fits.",
+  "Quick request: type the trip in your own words and the form fills itself, read with plain rules.",
+  "Group trips: share a plan, let everyone vote on the options, and decide together within each budget.",
   "Give every confirmed trip a 10-digit reservation number that opens it any time.",
   "Stay correct under pressure: the last seat or room is never sold twice.",
-  "Use no AI inside the app: plain rules that anyone can read and check.",
 ];
 
 // ── 6 · Solution: ways to book ───────────────────────────────────────────────────────────────
