@@ -17,7 +17,6 @@ import getpass
 import json
 import secrets
 import sys
-import tempfile
 from datetime import UTC, date, datetime
 from pathlib import Path
 
@@ -34,7 +33,6 @@ from app.models import User
 from app.modules.auth.models import UserRole
 from app.modules.auth.repository import UserRepository
 from app.modules.ingestion.models import ImportRun
-from app.modules.ingestion.repository import ImportRunRepository
 from app.modules.ingestion.service import Actor, ImportService
 from app.modules.ingestion.sources import open_source
 
@@ -200,18 +198,6 @@ def data_profile(path: Path, dataset: str, write: Path | None) -> int:
     return 0
 
 
-def data_bootstrap() -> int:
-    """Used by Docker Compose: load the demo dataset once, through the normal pipeline."""
-    with get_session_factory()() as session:
-        if ImportRunRepository(session).latest_published() is not None:
-            print("bootstrap: a dataset is already published; nothing to do")
-            return 0
-    with tempfile.TemporaryDirectory() as tmp:
-        archive = Path(tmp) / "synthetic-v1.zip"
-        data_generate(archive, seed=7, start=None, days=45, dirty=0.004)
-        return data_import(archive, "synthetic-v1", dry_run=False)
-
-
 def holiday_load(pack_dir: Path | None) -> int:
     """Load (or reload) the official finale data pack. Safe to run on every start-up."""
     from app.modules.holiday.pack import load_pack
@@ -280,7 +266,6 @@ def _parser() -> argparse.ArgumentParser:
     imp.add_argument("path", type=Path)
     imp.add_argument("--mapping", required=True, help="Name of a file in config/mappings")
     imp.add_argument("--dry-run", action="store_true", help="Validate without publishing")
-    data_sub.add_parser("bootstrap", help="Import the synthetic dataset if none is published")
     return parser
 
 
@@ -312,7 +297,7 @@ def main(argv: list[str] | None = None) -> int:
         return data_profile(args.path, args.dataset, args.write)
     if args.data_command == "import":
         return data_import(args.path, args.mapping, dry_run=args.dry_run)
-    return data_bootstrap()
+    return 1
 
 
 if __name__ == "__main__":
