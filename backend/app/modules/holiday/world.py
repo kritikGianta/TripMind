@@ -448,24 +448,18 @@ def generate_world(start: date, end: date, seed: int = 11) -> dict[str, Any]:
                 airline, code2 = rng.choice(AIRLINES)
                 base = round((9000 + minutes * 40) * max(level, 0.8))
                 for day in days:
-                    for direction in ("out", "home"):
+                    # Two flights each way a day: morning and evening.
+                    for direction, dep_clock in (
+                        ("out", (8, 15)),
+                        ("out", (21, 30)),
+                        ("home", (10, 15)),
+                        ("home", (19, 40)),
+                    ):
                         flight_no += 1
                         if direction == "out":
-                            src, dst, src_tz, dst_tz, dep_clock = (
-                                home,
-                                code,
-                                "Asia/Kolkata",
-                                tz,
-                                (21, 30),
-                            )
+                            src, dst, src_tz, dst_tz = home, code, "Asia/Kolkata", tz
                         else:
-                            src, dst, src_tz, dst_tz, dep_clock = (
-                                code,
-                                home,
-                                tz,
-                                "Asia/Kolkata",
-                                (10, 15),
-                            )
+                            src, dst, src_tz, dst_tz = code, home, tz, "Asia/Kolkata"
                         dep = datetime.combine(day, datetime.min.time()).replace(
                             hour=dep_clock[0], minute=dep_clock[1]
                         )

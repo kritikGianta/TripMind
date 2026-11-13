@@ -25,7 +25,7 @@ from typing import Any
 from app.modules.holiday.world import generate_world
 
 OFFICIAL_FIRST, OFFICIAL_LAST = date(2027, 4, 1), date(2027, 4, 20)
-FLIGHTS_PER_ROUTE_PER_DAY = 2
+FLIGHTS_PER_ROUTE_PER_DAY = 3
 
 
 def _days(start: date, end: date) -> list[date]:
@@ -39,13 +39,16 @@ def generate(
     folder = pack_dir / "data" / "catalog"
     flights = json.loads((folder / "flights.json").read_text(encoding="utf-8"))
     availability = json.loads((folder / "availability.json").read_text(encoding="utf-8"))
-    days = [d for d in _days(start, end) if not OFFICIAL_FIRST <= d <= OFFICIAL_LAST]
+    every_day = _days(start, end)
+    # Rooms on official dates come from the pack; flights are added on every day, April included,
+    # so travellers have more flights to choose from.
+    days = [d for d in every_day if not OFFICIAL_FIRST <= d <= OFFICIAL_LAST]
 
     by_route: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for f in flights:
         by_route[(f["from"], f["to"])].append(f)
     new_flights: list[dict[str, Any]] = []
-    for day in days:
+    for day in every_day:
         n = 0
         for route in sorted(by_route):
             templates = by_route[route]
