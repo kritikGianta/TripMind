@@ -1,31 +1,21 @@
-"""Suspicious-price detection at import (Isolation Forest, scikit-learn).
+"""Suspicious-price detection at import (a plain rule, no model).
 
-Each fare is compared with fares on the SAME route and cabin, which removes the legitimate
-differences between short and long routes or economy and business. Two features per fare:
-
-    relative fare      log(fare) - median log(fare) for its route and cabin
-    relative duration  log(duration) - median log(duration) for its route and cabin
-
-Isolation Forest then isolates fares that do not fit their route. Flagged rows are WARNINGS in
-the import report, never rejections: a fare can be unusual and still correct, so an operator
-decides. The model is fitted per import, so it adapts to whatever dataset arrives.
-models/price_anomaly/ measures it against deliberately injected price errors.
+A fare is flagged when it is at least 2.7 times above or below the median fare of its route
+(same airports, cabin and currency). Flags are warnings in the import report, never rejections:
+a fare can be unusual and still correct, so an operator decides.
 """
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import IsolationForest
 
 from app.modules.ingestion.rejects import RejectLog
 
 MIN_FARES = 50  # below this there is not enough data to learn what is normal
 # Only deviations of at least e^1.0 = 2.7x the route median are reported. On the demo data,
-# genuine fares (last-minute peaks included) reach 0.96 (2.6x), while injected price errors are
-# 8x; see models/price_anomaly/ for the evaluation.
+# genuine fares (last-minute peaks included) reach 2.6x, while injected price errors are 8x.
 MIN_RELATIVE_JUMP = 1.0
-SEED = 7
 
 
 def score_fares(flights: pd.DataFrame) -> pd.Series:
@@ -44,17 +34,9 @@ def score_fares(flights: pd.DataFrame) -> pd.Series:
         + priced["currency"].astype(str)
     )
     log_fare = pd.Series(np.log(priced["fare_minor"].astype(float)), index=priced.index)
-    log_duration = pd.Series(
-        np.log(priced["duration_minutes"].astype(float).clip(lower=1)), index=priced.index
-    )
     relative_fare = log_fare - log_fare.groupby(priced["route"]).transform("median")
-    relative_duration = log_duration - log_duration.groupby(priced["route"]).transform("median")
-    features = np.column_stack([relative_fare, relative_duration])
-    model = IsolationForest(n_estimators=200, contamination="auto", random_state=SEED)
-    outlier = model.fit_predict(features) == -1
-    # Isolation Forest also isolates harmless small deviations; report only material ones.
     material = np.abs(relative_fare.to_numpy()) >= MIN_RELATIVE_JUMP
-    flagged.loc[priced.index] = outlier & material
+    flagged.loc[priced.index] = material
     return flagged
 
 

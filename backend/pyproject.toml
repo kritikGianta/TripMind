@@ -25,8 +25,6 @@ dependencies = [
     "opentelemetry-exporter-otlp-proto-http>=1.45.2",
     "opentelemetry-instrumentation-fastapi>=0.66b2",
     "httpx>=0.28.1",
-    "scikit-learn>=1.9.1",
-    "lightgbm>=4.7.0",
     "redis>=5.2",
 ]
 
@@ -68,10 +66,6 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
 exclude = ["migrations/"]
-
-[[tool.mypy.overrides]]
-module = ["sklearn.*", "lightgbm.*"]  # no type stubs published
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["tests.*"]
