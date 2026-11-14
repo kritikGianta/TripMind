@@ -308,8 +308,8 @@ export const techStack: StackItem[] = [
   },
   {
     area: "Database access",
-    choice: "SQLAlchemy 2 and Alembic",
-    why: "Typed queries that run on PostgreSQL, and on SQLite for quick tests, with every schema change versioned.",
+    choice: "SQLAlchemy 2",
+    why: "Typed queries written in Python that run on PostgreSQL, and on SQLite for quick tests.",
     insteadOf: "Raw SQL strings scattered through the code.",
   },
   {
